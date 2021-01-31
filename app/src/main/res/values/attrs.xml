@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="TimeSelectView">
+        <attr name="intervalWidth" format="dimension"/>
+        <attr name="intervalHeight" format="dimension"/>
+        <attr name="borderColor" format="color"/>
+        <attr name="insideColor" format="color"/>
+        <attr name="timeTextSize" format="dimension"/>
+        <attr name="taskTextSize" format="dimension"/>
+    </declare-styleable>
+</resources>
