@@ -6,12 +6,15 @@ import android.content.res.TypedArray;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
+import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ScrollView;
 
 import com.ndhzs.timeplanning.R;
 
-public class TimeSelectView extends ViewGroup {
+public class TimeSelectView extends ScrollView {
 
     private RectView rectView;
     private int mScreenWidth, mScreenHeight;
@@ -31,11 +34,33 @@ public class TimeSelectView extends ViewGroup {
         mTimeTextSide = (int)ty.getDimension(R.styleable.TimeSelectView_timeTextSize, 50);
         mTaskTextSize = (int)ty.getDimension(R.styleable.TimeSelectView_taskTextSize, 60);
         mIntervalWidth = (int)ty.getDimension(R.styleable.TimeSelectView_intervalWidth, 126);
-        mIntervalHeight = (int)ty.getDimension(R.styleable.TimeSelectView_intervalHeight, 135);
-        mExtraHeight = (int)(mIntervalHeight * 0.4);
+        mIntervalHeight = (int)ty.getDimension(R.styleable.TimeSelectView_intervalHeight, 136);
+        mExtraHeight = (int)(mIntervalHeight * 0.5);
         ty.recycle();
+        setVerticalScrollBarEnabled(false);
         getScreenSize();
         init(context);
+    }
+
+    private boolean mIsShortPress = true;
+    public void setIsShortPress(boolean isShortPress) {
+        this.mIsShortPress = isShortPress;
+    }
+
+    @Override
+    public boolean onInterceptTouchEvent(MotionEvent ev) {
+        if (ev.getAction() == MotionEvent.ACTION_DOWN) {
+            if (ev.getX() < mIntervalWidth + 3) {
+                super.onInterceptTouchEvent(ev);
+                return true;
+            }else {
+                onTouchEvent(ev);
+            }
+        }else if (mIsShortPress) {
+            super.onInterceptTouchEvent(ev);
+            return true;
+        }
+        return false;
     }
 
     private void getScreenSize() {
@@ -51,30 +76,14 @@ public class TimeSelectView extends ViewGroup {
     }
 
     private void init(Context context) {
-        int startHour = 1;
-        int endHour = 27;
+        int startHour = 3;
+        int endHour = 24 + 3;
         rectView = new RectView(context);
         rectView.setHour(startHour, endHour);
         rectView.setRectColor(mBorderColor, mInsideColor);
         rectView.setTimeTextSize(mTimeTextSide, mTaskTextSize);
         rectView.setInterval(mIntervalWidth, mIntervalHeight, mExtraHeight);
-        int rectViewHeight = 2 * mExtraHeight + (endHour - startHour) * mIntervalHeight;
-        LayoutParams lp = new LayoutParams(LayoutParams.MATCH_PARENT, rectViewHeight);
+        LayoutParams lp = new LayoutParams(LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         addView(rectView, lp);
-    }
-
-    @Override
-    protected void onLayout(boolean changed, int l, int t, int r, int b) {
-        View childView = getChildAt(0);
-        childView.layout(0,0, rectView.getMeasuredWidth(), rectView.getMeasuredHeight());
-    }
-
-    @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        measureChildren(widthMeasureSpec, heightMeasureSpec);
-        int width = MeasureSpec.getSize(widthMeasureSpec);
-        int height = MeasureSpec.getSize(heightMeasureSpec);
-        setMeasuredDimension(width, height);
     }
 }
