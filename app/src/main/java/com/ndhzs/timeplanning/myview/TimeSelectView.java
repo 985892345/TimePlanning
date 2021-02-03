@@ -86,9 +86,9 @@ public class TimeSelectView extends ScrollView {
                     removeCallbacks(mLongPreRun);
                     return super.dispatchTouchEvent(ev);
                 }else {
-                    // 经过几个小时打log，我把View和ViewGroup的时间分发、
+                    // 经过几个小时打log，我把View和ViewGroup的事件分发、
                     // 事件拦截和事件处理都打印了出来，这里return true可以
-                    // 终止事件向下传递，意识就是onInterceptTouchEvent()
+                    // 终止事件向下传递，意思就是onInterceptTouchEvent()
                     // 和onTouchEvent将会收不到这个事件，将不会被调用，
                     // 所以这里刚好可以用来等待长按时间结束
                     return true;

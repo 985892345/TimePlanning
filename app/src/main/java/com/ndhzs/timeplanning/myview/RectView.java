@@ -158,11 +158,11 @@ public class RectView extends View {
     }
 
     private String calculateTime(float y) {
-        int hour = (int)((y - mExtraHeight + mHLineWidth/2) / mIntervalHeight) + mStartHour;
-        int minute = (int)(((y - mExtraHeight + mHLineWidth/2) % mIntervalHeight) / mIntervalHeight * 60);
+        int hour = (int)((y - mExtraHeight + mHLineWidth) / mIntervalHeight) + mStartHour;
+        int minute = (int)(((y - mExtraHeight + mHLineWidth) % mIntervalHeight) / mIntervalHeight * 60);
         if (y < mExtraHeight - mHLineWidth/2) {
             hour = mStartHour - 1;
-            minute = (int)(((mIntervalHeight - (mExtraHeight - mHLineWidth/2 - y))% mIntervalHeight) / mIntervalHeight * 60);
+            minute = (int)(((mIntervalHeight - (mExtraHeight - mHLineWidth - y))% mIntervalHeight) / mIntervalHeight * 60);
         }
         String stHour;
         String stMinute;
@@ -211,6 +211,9 @@ public class RectView extends View {
             float left, top, right, bottom;
             left = mIntervalLeft + mVLineWidth/2 + mBorderWidth/2;
             top = (int)((y - mExtraHeight)/mIntervalHeight)*mIntervalHeight+mExtraHeight+mHLineWidth/2+mBorderWidth/2;
+            if (isContainTop(top)) {
+                top = mInitialRectY;
+            }
             right = getWidth() - mIntervalRight - mBorderWidth/2;
             bottom = y;
             rect.set(left, top, right, top);
@@ -229,6 +232,17 @@ public class RectView extends View {
             mUpperLimit = getUpperLimit(mInitialRectY);
             mLowerLimit = getLowerLimit(mInitialRectY);
         }
+    }
+    private boolean isContainTop(float y) {
+        float x = getWidth()/2.0f;
+        y -= mBorderWidth/2;
+        for (int i = 0; i < rects.size(); i++) {
+            if (rects.get(i).contains(x, y)) {
+                mInitialRectY = rects.get(i).bottom + mBorderWidth + 1;
+                return true;
+            }
+        }
+        return false;
     }
     private boolean isContain(float x, float y) {
         for (int i = 0; i < rects.size(); i++) {

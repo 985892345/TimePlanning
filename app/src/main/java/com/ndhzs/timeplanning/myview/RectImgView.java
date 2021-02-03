@@ -8,6 +8,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.RectF;
+import android.util.Log;
 import android.view.View;
 
 public class RectImgView extends View {
@@ -49,6 +50,7 @@ public class RectImgView extends View {
         mTextCenterDistance = (fontMetrics.bottom - fontMetrics.top) / 2 - fontMetrics.bottom;
     }
 
+    private static final String TAG = "123";
     @Override
     protected void onDraw(Canvas canvas) {
         //先画矩形的过程
@@ -58,6 +60,7 @@ public class RectImgView extends View {
         canvas.drawText(mTaskName, mRect.centerX(), baseline, mTextPaint);
         canvas.drawText(mRectView.calculateImgViewTime(true), mRect.left + 6, mRect.top - mRectTimeAscent, mRectTimePaint);
         canvas.drawText(mRectView.calculateImgViewTime(false), mRect.left + 6, mRect.bottom - mRectTimeDescent, mRectTimePaint);
+
     }
 
     @Override
