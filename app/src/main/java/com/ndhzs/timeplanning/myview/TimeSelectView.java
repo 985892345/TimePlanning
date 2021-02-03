@@ -19,7 +19,7 @@ public class TimeSelectView extends ScrollView {
     private final int mInsideColor;//矩形内部颜色
     private final int mTimeTextSide;//时间字体大小
     private final int mTaskTextSize;//任务字体大小
-    private float mInitialX, mInitialY;//计入ACTION_DOWN时的坐标
+    private int mInitialX, mInitialY;//计入ACTION_DOWN时的坐标
 
     public TimeSelectView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -61,8 +61,8 @@ public class TimeSelectView extends ScrollView {
     };
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
-        float x = ev.getX();
-        float y = ev.getY();
+        int x = (int)ev.getX();
+        int y = (int)ev.getY();
         int action = ev.getAction();
         if (action == MotionEvent.ACTION_DOWN) {
             mInitialX = x;

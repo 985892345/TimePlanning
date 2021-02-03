@@ -7,13 +7,14 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Rect;
 import android.graphics.RectF;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
+import android.widget.FrameLayout;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,31 +35,32 @@ public class RectView extends View {
     private Paint mInsidePaint;//圆角矩形内部画笔
 
     private Paint mBorderPaint;//圆角矩形边框画笔
-    private final float mBorderWidth = 4;//圆角矩形边框厚度
+    private final int mBorderWidth = 4;//圆角矩形边框厚度
 
     private Paint mVLinePaint;//Vertical Line 垂直线画笔
-    private final float mVLineWidth = 2;//垂直线厚度
+    private final int mVLineWidth = 2;//垂直线厚度
 
     private Paint mHLinePaint;//Horizontal Line 水平线画笔
-    private final float mHLineWidth = 1;//水平线厚度
+    private final int mHLineWidth = 1;//水平线厚度
 
     private Paint mTextPaint;//任务名称文字画笔
     private Paint mLeftTimePaint;//左侧时间文字画笔
     private Paint mRectTimePaint;//矩形内部时间文字画笔
-    private float mInitialRectY;//长按生成矩形时的不动的y值
-    private float mUpperLimit, mLowerLimit;//当前矩形的上下限，不能移动到其他矩形区域
+    private int mInitialRectY;//长按生成矩形时的不动的y值
+    private int mUpperLimit, mLowerLimit;//当前矩形的上下限，不能移动到其他矩形区域
     private float mTextCenter, mLeftTimeCenter;//文字的水平线高度
     private float mRectTimeAscent, mRectTimeDescent;//矩形内部时间的ascent和descent线
     private TimeSelectView mMyScrollView;
     private ViewGroup mMyScrViewParent;
     private RectImgView mImgView;
-    private final RectF rect = new RectF(-40, -40, -40, -40);//初始矩形
-    private RectF deletedRect;//被删掉的矩形
-    private final List<RectF> rects = new ArrayList<>();
-    private final HashMap<RectF, String> rectAndName = new HashMap<>();
+    private final Rect initialRect = new Rect(-40, -40, -40, -40);//初始矩形
+    private Rect deletedRect;//被删掉的矩形
+    private RectF rectF;
+    private final List<Rect> rects = new ArrayList<>();
+    private final HashMap<Rect, String> rectAndName = new HashMap<>();
 
     private boolean mIsContain;//长按已选择的区域后为true
-    private float mContainedX, mContainedY;//长按已选择的区域时的坐标
+    private int mContainedX, mContainedY;//长按已选择的区域时的坐标
 
     private static final int X_MOVE_THRESHOLD = 50;
 
@@ -68,7 +70,8 @@ public class RectView extends View {
         init();
     }
     private void init() {
-        deletedRect = new RectF();
+        rectF = new RectF();
+        deletedRect = new Rect();
         //圆角矩形内部画笔
         mInsidePaint = generatePaint(true, Paint.Style.FILL, 10);
         //圆角矩形边框画笔
@@ -127,17 +130,19 @@ public class RectView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         //先画矩形的过程
-        canvas.drawRoundRect(rect, radius, radius, mInsidePaint);
-        canvas.drawRoundRect(rect, radius, radius, mBorderPaint);
-        canvas.drawText(calculateTime(rect.top - mBorderWidth/2), rect.left + 6, rect.top - mRectTimeAscent, mRectTimePaint);
-        canvas.drawText(calculateTime(rect.bottom + mBorderWidth/2), rect.left + 6, rect.bottom - mRectTimeDescent, mRectTimePaint);
+        rectF.set(initialRect);
+        canvas.drawRoundRect(rectF, radius, radius, mInsidePaint);
+        canvas.drawRoundRect(rectF, radius, radius, mBorderPaint);
+        canvas.drawText(calculateTime(initialRect.top - mBorderWidth/2), initialRect.left + 6, initialRect.top - mRectTimeAscent, mRectTimePaint);
+        canvas.drawText(calculateTime(initialRect.bottom + mBorderWidth/2), initialRect.left + 6, initialRect.bottom - mRectTimeDescent, mRectTimePaint);
 
-        for (RectF rectF : rects) {
+        for (Rect rect : rects) {
+            rectF.set(rect);
             canvas.drawRoundRect(rectF, radius, radius, mInsidePaint);
             canvas.drawRoundRect(rectF, radius, radius, mBorderPaint);
-            canvas.drawText(rectAndName.get(rectF), rectF.centerX(), rectF.centerY() + mTextCenter, mTextPaint);
-            canvas.drawText(calculateTime(rectF.top - mBorderWidth/2), rectF.left + 6, rectF.top - mRectTimeAscent, mRectTimePaint);
-            canvas.drawText(calculateTime(rectF.bottom + mBorderWidth/2), rectF.left + 6, rectF.bottom - mRectTimeDescent, mRectTimePaint);
+            canvas.drawText(rectAndName.get(rect), rect.centerX(), rect.centerY() + mTextCenter, mTextPaint);
+            canvas.drawText(calculateTime(rect.top - mBorderWidth/2), rect.left + 6, rect.top - mRectTimeAscent, mRectTimePaint);
+            canvas.drawText(calculateTime(rect.bottom + mBorderWidth/2), rect.left + 6, rect.bottom - mRectTimeDescent, mRectTimePaint);
         }
 
         canvas.drawLine(mIntervalLeft, 0, mIntervalLeft, getHeight(), mVLinePaint);
@@ -157,12 +162,12 @@ public class RectView extends View {
         }
     }
 
-    private String calculateTime(float y) {
-        int hour = (int)((y - mExtraHeight + mHLineWidth) / mIntervalHeight) + mStartHour;
-        int minute = (int)(((y - mExtraHeight + mHLineWidth) % mIntervalHeight) / mIntervalHeight * 60);
-        if (y < mExtraHeight - mHLineWidth/2) {
+    private String calculateTime(int y) {
+        int hour = ((y - mExtraHeight + mHLineWidth) / mIntervalHeight) + mStartHour;
+        int minute = (int)(((y - mExtraHeight + mHLineWidth) % mIntervalHeight) / (float)mIntervalHeight * 60);
+        if (y < mExtraHeight - mHLineWidth) {
             hour = mStartHour - 1;
-            minute = (int)(((mIntervalHeight - (mExtraHeight - mHLineWidth - y))% mIntervalHeight) / mIntervalHeight * 60);
+            minute = (int)(((mIntervalHeight - (mExtraHeight - mHLineWidth - y)) % mIntervalHeight) / (float)mIntervalHeight * 60);
         }
         String stHour;
         String stMinute;
@@ -196,33 +201,35 @@ public class RectView extends View {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
 
-    public void longPress(float x, float y) {
+    public void longPress(int x, int y) {
         if (isContain(x, y)) {
             //长按移动整体
-            Log.d(TAG, "longPress: ScrollY = " + mMyScrollView.getScrollY());
             mImgView = new RectImgView(context, deletedRect, radius, mBorderPaint, mInsidePaint, mTextPaint,
                     mRectTimePaint, mRectTimeAscent, mRectTimeDescent, rectAndName.get(deletedRect), this);
-            mMyScrViewParent.addView(mImgView);
+            FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            lp.leftMargin = deletedRect.left - mBorderWidth/2;
+            lp.topMargin = deletedRect.top - mBorderWidth/2 - mMyScrollView.getScrollY();
+            mMyScrViewParent.addView(mImgView, lp);
 
             mUpperLimit = getUpperLimit(deletedRect.top);
             mLowerLimit = getLowerLimit(deletedRect.bottom);
         }else {
             //长按开启选取
-            float left, top, right, bottom;
+            int left, top, right, bottom;
             left = mIntervalLeft + mVLineWidth/2 + mBorderWidth/2;
-            top = (int)((y - mExtraHeight)/mIntervalHeight)*mIntervalHeight+mExtraHeight+mHLineWidth/2+mBorderWidth/2;
+            top = (y - mExtraHeight)/mIntervalHeight * mIntervalHeight + mExtraHeight + mBorderWidth/2;
             if (isContainTop(top)) {
                 top = mInitialRectY;
             }
             right = getWidth() - mIntervalRight - mBorderWidth/2;
             bottom = y;
-            rect.set(left, top, right, top);
+            initialRect.set(left, top, right, top);
             mInitialRectY = top;
-            ValueAnimator animator = ValueAnimator.ofFloat(top, y);
+            ValueAnimator animator = ValueAnimator.ofInt(top, y);
             animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
                 @Override
                 public void onAnimationUpdate(ValueAnimator animation) {
-                    rect.bottom = (float) animation.getAnimatedValue();
+                    initialRect.bottom = (int)animation.getAnimatedValue();
                     invalidate();
                 }
             });
@@ -233,8 +240,8 @@ public class RectView extends View {
             mLowerLimit = getLowerLimit(mInitialRectY);
         }
     }
-    private boolean isContainTop(float y) {
-        float x = getWidth()/2.0f;
+    private boolean isContainTop(int y) {
+        int x = getWidth()/2;
         y -= mBorderWidth/2;
         for (int i = 0; i < rects.size(); i++) {
             if (rects.get(i).contains(x, y)) {
@@ -244,7 +251,7 @@ public class RectView extends View {
         }
         return false;
     }
-    private boolean isContain(float x, float y) {
+    private boolean isContain(int x, int y) {
         for (int i = 0; i < rects.size(); i++) {
             if (rects.get(i).contains(x, y)) {
                 deletedRect.set(rects.get(i));
@@ -259,43 +266,43 @@ public class RectView extends View {
         mIsContain = false;
         return false;
     }
-    private float getUpperLimit(float top) {
-        List<Float> bottoms = new ArrayList<>();
+    private int getUpperLimit(int top) {
+        List<Integer> bottoms = new ArrayList<>();
         for (int i = 0; i < rects.size(); i++) {
-            float bottom = rects.get(i).bottom;
+            int bottom = rects.get(i).bottom;
             if (bottom < top) {
                 bottoms.add(bottom);
             }
         }
-        return (bottoms.size() == 0) ? mExtraHeight - mHLineWidth/2:
-                Collections.max(bottoms, new Comparator<Float>() {
+        return (bottoms.size() == 0) ? mExtraHeight:
+                Collections.max(bottoms, new Comparator<Integer>() {
                     @Override
-                    public int compare(Float o1, Float o2) {
-                        return (int)(o1 - o2);
+                    public int compare(Integer o1, Integer o2) {
+                        return o1 - o2;
                     }
                 }) + mBorderWidth/2;
     }
-    private float getLowerLimit(float bottom) {
-        List<Float> tops = new ArrayList<>();
+    private int getLowerLimit(int bottom) {
+        List<Integer> tops = new ArrayList<>();
         for (int i = 0; i < rects.size(); i++) {
-            float top = rects.get(i).top;
+            int top = rects.get(i).top;
             if (top > bottom) {
                 tops.add(top);
             }
         }
-        return (tops.size() == 0) ? getHeight() - mExtraHeight + mHLineWidth/2:
-                Collections.min(tops, new Comparator<Float>() {
+        return (tops.size() == 0) ? getHeight() - mExtraHeight:
+                Collections.min(tops, new Comparator<Integer>() {
                     @Override
-                    public int compare(Float o1, Float o2) {
-                        return (int)(o1 - o2);
+                    public int compare(Integer o1, Integer o2) {
+                        return o1 - o2;
                     }
                 }) - mBorderWidth/2;
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        float x = event.getX();
-        float y = event.getY();
+        int x = (int)event.getX();
+        int y = (int)event.getY();
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 if (mMyScrollView == null) {
@@ -306,21 +313,21 @@ public class RectView extends View {
             case MotionEvent.ACTION_MOVE:
                 if (!mIsContain) {
                     if (y > mInitialRectY) {
-                        rect.bottom = y;
-                        rect.top = mInitialRectY;
+                        initialRect.bottom = y;
+                        initialRect.top = mInitialRectY;
                         if (y > mLowerLimit) {
-                            rect.bottom = mLowerLimit - mBorderWidth/2 - mHLineWidth;
+                            initialRect.bottom = mLowerLimit - mBorderWidth/2 - mHLineWidth;
                         }
                     }else if (y < mInitialRectY) {
-                        rect.bottom = mInitialRectY - mBorderWidth - mHLineWidth;
-                        rect.top = y;
+                        initialRect.bottom = mInitialRectY - mBorderWidth - mHLineWidth;
+                        initialRect.top = y;
                         if (y < mUpperLimit) {
-                            rect.top = mUpperLimit + mBorderWidth/2 + mHLineWidth;
+                            initialRect.top = mUpperLimit + mBorderWidth/2 + mHLineWidth;
                         }
                     }
                     invalidate();
                 }else {
-                    float dx = x - mContainedX;
+                    int dx = x - mContainedX;
                     dx = (Math.abs(dx) < X_MOVE_THRESHOLD) ? 0 : (dx > 0) ? dx - X_MOVE_THRESHOLD : dx + X_MOVE_THRESHOLD;
                     mImgView.layout(dx + deletedRect.left - mBorderWidth/2,
                             y - mContainedY + deletedRect.top - mBorderWidth/2 - mMyScrollView.getScrollY());
@@ -329,16 +336,17 @@ public class RectView extends View {
                 break;
             case MotionEvent.ACTION_UP:
                 if (!mIsContain) {
-                    if (rect.height() > mIntervalHeight * 0.4f) {
-                        RectF re = new RectF(rect);
+                    if (initialRect.height() > mIntervalHeight * 0.4f) {
+                        Rect re = new Rect(initialRect);
                         rects.add(re);
                         rectAndName.put(re, "请设置任务名称！");
                     }
                 }else {
                     float dx = x - mContainedX;
                     if (Math.abs(dx) > (getWidth() - mIntervalLeft)*0.35f) {
-                        mImgView.animate().x((dx > 0) ? getWidth() + deletedRect.height()/4 : -getWidth() - deletedRect.height()/4)
-                                .rotation((dx > 0) ? 80 : -80)
+                        mImgView.animate().x((dx > 0) ? getWidth() : -getWidth())
+                                .scaleX(0)
+                                .scaleY(0)
                                 .setDuration((int)((getWidth() - Math.abs(dx)) * 1.2f))
                                 .setInterpolator(new AccelerateInterpolator())
                                 .setListener(new AnimatorListenerAdapter() {
@@ -353,19 +361,19 @@ public class RectView extends View {
                         boolean isOverUpperLimit = imgViewTop + mMyScrollView.getScrollY() < mUpperLimit + mHLineWidth;
                         boolean isOverLowerLimit = mImgView.getBottom() + mMyScrollView.getScrollY() > mLowerLimit - mHLineWidth;
 
-                        float trueY  = isOverUpperLimit ?
+                        int trueY  = isOverUpperLimit ?
                                 mUpperLimit + mHLineWidth - mMyScrollView.getScrollY():
                                 (isOverLowerLimit ?
                                         mLowerLimit - mHLineWidth - mImgView.getHeight() - mMyScrollView.getScrollY() :
                                         imgViewTop);
-                        mImgView.animate().x(mIntervalLeft + mVLineWidth/2)
+                        mImgView.animate().x(mIntervalLeft + mVLineWidth/2.0f)
                                 .y(trueY)
                                 .setDuration((int)(Math.abs(dx) * 1.2f))
                                 .setInterpolator(new DecelerateInterpolator())
                                 .setListener(new AnimatorListenerAdapter() {
                                     @Override
                                     public void onAnimationEnd(Animator animation) {
-                                        float left, top, right, bottom;
+                                        int left, top, right, bottom;
                                         left = deletedRect.left;
                                         top = isOverUpperLimit ?
                                                 trueY + mMyScrollView.getScrollY() + mBorderWidth/2 :
@@ -374,7 +382,7 @@ public class RectView extends View {
                                                         trueY + mMyScrollView.getScrollY() + mBorderWidth/2);
                                         right = deletedRect.right;
                                         bottom = top + deletedRect.height();
-                                        RectF re = new RectF(left, top, right, bottom);
+                                        Rect re = new Rect(left, top, right, bottom);
                                         rects.add(re);
                                         rectAndName.put(re, "请设置任务名称！");
                                         mMyScrViewParent.removeView(mImgView);
@@ -383,7 +391,7 @@ public class RectView extends View {
                                 });
                     }
                 }
-                rect.set(-40, -40, -40, -40);
+                initialRect.set(-40, -40, -40, -40);
                 invalidate();
                 break;
         }
