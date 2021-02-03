@@ -1,14 +1,9 @@
 package com.ndhzs.timeplanning.myview;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.res.TypedArray;
-import android.os.Build;
 import android.util.AttributeSet;
-import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.MotionEvent;
-import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ScrollView;
 
@@ -17,62 +12,28 @@ import com.ndhzs.timeplanning.R;
 public class TimeSelectView extends ScrollView {
 
     private RectView rectView;
-    private int mScreenWidth, mScreenHeight;
     private final int mIntervalHeight;//一个小时的间隔高度
-    private final int mIntervalWidth;//左边的文字间隔宽度
+    private final int mIntervalLeft;//左边的文字间隔宽度
     private final int mExtraHeight;//上方或下方其中一方多余的高度
     private final int mBorderColor;//矩形边框颜色
     private final int mInsideColor;//矩形内部颜色
     private final int mTimeTextSide;//时间字体大小
     private final int mTaskTextSize;//任务字体大小
+    private float mInitialX, mInitialY;//计入ACTION_DOWN时的坐标
 
     public TimeSelectView(Context context, AttributeSet attrs) {
         super(context, attrs);
         TypedArray ty = context.obtainStyledAttributes(attrs, R.styleable.TimeSelectView);
         mBorderColor = ty.getColor(R.styleable.TimeSelectView_borderColor, 0xFFFF0000);
         mInsideColor = ty.getColor(R.styleable.TimeSelectView_insideColor, 0xFFDCCC48);
-        mTimeTextSide = (int)ty.getDimension(R.styleable.TimeSelectView_timeTextSize, 50);
-        mTaskTextSize = (int)ty.getDimension(R.styleable.TimeSelectView_taskTextSize, 60);
-        mIntervalWidth = (int)ty.getDimension(R.styleable.TimeSelectView_intervalWidth, 126);
+        mIntervalLeft = (int)ty.getDimension(R.styleable.TimeSelectView_intervalWidth, 126);
         mIntervalHeight = (int)ty.getDimension(R.styleable.TimeSelectView_intervalHeight, 136);
+        mTimeTextSide = (int)ty.getDimension(R.styleable.TimeSelectView_timeTextSize, mIntervalLeft *0.36f);
+        mTaskTextSize = (int)ty.getDimension(R.styleable.TimeSelectView_taskTextSize, mIntervalHeight*0.38f);
         mExtraHeight = (int)(mIntervalHeight * 0.5);
         ty.recycle();
         setVerticalScrollBarEnabled(false);
-        getScreenSize();
         init(context);
-    }
-
-    private boolean mIsShortPress = true;
-    public void setIsShortPress(boolean isShortPress) {
-        this.mIsShortPress = isShortPress;
-    }
-
-    @Override
-    public boolean onInterceptTouchEvent(MotionEvent ev) {
-        if (ev.getAction() == MotionEvent.ACTION_DOWN) {
-            if (ev.getX() < mIntervalWidth + 3) {
-                super.onInterceptTouchEvent(ev);
-                return true;
-            }else {
-                onTouchEvent(ev);
-            }
-        }else if (mIsShortPress) {
-            super.onInterceptTouchEvent(ev);
-            return true;
-        }
-        return false;
-    }
-
-    private void getScreenSize() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
-            DisplayMetrics dm = new DisplayMetrics();
-            ((Activity) getContext()).getWindowManager().getDefaultDisplay().getMetrics(dm);
-            mScreenWidth = dm.widthPixels;
-            mScreenHeight = dm.heightPixels;
-        }else {
-            mScreenWidth = ((Activity) getContext()).getWindowManager().getCurrentWindowMetrics().getBounds().width();
-            mScreenHeight = ((Activity) getContext()).getWindowManager().getCurrentWindowMetrics().getBounds().height();
-        }
     }
 
     private void init(Context context) {
@@ -81,9 +42,82 @@ public class TimeSelectView extends ScrollView {
         rectView = new RectView(context);
         rectView.setHour(startHour, endHour);
         rectView.setRectColor(mBorderColor, mInsideColor);
-        rectView.setTimeTextSize(mTimeTextSide, mTaskTextSize);
-        rectView.setInterval(mIntervalWidth, mIntervalHeight, mExtraHeight);
+        rectView.setTextSize(mTimeTextSide, mTaskTextSize);
+        rectView.setInterval(mIntervalLeft, mIntervalHeight, mExtraHeight);
         LayoutParams lp = new LayoutParams(LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         addView(rectView, lp);
+    }
+
+    private boolean mIsLongPre;
+    private boolean mIsFinishJudge;
+    private boolean mIsIntervalLeft;
+    private static final int DISTANCE_THRESHOLD = 20;
+    private final Runnable mLongPreRun = new Runnable() {
+        @Override
+        public void run() {
+            mIsLongPre = true;
+            rectView.longPress(mInitialX, mInitialY + getScrollY());
+        }
+    };
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        float x = ev.getX();
+        float y = ev.getY();
+        int action = ev.getAction();
+        if (action == MotionEvent.ACTION_DOWN) {
+            mInitialX = x;
+            mInitialY = y;
+            mIsLongPre = false;//刷新
+            if (mInitialX < mIntervalLeft + 3) {
+                mIsFinishJudge = true;
+                mIsIntervalLeft = true;
+                return super.dispatchTouchEvent(ev);
+            }
+            mIsFinishJudge = false;//刷新
+            mIsIntervalLeft = false;//刷新
+            postDelayed(mLongPreRun, 600);
+            return super.dispatchTouchEvent(ev);
+        }else if (action == MotionEvent.ACTION_MOVE) {
+            if (mIsFinishJudge)
+                return super.dispatchTouchEvent(ev);
+            if (!mIsLongPre) {
+                if (Math.abs(x - mInitialX) > DISTANCE_THRESHOLD || Math.abs(y - mInitialY) > DISTANCE_THRESHOLD) {
+                    mIsFinishJudge = true;
+                    removeCallbacks(mLongPreRun);
+                    return super.dispatchTouchEvent(ev);
+                }else {
+                    // 经过几个小时打log，我把View和ViewGroup的时间分发、
+                    // 事件拦截和事件处理都打印了出来，这里return true可以
+                    // 终止事件向下传递，意识就是onInterceptTouchEvent()
+                    // 和onTouchEvent将会收不到这个事件，将不会被调用，
+                    // 所以这里刚好可以用来等待长按时间结束
+                    return true;
+                }
+            }else {
+                mIsFinishJudge = true;
+                return super.dispatchTouchEvent(ev);
+            }
+        }else if (action == MotionEvent.ACTION_UP) {
+            removeCallbacks(mLongPreRun);
+            return super.dispatchTouchEvent(ev);
+        }
+        return super.dispatchTouchEvent(ev);
+    }
+
+    @Override
+    public boolean onInterceptTouchEvent(MotionEvent ev) {
+        if (mIsIntervalLeft) {
+            super.onInterceptTouchEvent(ev);
+            return true;
+        }
+        if (ev.getAction() == MotionEvent.ACTION_DOWN) {
+            onTouchEvent(ev);
+            return false;
+        }
+        if (!mIsLongPre) {
+            super.onInterceptTouchEvent(ev);
+            return true;
+        }
+        return false;
     }
 }
