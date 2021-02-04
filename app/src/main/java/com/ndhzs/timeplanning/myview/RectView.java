@@ -2,13 +2,13 @@ package com.ndhzs.timeplanning.myview;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
-import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,6 +30,9 @@ public class RectView extends View {
     private int mIntervalHeight;//一个小时的间隔高度
     private int mExtraHeight;//上方或下方其中一方多余的高度
     private int mStartHour, mEndHour;
+    private int mLastHour, mLastMinute;//上一次计算时间的值
+    private String mStDTime;
+    private HashMap<Rect, String> mRectAndDTime = new HashMap<>();//矩形与时间段差值
 
     private final int radius = 8;//圆角矩形的圆角半径
     private Paint mInsidePaint;//圆角矩形内部画笔
@@ -43,26 +46,41 @@ public class RectView extends View {
     private Paint mHLinePaint;//Horizontal Line 水平线画笔
     private final int mHLineWidth = 1;//水平线厚度
 
-    private Paint mTextPaint;//任务名称文字画笔
-    private Paint mLeftTimePaint;//左侧时间文字画笔
-    private Paint mRectTimePaint;//矩形内部时间文字画笔
+    private Paint mArrowsPaint;//时间差的箭头线画笔
+
+    private Paint mLeftTimePaint;//左侧时间画笔
+    private Paint mRectTimePaint;//上下线时间画笔
+    private Paint mStartTimePaint;//开始时间画笔
+    private Paint mTextPaint;//任务名称画笔
+    private Paint mDTimePaint;//时间差值画笔
+    private final Path mArrowsPath = new Path();//箭头的路径
     private int mInitialRectY;//长按生成矩形时的不动的y值
     private int mUpperLimit, mLowerLimit;//当前矩形的上下限，不能移动到其他矩形区域
-    private float mTextCenter, mLeftTimeCenter;//文字的水平线高度
-    private float mRectTimeAscent, mRectTimeDescent;//矩形内部时间的ascent和descent线
+    private int mContainedX, mContainedY;//长按已选择的区域时的坐标
+    private float mTextCenter, mLeftTimeCenter, mDTimeCenter;//文字的水平线高度
+    private float mRectTimeAscent, mRectTimeDescent, mStartTimeAscent;//矩形内部时间的ascent和descent线
+    private float mDTimeHalfHeight;//右侧时间的高度的一半
     private TimeSelectView mMyScrollView;
     private ViewGroup mMyScrViewParent;
     private RectImgView mImgView;
     private final Rect initialRect = new Rect(-40, -40, -40, -40);//初始矩形
-    private Rect deletedRect;//被删掉的矩形
-    private RectF rectF;
+    private final Rect deletedRect = new Rect();//被删掉的矩形
+    private final RectF rectF = new RectF();;//用来给圆角矩形转换
     private final List<Rect> rects = new ArrayList<>();
-    private final HashMap<Rect, String> rectAndName = new HashMap<>();
+    private final HashMap<Rect, String> mRectAndName = new HashMap<>();
 
-    private boolean mIsContain;//长按已选择的区域后为true
-    private int mContainedX, mContainedY;//长按已选择的区域时的坐标
+    private boolean mIsFromHLine;//起点是从水平线开始的
 
-    private static final int X_MOVE_THRESHOLD = 50;
+    private int WHICH_CONDITION = 0;//保存长按的情况
+
+    private static final int X_MOVE_THRESHOLD = 40;//长按后左右移动的阈值
+    private static final int TOP = 1;//长按的顶部区域
+    private static final int INSIDE = 2;//长按的内部区域
+    private static final int BOTTOM = 3;//长按的底部区域
+    private static final int EMPTY_AREA = 4;//长按的空白区域
+    private static final int TOP_BOTTOM_WIDTH = 10;//顶部和底部区域的宽度
+    private static float RECT_MIN_HEIGHT;//矩形最小高度
+    private static float RECT_LESSER_HEIGHT;//矩形较小高度
 
     public RectView(Context context) {
         super(context);
@@ -70,31 +88,40 @@ public class RectView extends View {
         init();
     }
     private void init() {
-        rectF = new RectF();
-        deletedRect = new Rect();
-        //圆角矩形内部画笔
-        mInsidePaint = generatePaint(true, Paint.Style.FILL, 10);
+        mRectAndDTime.put(initialRect, "");
         //圆角矩形边框画笔
         mBorderPaint = generatePaint(true, Paint.Style.STROKE, mBorderWidth);
+        //圆角矩形内部画笔
+        mInsidePaint = generatePaint(true, Paint.Style.FILL, 10);
         //Vertical Line 垂直线画笔
         mVLinePaint = generatePaint(false, Paint.Style.FILL, mVLineWidth);
         mVLinePaint.setColor(0xFFC8C8C8);
         //Horizontal Line 水平线画笔
         mHLinePaint = generatePaint(false, Paint.Style.FILL, mHLineWidth);
         mHLinePaint.setColor(0xFF9C9C9C);
-        //任务名称文字画笔
-        mTextPaint = new Paint();
-        mTextPaint.setColor(Color.parseColor("#505050"));
-        mTextPaint.setAntiAlias(true);
-        mTextPaint.setTextAlign(Paint.Align.CENTER);
-        //左侧时间文字画笔
-        mLeftTimePaint = new Paint(mTextPaint);
-        //上方时间文字画笔
-        mRectTimePaint = new Paint(mTextPaint);
+        //时间差的箭头线画笔
+        mArrowsPaint = generatePaint(false, Paint.Style.STROKE, 2);
+        mArrowsPaint.setColor(0xFF000000);
+        //左侧时间画笔
+        mLeftTimePaint = new Paint();
+        mLeftTimePaint.setColor(0xFF505050);
+        mLeftTimePaint.setAntiAlias(true);
+        mLeftTimePaint.setTextAlign(Paint.Align.CENTER);
+        //上下线时间画笔
+        mRectTimePaint = new Paint(mLeftTimePaint);
+        mRectTimePaint.setColor(0xFF000000);
         mRectTimePaint.setTextAlign(Paint.Align.LEFT);
+        //开始时间画笔
+        mStartTimePaint = new Paint(mRectTimePaint);
+        mStartTimePaint.setTextAlign(Paint.Align.CENTER);
+        //任务名称画笔
+        mTextPaint = new Paint(mLeftTimePaint);
+        //时间差值画笔
+        mDTimePaint = new Paint(mRectTimePaint);
+        mDTimePaint.setTextAlign(Paint.Align.RIGHT);
     }
 
-    private Paint generatePaint(boolean antiAlias, Paint.Style style, float strokeWidth) {
+    private Paint generatePaint(boolean antiAlias, Paint.Style style, int strokeWidth) {
         Paint paint = new Paint();
         paint.setAntiAlias(antiAlias);//抗锯齿
         paint.setStyle(style);
@@ -116,36 +143,50 @@ public class RectView extends View {
     }
     public void setTextSize(int timeTextSize, int taskTextSize) {
         mLeftTimePaint.setTextSize(timeTextSize);
-        mTextPaint.setTextSize(taskTextSize);
         mRectTimePaint.setTextSize(timeTextSize * 0.85f);
-        Paint.FontMetrics fontMetrics = mTextPaint.getFontMetrics();
-        mTextCenter = (fontMetrics.bottom - fontMetrics.top) / 2 - fontMetrics.bottom;
-        fontMetrics = mLeftTimePaint.getFontMetrics();
+        mStartTimePaint.setTextSize(timeTextSize * 0.8f);
+        mTextPaint.setTextSize(taskTextSize);
+        mDTimePaint.setTextSize(timeTextSize * 0.8f);
+
+        Paint.FontMetrics fontMetrics = mLeftTimePaint.getFontMetrics();
         mLeftTimeCenter = (fontMetrics.bottom - fontMetrics.top) / 2 - fontMetrics.bottom;
+
         fontMetrics = mRectTimePaint.getFontMetrics();
         mRectTimeAscent = fontMetrics.ascent;
         mRectTimeDescent = fontMetrics.descent;
+        RECT_LESSER_HEIGHT = (mRectTimeDescent - mRectTimeAscent) * 2;
+
+        fontMetrics = mStartTimePaint.getFontMetrics();
+        mStartTimeAscent = fontMetrics.ascent;
+
+        fontMetrics = mTextPaint.getFontMetrics();
+        mTextCenter = (fontMetrics.bottom - fontMetrics.top) / 2 - fontMetrics.bottom;
+        RECT_MIN_HEIGHT = fontMetrics.descent - fontMetrics.ascent;
+
+        fontMetrics = mDTimePaint.getFontMetrics();
+        mDTimeHalfHeight = (fontMetrics.bottom - fontMetrics.top)/2;
+        mDTimeCenter = mDTimeHalfHeight - fontMetrics.bottom;
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
-        //先画矩形的过程
-        rectF.set(initialRect);
-        canvas.drawRoundRect(rectF, radius, radius, mInsidePaint);
-        canvas.drawRoundRect(rectF, radius, radius, mBorderPaint);
-        canvas.drawText(calculateTime(initialRect.top - mBorderWidth/2), initialRect.left + 6, initialRect.top - mRectTimeAscent, mRectTimePaint);
-        canvas.drawText(calculateTime(initialRect.bottom + mBorderWidth/2), initialRect.left + 6, initialRect.bottom - mRectTimeDescent, mRectTimePaint);
-
-        for (Rect rect : rects) {
-            rectF.set(rect);
-            canvas.drawRoundRect(rectF, radius, radius, mInsidePaint);
-            canvas.drawRoundRect(rectF, radius, radius, mBorderPaint);
-            canvas.drawText(rectAndName.get(rect), rect.centerX(), rect.centerY() + mTextCenter, mTextPaint);
-            canvas.drawText(calculateTime(rect.top - mBorderWidth/2), rect.left + 6, rect.top - mRectTimeAscent, mRectTimePaint);
-            canvas.drawText(calculateTime(rect.bottom + mBorderWidth/2), rect.left + 6, rect.bottom - mRectTimeDescent, mRectTimePaint);
+        drawRect(canvas, initialRect, null);
+        if (initialRect.height() > RECT_LESSER_HEIGHT) {
+            drawTopBottomTime(canvas, initialRect, null, null);
         }
-
-        canvas.drawLine(mIntervalLeft, 0, mIntervalLeft, getHeight(), mVLinePaint);
+        if (initialRect.height() > RECT_MIN_HEIGHT) {
+            Log.d(TAG, "RECT_MIN_HEIGHT");
+            drawArrows(canvas, initialRect, null);
+            canvas.drawText(calculateTime(initialRect.top - mBorderWidth / 2, false),
+                    initialRect.centerX(), initialRect.top - mRectTimeAscent - mBorderWidth, mStartTimePaint);
+        }
+        for (Rect rect : rects) {
+            Log.d(TAG, "RECTS");
+            drawRect(canvas, rect, mRectAndName.get(rect));
+            drawArrows(canvas, rect, mRectAndDTime.get(rect));
+            drawTopBottomTime(canvas, rect, null, null);
+        }
+        canvas.drawLine(mIntervalLeft, 0, mIntervalLeft, getHeight(), mVLinePaint);//这是左边的竖线
         for (int i = mStartHour; i <= mEndHour; i++) {
             String hour;
             if (i < 10) {
@@ -158,16 +199,88 @@ public class RectView extends View {
             int y = mExtraHeight + mIntervalHeight * (i - mStartHour);
             float baseline = y + mLeftTimeCenter;//时间文字相对于矩形的水平线高度
             canvas.drawText(hour, mIntervalLeft /2.0f, baseline, mLeftTimePaint);
-            canvas.drawLine(mIntervalLeft, y, getWidth() - mIntervalRight, y, mHLinePaint);
+            canvas.drawLine(mIntervalLeft, y - mHLineWidth/2.0f, getWidth() - mIntervalRight, y - mHLineWidth/2.0f, mHLinePaint);
+        }
+    }
+    public void drawRect(Canvas canvas, Rect rect, String taskName) {
+        rectF.set(rect);
+        canvas.drawRoundRect(rectF, radius, radius, mInsidePaint);
+        canvas.drawRoundRect(rectF, radius, radius, mBorderPaint);
+        if (taskName != null)
+            canvas.drawText(taskName, rect.centerX(), rect.centerY() + mTextCenter, mTextPaint);
+    }
+    public void drawArrows(Canvas canvas, Rect rect, String stDTime) {
+        if (stDTime != null) {
+            Log.d(TAG, "OK");
+            canvas.drawText(stDTime,
+                    rect.right - 6, rect.centerY() + mDTimeCenter, mDTimePaint);
+        }else {
+            Log.d(TAG, "NULL !!!!");;
+            calculateTime(rect.top - mBorderWidth / 2, false);
+            String s = calculateTime(rect.bottom + mBorderWidth / 2, true);
+            canvas.drawText(s,
+                    rect.right - 6, rect.centerY() + mDTimeCenter, mDTimePaint);
+        }
+        {
+            int horizontalInterval = 5;
+            int verticalInterval = 9;
+            int verticalCenter = rect.right - 30;
+            int left = verticalCenter - horizontalInterval;
+            int top = rect.top + 8;
+            int right = verticalCenter + horizontalInterval;
+            int bottom = rect.bottom - 8;
+
+            mArrowsPath.moveTo(verticalCenter, top);
+            mArrowsPath.lineTo(verticalCenter, rect.centerY() - mDTimeHalfHeight);
+
+            mArrowsPath.moveTo(verticalCenter, rect.centerY() + mDTimeHalfHeight);
+            mArrowsPath.lineTo(verticalCenter, bottom);
+
+            mArrowsPath.moveTo(left, top + verticalInterval);
+            mArrowsPath.lineTo(verticalCenter, top);
+            mArrowsPath.lineTo(right, top + verticalInterval);
+
+            mArrowsPath.moveTo(left, bottom - verticalInterval);
+            mArrowsPath.lineTo(verticalCenter, bottom);
+            mArrowsPath.lineTo(right, bottom - verticalInterval);
+
+            canvas.drawPath(mArrowsPath, mArrowsPaint);
+            mArrowsPath.rewind();
+        }
+    }
+    public void drawTopBottomTime(Canvas canvas, Rect rect, String topTime, String bottomTime) {
+        if (topTime == null) {
+            canvas.drawText(calculateTime(rect.top - mBorderWidth / 2, false),
+                    rect.left + 6, rect.top - mRectTimeAscent - mBorderWidth, mRectTimePaint);
+            canvas.drawText(calculateTime(rect.bottom + mBorderWidth / 2, false),
+                    rect.left + 6, rect.bottom - mRectTimeDescent + mBorderWidth, mRectTimePaint);
+        }else {
+            canvas.drawText(topTime,
+                    rect.left + 6, rect.top - mRectTimeAscent - mBorderWidth, mRectTimePaint);
+            canvas.drawText(bottomTime,
+                    rect.left + 6, rect.bottom - mRectTimeDescent + mBorderWidth, mRectTimePaint);
         }
     }
 
-    private String calculateTime(int y) {
+    public String calculateTime(int y, boolean isCalculateDifference) {
         int hour = ((y - mExtraHeight + mHLineWidth) / mIntervalHeight) + mStartHour;
         int minute = (int)(((y - mExtraHeight + mHLineWidth) % mIntervalHeight) / (float)mIntervalHeight * 60);
         if (y < mExtraHeight - mHLineWidth) {
             hour = mStartHour - 1;
             minute = (int)(((mIntervalHeight - (mExtraHeight - mHLineWidth - y)) % mIntervalHeight) / (float)mIntervalHeight * 60);
+        }
+        if (isCalculateDifference) {
+            if (minute >= mLastMinute) {
+                minute = minute - mLastMinute;
+                hour -= mLastHour;
+            }else {
+                minute = minute + 60 - mLastMinute;
+                hour -= mLastHour + 1;
+            }
+        }else {
+            Log.d(TAG, "记录Last");
+            mLastHour = hour;
+            mLastMinute = minute;
         }
         String stHour;
         String stMinute;
@@ -183,7 +296,13 @@ public class RectView extends View {
         }else {
             stMinute = minute + "";
         }
-        return stHour +":" + stMinute;
+        if (isCalculateDifference) {
+            Log.d(TAG, "calculateTime: mStDTime = " + mStDTime);
+            mStDTime = stHour + ":" + stMinute;
+            return mStDTime;
+        }
+        Log.d(TAG, "calculateTime22222222222: mStDTime = " + mStDTime);
+        return stHour + ":" + stMinute;
     }
 
     @Override
@@ -201,69 +320,33 @@ public class RectView extends View {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
 
-    public void longPress(int x, int y) {
-        if (isContain(x, y)) {
-            //长按移动整体
-            mImgView = new RectImgView(context, deletedRect, radius, mBorderPaint, mInsidePaint, mTextPaint,
-                    mRectTimePaint, mRectTimeAscent, mRectTimeDescent, rectAndName.get(deletedRect), this);
-            FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            lp.leftMargin = deletedRect.left - mBorderWidth/2;
-            lp.topMargin = deletedRect.top - mBorderWidth/2 - mMyScrollView.getScrollY();
-            mMyScrViewParent.addView(mImgView, lp);
-
-            mUpperLimit = getUpperLimit(deletedRect.top);
-            mLowerLimit = getLowerLimit(deletedRect.bottom);
-        }else {
-            //长按开启选取
-            int left, top, right, bottom;
-            left = mIntervalLeft + mVLineWidth/2 + mBorderWidth/2;
-            top = (y - mExtraHeight)/mIntervalHeight * mIntervalHeight + mExtraHeight + mBorderWidth/2;
-            if (isContainTop(top)) {
-                top = mInitialRectY;
-            }
-            right = getWidth() - mIntervalRight - mBorderWidth/2;
-            bottom = y;
-            initialRect.set(left, top, right, top);
-            mInitialRectY = top;
-            ValueAnimator animator = ValueAnimator.ofInt(top, y);
-            animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                @Override
-                public void onAnimationUpdate(ValueAnimator animation) {
-                    initialRect.bottom = (int)animation.getAnimatedValue();
+    private int isContain(int x, int y) {
+        for (int i = 0; i < rects.size(); i++) {
+            Rect rect = rects.get(i);
+            if (rect.contains(x, y)) {
+                if (y + TOP_BOTTOM_WIDTH > rect.bottom) {
+                    return BOTTOM;
+                }else if (y - TOP_BOTTOM_WIDTH < rect.top) {
+                    return TOP;
+                }else {
+                    deletedRect.set(rects.get(i));
+                    rects.remove(i);
                     invalidate();
+                    return INSIDE;
                 }
-            });
-            animator.setDuration((int)Math.sqrt(bottom - top)*8);
-            animator.setInterpolator(new DecelerateInterpolator());
-            animator.start();
-            mUpperLimit = getUpperLimit(mInitialRectY);
-            mLowerLimit = getLowerLimit(mInitialRectY);
+            }
         }
+        return EMPTY_AREA;
     }
     private boolean isContainTop(int y) {
         int x = getWidth()/2;
-        y -= mBorderWidth/2;
+        y -= mBorderWidth/2 + 1;
         for (int i = 0; i < rects.size(); i++) {
             if (rects.get(i).contains(x, y)) {
-                mInitialRectY = rects.get(i).bottom + mBorderWidth + 1;
+                mInitialRectY = rects.get(i).bottom + mBorderWidth + mHLineWidth;
                 return true;
             }
         }
-        return false;
-    }
-    private boolean isContain(int x, int y) {
-        for (int i = 0; i < rects.size(); i++) {
-            if (rects.get(i).contains(x, y)) {
-                deletedRect.set(rects.get(i));
-                rects.remove(i);
-                mIsContain = true;
-                mContainedX = x;
-                mContainedY = y;
-                invalidate();
-                return true;
-            }
-        }
-        mIsContain = false;
         return false;
     }
     private int getUpperLimit(int top) {
@@ -274,13 +357,13 @@ public class RectView extends View {
                 bottoms.add(bottom);
             }
         }
-        return (bottoms.size() == 0) ? mExtraHeight:
+        return (bottoms.size() == 0) ? mExtraHeight :
                 Collections.max(bottoms, new Comparator<Integer>() {
                     @Override
                     public int compare(Integer o1, Integer o2) {
                         return o1 - o2;
                     }
-                }) + mBorderWidth/2;
+                }) + mBorderWidth/2 + mHLineWidth;
     }
     private int getLowerLimit(int bottom) {
         List<Integer> tops = new ArrayList<>();
@@ -290,119 +373,191 @@ public class RectView extends View {
                 tops.add(top);
             }
         }
-        return (tops.size() == 0) ? getHeight() - mExtraHeight:
+        return (tops.size() == 0) ? getHeight() - mExtraHeight - mHLineWidth:
                 Collections.min(tops, new Comparator<Integer>() {
                     @Override
                     public int compare(Integer o1, Integer o2) {
                         return o1 - o2;
                     }
-                }) - mBorderWidth/2;
+                }) - mBorderWidth/2 - mHLineWidth;
     }
-
+    public void longPress(int x, int y) {
+        switch (WHICH_CONDITION = isContain(x, y)) {
+            case EMPTY_AREA: {
+                //长按开启选取，先识别了位置，再加载了动画
+                if (y < mExtraHeight || y >= getHeight() - mExtraHeight - mHLineWidth)
+                    return;
+                int left, top, right, bottom;
+                left = mIntervalLeft + mVLineWidth / 2 + mBorderWidth / 2;
+                top = y + mBorderWidth / 2;
+                mIsFromHLine = false;
+                int hLineHeight = (y - mExtraHeight) / mIntervalHeight * mIntervalHeight + mExtraHeight;
+                if (y < hLineHeight + 1 / 60.0f * mIntervalHeight + 1) {//此处是判断如果y是在十分接近水平线时，就从水平线开始
+                    mIsFromHLine = true;
+                    top = hLineHeight + mBorderWidth / 2;
+                }else if (isContainTop(top)) {
+                    top = mInitialRectY;
+                }
+                right = getWidth() - mIntervalRight - mBorderWidth / 2;
+                bottom = top + 1;
+                initialRect.set(left, top, right, bottom);
+                mInitialRectY = top;
+                mUpperLimit = getUpperLimit(mInitialRectY);
+                mLowerLimit = getLowerLimit(mInitialRectY);
+                break;
+            }
+            case INSIDE: {
+                //长按移动整体，先生成一个可以移动的矩形
+                mImgView = new RectImgView(context, deletedRect, mBorderWidth,
+                        mRectAndName.get(deletedRect), mRectAndDTime.get(deletedRect), this);
+                FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(deletedRect.width() + mBorderWidth, deletedRect.height() + mBorderWidth);
+                lp.leftMargin = deletedRect.left - mBorderWidth / 2;
+                lp.topMargin = deletedRect.top - mBorderWidth / 2 - mMyScrollView.getScrollY();
+                mMyScrViewParent.addView(mImgView, lp);
+                mContainedX = x;//记录长按坐标
+                mContainedY = y;
+                mUpperLimit = getUpperLimit(deletedRect.top);
+                mLowerLimit = getLowerLimit(deletedRect.bottom);
+                break;
+            }
+            case TOP: {}
+            case BOTTOM: {
+                break;
+            }
+        }
+    }
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         int x = (int)event.getX();
         int y = (int)event.getY();
         switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
+            case MotionEvent.ACTION_DOWN: {
                 if (mMyScrollView == null) {
                     mMyScrollView = (TimeSelectView) getParent();
                     mMyScrViewParent = (ViewGroup) mMyScrollView.getParent();
                 }
                 break;
-            case MotionEvent.ACTION_MOVE:
-                if (!mIsContain) {
-                    if (y > mInitialRectY) {
-                        initialRect.bottom = y;
-                        initialRect.top = mInitialRectY;
-                        if (y > mLowerLimit) {
-                            initialRect.bottom = mLowerLimit - mBorderWidth/2 - mHLineWidth;
-                        }
-                    }else if (y < mInitialRectY) {
-                        initialRect.bottom = mInitialRectY - mBorderWidth - mHLineWidth;
-                        initialRect.top = y;
-                        if (y < mUpperLimit) {
-                            initialRect.top = mUpperLimit + mBorderWidth/2 + mHLineWidth;
-                        }
-                    }
-                    invalidate();
-                }else {
-                    int dx = x - mContainedX;
-                    dx = (Math.abs(dx) < X_MOVE_THRESHOLD) ? 0 : (dx > 0) ? dx - X_MOVE_THRESHOLD : dx + X_MOVE_THRESHOLD;
-                    mImgView.layout(dx + deletedRect.left - mBorderWidth/2,
-                            y - mContainedY + deletedRect.top - mBorderWidth/2 - mMyScrollView.getScrollY());
-                    mImgView.invalidate();
-                }
+            }
+            case MotionEvent.ACTION_MOVE: {
+                theMoveEvent(x, y);
                 break;
-            case MotionEvent.ACTION_UP:
-                if (!mIsContain) {
-                    if (initialRect.height() > mIntervalHeight * 0.4f) {
-                        Rect re = new Rect(initialRect);
-                        rects.add(re);
-                        rectAndName.put(re, "请设置任务名称！");
-                    }
-                }else {
-                    float dx = x - mContainedX;
-                    if (Math.abs(dx) > (getWidth() - mIntervalLeft)*0.35f) {
-                        mImgView.animate().x((dx > 0) ? getWidth() : -getWidth())
-                                .scaleX(0)
-                                .scaleY(0)
-                                .setDuration((int)((getWidth() - Math.abs(dx)) * 1.2f))
-                                .setInterpolator(new AccelerateInterpolator())
-                                .setListener(new AnimatorListenerAdapter() {
-                                    @Override
-                                    public void onAnimationEnd(Animator animation) {
-                                        mMyScrViewParent.removeView(mImgView);
-                                    }
-                                });
-                    }else {
-                        int imgViewTop = mImgView.getTop();
-
-                        boolean isOverUpperLimit = imgViewTop + mMyScrollView.getScrollY() < mUpperLimit + mHLineWidth;
-                        boolean isOverLowerLimit = mImgView.getBottom() + mMyScrollView.getScrollY() > mLowerLimit - mHLineWidth;
-
-                        int trueY  = isOverUpperLimit ?
-                                mUpperLimit + mHLineWidth - mMyScrollView.getScrollY():
-                                (isOverLowerLimit ?
-                                        mLowerLimit - mHLineWidth - mImgView.getHeight() - mMyScrollView.getScrollY() :
-                                        imgViewTop);
-                        mImgView.animate().x(mIntervalLeft + mVLineWidth/2.0f)
-                                .y(trueY)
-                                .setDuration((int)(Math.abs(dx) * 1.2f))
-                                .setInterpolator(new DecelerateInterpolator())
-                                .setListener(new AnimatorListenerAdapter() {
-                                    @Override
-                                    public void onAnimationEnd(Animator animation) {
-                                        int left, top, right, bottom;
-                                        left = deletedRect.left;
-                                        top = isOverUpperLimit ?
-                                                trueY + mMyScrollView.getScrollY() + mBorderWidth/2 :
-                                                (isOverLowerLimit ?
-                                                        mLowerLimit - mHLineWidth - deletedRect.height() - mBorderWidth/2 :
-                                                        trueY + mMyScrollView.getScrollY() + mBorderWidth/2);
-                                        right = deletedRect.right;
-                                        bottom = top + deletedRect.height();
-                                        Rect re = new Rect(left, top, right, bottom);
-                                        rects.add(re);
-                                        rectAndName.put(re, "请设置任务名称！");
-                                        mMyScrViewParent.removeView(mImgView);
-                                        invalidate();
-                                    }
-                                });
-                    }
-                }
-                initialRect.set(-40, -40, -40, -40);
-                invalidate();
+            }
+            case MotionEvent.ACTION_UP: {
+                theUpEvent(x, y);
                 break;
+            }
         }
         return true;
+    }
+    private void theMoveEvent(int x, int y) {
+        switch (WHICH_CONDITION) {
+            case EMPTY_AREA: {
+                if (y >= mInitialRectY) {
+                    initialRect.bottom = y;
+                    initialRect.top = mInitialRectY;//防止从y < mInitialRectY回来top为最后一次y的值
+                    if (y + mBorderWidth / 2 >= mLowerLimit) {
+                        initialRect.bottom = mLowerLimit - mBorderWidth / 2;
+                    }
+                }else {
+                    initialRect.bottom = mInitialRectY - mBorderWidth;
+                    if (mIsFromHLine)
+                        initialRect.bottom = mInitialRectY - mBorderWidth - mHLineWidth;
+                    initialRect.top = y;
+                    if (y < mUpperLimit) {
+                        initialRect.top = mUpperLimit + mBorderWidth / 2;
+                    }
+                }
+                invalidate();
+                break;
+            }
+            case INSIDE: {
+                int dx = x - mContainedX;
+                dx = (Math.abs(dx) < X_MOVE_THRESHOLD) ? 0 : (dx > 0) ? dx - X_MOVE_THRESHOLD : dx + X_MOVE_THRESHOLD;
+                mImgView.layout(dx + deletedRect.left - mBorderWidth / 2,
+                        y - mContainedY + deletedRect.top - mBorderWidth / 2 - mMyScrollView.getScrollY());
+                mImgView.invalidate();
+                break;
+            }
+            case TOP: {}
+            case BOTTOM: {
+                break;
+            }
+        }
+    }
+    private void theUpEvent(int x, int y) {
+        switch (WHICH_CONDITION) {
+            case EMPTY_AREA: {
+                if (initialRect.height() > RECT_MIN_HEIGHT) {
+                    Rect re = new Rect(initialRect);
+                    rects.add(re);
+                    mRectAndName.put(re, "请设置任务名称！");
+                    initialRect.set(-40, -40, -40, -40);
+                    Log.d(TAG, "theUpEvent: mStDTime = " + mStDTime);
+                    mRectAndDTime.put(re, mStDTime);
+                }
+                invalidate();
+                break;
+            }
+            case INSIDE: {
+                int dx = x - mContainedX;
+                if (Math.abs(dx) > (getWidth() - mIntervalLeft) * 0.35f) {
+                    mImgView.animate().x((dx > 0) ? getWidth() : -getWidth())
+                            .scaleX(0)
+                            .scaleY(0)
+                            .setDuration((int) ((getWidth() - Math.abs(dx)) * 1.2f))
+                            .setInterpolator(new AccelerateInterpolator())
+                            .setListener(new AnimatorListenerAdapter() {
+                                @Override
+                                public void onAnimationEnd(Animator animation) {
+                                    mMyScrViewParent.removeView(mImgView);
+                                }
+                            });
+                }else {
+                    int imgViewTop = mImgView.getTop();
+
+                    boolean isOverUpperLimit = imgViewTop + mMyScrollView.getScrollY() < mUpperLimit;
+                    boolean isOverLowerLimit = mImgView.getBottom() + mMyScrollView.getScrollY() > mLowerLimit;
+
+                    int trueY = isOverUpperLimit ?
+                            mUpperLimit - mMyScrollView.getScrollY() :
+                            (isOverLowerLimit ?
+                                    mLowerLimit - mImgView.getHeight() - mMyScrollView.getScrollY() :
+                                    imgViewTop);
+                    mImgView.animate().x(mIntervalLeft + mVLineWidth / 2.0f)
+                            .y(trueY)
+                            .setDuration((int) (Math.abs(dx) * 1.2f))
+                            .setInterpolator(new DecelerateInterpolator())
+                            .setListener(new AnimatorListenerAdapter() {
+                                @Override
+                                public void onAnimationEnd(Animator animation) {
+                                    int left, top, right, bottom;
+                                    left = deletedRect.left;
+                                    top = trueY + mMyScrollView.getScrollY() + mBorderWidth / 2;
+                                    right = deletedRect.right;
+                                    bottom = top + deletedRect.height();
+                                    Rect re = new Rect(left, top, right, bottom);
+                                    rects.add(re);
+                                    mRectAndName.put(re, "请设置任务名称！");
+                                    mRectAndDTime.put(re, mRectAndDTime.get(deletedRect));
+                                    mMyScrViewParent.removeView(mImgView);
+                                    invalidate();
+                                    Log.d(TAG, "onAnimationEnd: ");
+                                }
+                            });
+                }
+                mRectAndName.remove(deletedRect);
+                mRectAndDTime.remove(deletedRect);
+                break;
+            }
+            case TOP: {}
+            case BOTTOM: {
+                break;
+            }
+        }
     }
 
     public int getScrollViewScrollY() {
         return mMyScrollView.getScrollY();
-    }
-    public String calculateImgViewTime(boolean isTop) {
-        return calculateTime((isTop ? mImgView.getTop() : mImgView.getBottom()) + mMyScrollView.getScrollY());
     }
 
     private static final String TAG = "123";

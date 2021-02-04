@@ -27,9 +27,9 @@ public class TimeSelectView extends ScrollView {
         mBorderColor = ty.getColor(R.styleable.TimeSelectView_borderColor, 0xFFFF0000);
         mInsideColor = ty.getColor(R.styleable.TimeSelectView_insideColor, 0xFFDCCC48);
         mIntervalLeft = (int)ty.getDimension(R.styleable.TimeSelectView_intervalWidth, 126);
-        mIntervalHeight = (int)ty.getDimension(R.styleable.TimeSelectView_intervalHeight, 136);
+        mIntervalHeight = (int)ty.getDimension(R.styleable.TimeSelectView_intervalHeight, 180);
         mTimeTextSide = (int)ty.getDimension(R.styleable.TimeSelectView_timeTextSize, mIntervalLeft *0.36f);
-        mTaskTextSize = (int)ty.getDimension(R.styleable.TimeSelectView_taskTextSize, mIntervalHeight*0.38f);
+        mTaskTextSize = (int)ty.getDimension(R.styleable.TimeSelectView_taskTextSize, mIntervalHeight*0.34f);
         mExtraHeight = (int)(mIntervalHeight * 0.5);
         ty.recycle();
         setVerticalScrollBarEnabled(false);
@@ -51,7 +51,7 @@ public class TimeSelectView extends ScrollView {
     private boolean mIsLongPre;
     private boolean mIsFinishJudge;
     private boolean mIsIntervalLeft;
-    private static final int DISTANCE_THRESHOLD = 20;
+    private static final int DISTANCE_THRESHOLD = 15;
     private final Runnable mLongPreRun = new Runnable() {
         @Override
         public void run() {
