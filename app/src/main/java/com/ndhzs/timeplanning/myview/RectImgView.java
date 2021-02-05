@@ -12,8 +12,6 @@ import android.view.View;
 public class RectImgView extends View {
 
     private final Rect mRect;//这个是坐标从(0,0)开始的矩形
-    private final Rect rect;//这个是ScrollView布局中的坐标，减去移动量就是上面这个mRect
-    private final int mBorderWidth;//圆角矩形边框厚度
     private final String mTaskName;
     private final String mStDTime;
     private final RectView mRectView;
@@ -22,24 +20,16 @@ public class RectImgView extends View {
      * 必须传入这几个值才能绘制可移动的矩形，移动请调用layout(int left, int top)
      * @param context 传入context
      * @param rect 传入矩形，不用区分位置，传入后会以此矩形大小和边框厚度重绘
-     * @param borderWidth 矩形边框厚度
      * @param taskName 任务名称
      * @param stDTime 任务段时间差值
      * @param rectView 与RectView进行绑定
      */
-    public RectImgView(Context context, Rect rect, int borderWidth, String taskName, String stDTime, RectView rectView) {
+    public RectImgView(Context context, Rect rect, String taskName, String stDTime, RectView rectView) {
         super(context);
-        this.mBorderWidth = borderWidth;
-        this.rect = rect;
         this.mTaskName = taskName;
         this.mStDTime = stDTime;
         this.mRectView = rectView;
-        int left, top, right, bottom;
-        left = mBorderWidth/2;
-        top = left;
-        right = rect.width() + left;
-        bottom = rect.height() + top;
-        mRect = new Rect(left, top, right, bottom);
+        mRect = new Rect(0, 0, rect.width(), rect.height());
     }
 
     private static final String TAG = "123";
@@ -59,5 +49,6 @@ public class RectImgView extends View {
      */
     public void layout(int left, int top) {
         layout(left, top, left + getWidth(), top + getHeight());
+        invalidate();
     }
 }
