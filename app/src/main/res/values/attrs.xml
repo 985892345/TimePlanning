@@ -1,11 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <declare-styleable name="TimeSelectView">
+<!--        左侧时间间隔的宽度-->
         <attr name="intervalWidth" format="dimension"/>
+<!--        每根水平线间隔的高度-->
         <attr name="intervalHeight" format="dimension"/>
+<!--        任务边框颜色-->
         <attr name="borderColor" format="color"/>
+<!--        任务内部颜色-->
         <attr name="insideColor" format="color"/>
+<!--        左侧时间文字大小，其他时间文字大小会依据该值进行缩小-->
         <attr name="timeTextSize" format="dimension"/>
+<!--        任务名称文字大小-->
         <attr name="taskTextSize" format="dimension"/>
+<!--        设置居中的时间，支持小数-->
+<!--        若传入的时间处于上下边界附近无法居中的位置，则会使时间线处于顶部或尾部界面内，但不居中。-->
+<!--        若不设置，则会自动以当前时间居中。-->
+        <attr name="centerTime" format="float"/>
     </declare-styleable>
 </resources>
