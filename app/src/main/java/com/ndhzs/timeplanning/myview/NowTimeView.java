@@ -22,7 +22,7 @@ public class NowTimeView extends View {
         mTimeLinePaint.setAntiAlias(true);
         mTimeLinePaint.setColor(0xFFE40000);
         mTimeLinePaint.setStyle(Paint.Style.FILL);
-        mTimeLinePaint.setStrokeWidth(1);
+        mTimeLinePaint.setStrokeWidth(99);
     }
     public void setInterval(int intervalLeft, int intervalRight) {
         this.mIntervalLeft = intervalLeft;
@@ -45,7 +45,7 @@ public class NowTimeView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         float x = mIntervalLeft - TimeFrameView.VERTICAL_LINE_WIDTH/2.0f;
-        float y = 200;
+        float y = 600;
         canvas.drawCircle(x, y, BALL_DIAMETER/2.0f, mTimeLinePaint);
         canvas.drawLine(x, y, getWidth() - mIntervalRight, y, mTimeLinePaint);
     }

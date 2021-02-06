@@ -262,7 +262,7 @@ public class RectView extends View {
         return EMPTY_AREA;
     }
     private int getCorrectTop(int y) {
-        int hLineTopHeight = MyTime.getHLineTopHeight(y + mExtraHeight);
+        int hLineTopHeight = MyTime.getHLineTopHeight(y + mExtraHeight) - mExtraHeight;
         int height = y - hLineTopHeight;
         int minuteInterval = (60 % START_TIME_INTERVAL == 0) ? START_TIME_INTERVAL : 5;
         if (height <= MyTime.sEveryMinuteHeight[minuteInterval]) {
@@ -272,7 +272,7 @@ public class RectView extends View {
             mIsFromHLine = false;//刷新
             for (int i = minuteInterval; i < MyTime.sEveryMinuteHeight.length - minuteInterval; i += minuteInterval) {
                 if (height <= MyTime.sEveryMinuteHeight[i + minuteInterval]) {
-                    return (int) MyTime.sEveryMinuteHeight[i] + 1;
+                    return hLineTopHeight + (int) MyTime.sEveryMinuteHeight[i] + 1;
                 }
             }
         }
@@ -331,7 +331,7 @@ public class RectView extends View {
                 //长按开启选取，先识别了位置，再加载了动画
                 int l, t, r, b;
                 l = 0;
-                t = y;
+                t = getCorrectTop(y);
                 r = getWidth();
                 b = t + TimeFrameView.HORIZONTAL_LINE_WIDTH;
                 initialRect.set(l, t, r, b);
