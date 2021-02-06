@@ -5,22 +5,21 @@ import android.content.res.TypedArray;
 import android.os.Vibrator;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
-import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ScrollView;
 
 import com.ndhzs.timeplanning.R;
 
-import java.util.Calendar;
-
 public class TimeSelectView extends ScrollView {
 
     private Context context;
-    private RectView rectView;
+    private RectView mRectView;
     private int mStartHour = 3;
     private int mEndHour = 24 + 3;
-    private final int mIntervalHeight;//一个小时的间隔高度
+
     private final int mIntervalLeft;//左边的文字间隔宽度
     private final int mExtraHeight;//上方或下方其中一方多余的高度
+    private final int mIntervalHeight;//一个小时的间隔高度
     private final int mBorderColor;//矩形边框颜色
     private final int mInsideColor;//矩形内部颜色
     private final int mTimeTextSide;//时间字体大小
@@ -28,6 +27,7 @@ public class TimeSelectView extends ScrollView {
     private int mInitialX, mInitialY;//计入ACTION_DOWN时的坐标
 
     private float mCenterTime;
+
 
     /**
      * 不建议用addView()调用，因为我不打算开放一些设置字体大小、矩形颜色的set方法。
@@ -48,34 +48,62 @@ public class TimeSelectView extends ScrollView {
         mTimeTextSide = (int)ty.getDimension(R.styleable.TimeSelectView_timeTextSize, 40);
         mTaskTextSize = (int)ty.getDimension(R.styleable.TimeSelectView_taskTextSize, 45);
         mExtraHeight = (int)(mIntervalHeight * 0.5);
-        mCenterTime = ty.getFloat(R.styleable.TimeSelectView_centerTime, getNewTime());
+        mCenterTime = ty.getFloat(R.styleable.TimeSelectView_centerTime, MyTime.getNowTime());
         ty.recycle();
         setCenterTime(mCenterTime);
+        MyTime.loadData(TimeFrameView.HORIZONTAL_LINE_WIDTH, mExtraHeight, mIntervalHeight, mStartHour);
         setVerticalScrollBarEnabled(false);
-        init(context);
+        initLayout(context);
     }
 
-    private void init(Context context) {
-        rectView = new RectView(context);
-        rectView.setHour(mStartHour, mEndHour);
-        rectView.setRectColor(mBorderColor, mInsideColor);
-        rectView.setTextSize(mTimeTextSide, mTaskTextSize);
-        rectView.setInterval(mIntervalLeft, mIntervalHeight, mExtraHeight);
-        LayoutParams lp = new LayoutParams(LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        addView(rectView, lp);
+    private void initLayout(Context context) {
+        FrameLayout layoutParent = new FrameLayout(context);
+
+        LayoutParams lpLayoutParent = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+        addView(layoutParent, lpLayoutParent);
+
+        ChildFrameLayout layoutChild= new ChildFrameLayout(context);
+        LayoutParams lpLayoutChild = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+        layoutParent.addView(layoutChild, lpLayoutChild);
+
+        NowTimeView nowTimeView = new NowTimeView(context);
+        nowTimeView.setInterval(mIntervalLeft, TimeFrameView.INTERVAL_RIGHT);
+        LayoutParams lpNowTimeView = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+        layoutParent.addView(nowTimeView, lpNowTimeView);
+
+        mRectView = new RectView(context);
+        LayoutParams lpRectView = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+        lpRectView.leftMargin = mIntervalLeft;
+        lpRectView.topMargin = mExtraHeight;
+        lpRectView.rightMargin = TimeFrameView.INTERVAL_RIGHT;
+        lpRectView.bottomMargin = mExtraHeight + TimeFrameView.HORIZONTAL_LINE_WIDTH;
+        mRectView.setChildFrameLayout(layoutChild);
+        mRectView.setRectColor(mBorderColor, mInsideColor);
+        mRectView.setTextSize(mTimeTextSide, mTaskTextSize);
+        mRectView.setInterval(mExtraHeight);
+        layoutChild.addView(mRectView, lpRectView);
+
+        TimeFrameView timeFrameView = new TimeFrameView(context);
+        LayoutParams lpTimeFrameView = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+        timeFrameView.setHour(mStartHour, mEndHour);
+        timeFrameView.setTextSize(mTimeTextSide);
+        timeFrameView.setInterval(mIntervalLeft, TimeFrameView.INTERVAL_RIGHT, mExtraHeight, mIntervalHeight);
+        layoutChild.addView(timeFrameView, lpTimeFrameView);
+        layoutChild.setRectView(mRectView);
+        layoutChild.setInterval(mIntervalLeft, mExtraHeight);
     }
 
     private boolean mIsLongPress;
     private boolean mIsFinishJudge;
     private boolean mIsIntervalLeft;
-    private static final int MOVE_THRESHOLD = 15;//识别是长按的能移动的阀值
+    private static final int MOVE_THRESHOLD = 15;//识别是长按而能移动的阀值
     private final Runnable mLongPressRun = new Runnable() {
         @Override
         public void run() {
             mIsLongPress = true;
             Vibrator vibrator = (Vibrator)context.getSystemService(Context.VIBRATOR_SERVICE);
             vibrator.vibrate(15);
-            rectView.longPress(mInitialX, mInitialY + getScrollY());
+            mRectView.longPress(mInitialX, mInitialY + getScrollY() - mExtraHeight);
         }
     };
 
@@ -178,8 +206,7 @@ public class TimeSelectView extends ScrollView {
             public void run() {
                 float time = mCenterTime;
                 int parentHalfHeight = getHeight()/2;
-                int intTime = (int)time;
-                time = intTime % 24 + time - intTime;
+                time %= 24;
                 if (time < mStartHour) {
                     time += 24;
                 }
@@ -194,10 +221,7 @@ public class TimeSelectView extends ScrollView {
         });
     }
 
-    private float getNewTime() {
-        Calendar calendar = Calendar.getInstance();
-        int hour = calendar.get(Calendar.HOUR_OF_DAY);
-        int minute = calendar.get(Calendar.MINUTE);
-        return hour + minute/60.0f;
+    public int getSlippage() {
+        return getScrollY();
     }
 }
