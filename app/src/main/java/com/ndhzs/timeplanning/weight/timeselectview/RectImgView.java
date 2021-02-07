@@ -1,4 +1,4 @@
-package com.ndhzs.timeplanning.myview;
+package com.ndhzs.timeplanning.weight.timeselectview;
 
 /*
  *此自定义View只用于在长按已选取的区域时生成相同的Img来移动

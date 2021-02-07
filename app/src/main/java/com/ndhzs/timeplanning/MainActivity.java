@@ -4,7 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
 
-import com.ndhzs.timeplanning.myview.TimeSelectView;
+import com.ndhzs.timeplanning.weight.TimeSelectView;
 
 public class MainActivity extends AppCompatActivity {
 

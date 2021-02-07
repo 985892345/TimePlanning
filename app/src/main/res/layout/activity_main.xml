@@ -21,11 +21,11 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <com.ndhzs.timeplanning.myview.TimeSelectView
+        <com.ndhzs.timeplanning.weight.TimeSelectView
             android:id="@+id/view"
             android:layout_width="match_parent"
             android:layout_height="610dp"
-            app:intervalHeight="70dp"
+
             app:intervalWidth="40dp"
             app:taskTextSize="16dp"
             app:timeTextSize="13dp" />

@@ -1,9 +1,13 @@
-package com.ndhzs.timeplanning.myview;
+package com.ndhzs.timeplanning.weight.timeselectview;
 
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.util.Log;
 import android.view.View;
+
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class NowTimeView extends View {
 
@@ -11,10 +15,16 @@ public class NowTimeView extends View {
     private int mIntervalLeft;//左边的时间间隔宽度
     private int mIntervalRight;//右边的间隔宽度
 
-    private final int BALL_DIAMETER = 5;//小球直径
+    private final int BALL_DIAMETER = 14;//小球直径
 
     public NowTimeView(Context context) {
         super(context);
+        post(new Runnable() {
+            @Override
+            public void run() {
+                timeLineMove();
+            }
+        });
         init();
     }
     private void init() {
@@ -22,7 +32,7 @@ public class NowTimeView extends View {
         mTimeLinePaint.setAntiAlias(true);
         mTimeLinePaint.setColor(0xFFE40000);
         mTimeLinePaint.setStyle(Paint.Style.FILL);
-        mTimeLinePaint.setStrokeWidth(99);
+        mTimeLinePaint.setStrokeWidth(3);
     }
     public void setInterval(int intervalLeft, int intervalRight) {
         this.mIntervalLeft = intervalLeft;
@@ -45,11 +55,24 @@ public class NowTimeView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         float x = mIntervalLeft - TimeFrameView.VERTICAL_LINE_WIDTH/2.0f;
-        float y = 600;
+        float y = BALL_DIAMETER/2.0f;
         canvas.drawCircle(x, y, BALL_DIAMETER/2.0f, mTimeLinePaint);
         canvas.drawLine(x, y, getWidth() - mIntervalRight, y, mTimeLinePaint);
     }
 
+    @Override
+    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+        if (changed) {
+            Log.d("123", "onLayout: ");
+            timeLineMove();
+        }
+    }
+
+    public void layout(int y) {
+        layout(0, y, getWidth(), y + getHeight());
+    }
+
     private void timeLineMove() {
+        layout(MyTime.getNowTimeHeight() - BALL_DIAMETER/2);
     }
 }

@@ -1,19 +1,26 @@
-package com.ndhzs.timeplanning.myview;
+package com.ndhzs.timeplanning.weight;
 
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.os.Vibrator;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
-import android.widget.FrameLayout;
-import android.widget.ScrollView;
+import android.widget.FrameLayout;;
+
+import androidx.core.view.ViewCompat;
+import androidx.core.widget.NestedScrollView;
 
 import com.ndhzs.timeplanning.R;
+import com.ndhzs.timeplanning.weight.timeselectview.ChildFrameLayout;
+import com.ndhzs.timeplanning.weight.timeselectview.MyTime;
+import com.ndhzs.timeplanning.weight.timeselectview.NowTimeView;
+import com.ndhzs.timeplanning.weight.timeselectview.RectView;
+import com.ndhzs.timeplanning.weight.timeselectview.TimeFrameView;
 
-public class TimeSelectView extends ScrollView {
+public class TimeSelectView extends NestedScrollView {
 
     private Context context;
-    private RectView mRectView;
+    private IIsLongPress mIIsLongPress;
     private int mStartHour = 3;
     private int mEndHour = 24 + 3;
 
@@ -27,6 +34,8 @@ public class TimeSelectView extends ScrollView {
     private int mInitialX, mInitialY;//计入ACTION_DOWN时的坐标
 
     private float mCenterTime;
+
+    private static final int MAX_AUTO_SLIDE_VELOCITY = 10;
 
 
     /**
@@ -44,7 +53,7 @@ public class TimeSelectView extends ScrollView {
         mBorderColor = ty.getColor(R.styleable.TimeSelectView_borderColor, 0xFFFF0000);
         mInsideColor = ty.getColor(R.styleable.TimeSelectView_insideColor, 0xFFDCCC48);
         mIntervalLeft = (int)ty.getDimension(R.styleable.TimeSelectView_intervalWidth, 110);
-        mIntervalHeight = (int)ty.getDimension(R.styleable.TimeSelectView_intervalHeight, 180);
+        mIntervalHeight = (int)ty.getDimension(R.styleable.TimeSelectView_intervalHeight, 194);
         mTimeTextSide = (int)ty.getDimension(R.styleable.TimeSelectView_timeTextSize, 40);
         mTaskTextSize = (int)ty.getDimension(R.styleable.TimeSelectView_taskTextSize, 45);
         mExtraHeight = (int)(mIntervalHeight * 0.5);
@@ -71,17 +80,18 @@ public class TimeSelectView extends ScrollView {
         LayoutParams lpNowTimeView = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
         layoutParent.addView(nowTimeView, lpNowTimeView);
 
-        mRectView = new RectView(context);
+        RectView rectView = new RectView(context);
+        mIIsLongPress = rectView;
         LayoutParams lpRectView = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
         lpRectView.leftMargin = mIntervalLeft;
         lpRectView.topMargin = mExtraHeight;
         lpRectView.rightMargin = TimeFrameView.INTERVAL_RIGHT;
         lpRectView.bottomMargin = mExtraHeight + TimeFrameView.HORIZONTAL_LINE_WIDTH;
-        mRectView.setChildFrameLayout(layoutChild);
-        mRectView.setRectColor(mBorderColor, mInsideColor);
-        mRectView.setTextSize(mTimeTextSide, mTaskTextSize);
-        mRectView.setInterval(mExtraHeight);
-        layoutChild.addView(mRectView, lpRectView);
+        rectView.setChildFrameLayout(layoutChild);
+        rectView.setRectColor(mBorderColor, mInsideColor);
+        rectView.setTextSize((int)(0.8f * mTimeTextSide), mTaskTextSize);
+        rectView.setInterval(mExtraHeight);
+        layoutChild.addView(rectView, lpRectView);
 
         TimeFrameView timeFrameView = new TimeFrameView(context);
         LayoutParams lpTimeFrameView = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
@@ -89,7 +99,7 @@ public class TimeSelectView extends ScrollView {
         timeFrameView.setTextSize(mTimeTextSide);
         timeFrameView.setInterval(mIntervalLeft, TimeFrameView.INTERVAL_RIGHT, mExtraHeight, mIntervalHeight);
         layoutChild.addView(timeFrameView, lpTimeFrameView);
-        layoutChild.setRectView(mRectView);
+        layoutChild.setRectView(rectView);
         layoutChild.setInterval(mIntervalLeft, mExtraHeight);
     }
 
@@ -103,7 +113,7 @@ public class TimeSelectView extends ScrollView {
             mIsLongPress = true;
             Vibrator vibrator = (Vibrator)context.getSystemService(Context.VIBRATOR_SERVICE);
             vibrator.vibrate(15);
-            mRectView.longPress(mInitialX, mInitialY + getScrollY() - mExtraHeight);
+            mIIsLongPress.longPress(mInitialY + getScrollY() - mExtraHeight);
         }
     };
 
@@ -132,8 +142,9 @@ public class TimeSelectView extends ScrollView {
                 postDelayed(mLongPressRun, 250);
                 break;
             case MotionEvent.ACTION_MOVE:
-                if (mIsFinishJudge)
+                if (mIsFinishJudge) {
                     return super.dispatchTouchEvent(ev);
+                }
                 if (!mIsLongPress) {
                     if (Math.abs(x - mInitialX) > MOVE_THRESHOLD || Math.abs(y - mInitialY) > MOVE_THRESHOLD) {
                         mIsFinishJudge = true;
@@ -173,26 +184,67 @@ public class TimeSelectView extends ScrollView {
             super.onInterceptTouchEvent(ev);
             return true;
         }
-        if (ev.getAction() == MotionEvent.ACTION_DOWN) {
-            if (mInitialY < mExtraHeight || mInitialY > getHeight() - mExtraHeight - 5) {
-                removeCallbacks(mLongPressRun);
-                return true;
-            }
+        switch (ev.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                /*
+                 * ScrollView的外部大小的上下mExtraHeight距离进行拦截
+                 * */
+                if (mInitialY < mExtraHeight || mInitialY > getHeight() - mExtraHeight - 5) {
+                    removeCallbacks(mLongPressRun);
+                    //scrollTo(0, 100);//正值向上移动
+//                    Log.d("123", "onInterceptTouchEvent: DOWN");
+                    return true;
+                }
 
-            /*
-            * 如果不在DOWN事件手动调用onTouchEvent(), ScrollView就不会移动,
-            * 因为子View的onTouchEvent()已经把DOWN事件拦截了,
-            *
-            * */
-            onTouchEvent(ev);
-            return false;
-        }
-        if (!mIsLongPress) {
-            super.onInterceptTouchEvent(ev);
-            return true;
+                /*
+                 * 如果不在DOWN事件手动调用onTouchEvent(), ScrollView就不会移动,
+                 * 因为子View的onTouchEvent()已经把DOWN事件拦截了,
+                 * */
+                onTouchEvent(ev);
+                return false;
+            case MotionEvent.ACTION_MOVE:
+//                Log.d("123", "onInterceptTouchEvent: MOVE");
+                if (!mIsLongPress) {
+                    super.onInterceptTouchEvent(ev);
+                    return true;
+                }
+                //automaticSlide((int)ev.getY());
+                break;
+            case MotionEvent.ACTION_UP:
+                removeCallbacks(mScrollRunnable);
+                dy = -1;
+                break;
         }
         return false;
     }
+
+    int dy = -1;
+    private void automaticSlide(int y) {
+        switch (RectView.WHICH_CONDITION) {
+            case RectView.TOP:
+            case RectView.BOTTOM:
+                double multiple = Math.sqrt(MAX_AUTO_SLIDE_VELOCITY)/mExtraHeight;
+                if (y <= mExtraHeight) {
+                    dy = -Math.abs((int)Math.pow((y - mExtraHeight) * multiple, 2));
+                }else if (y >= getHeight() - mExtraHeight) {
+                    dy = Math.abs((int)Math.pow(getHeight() - mExtraHeight - y, 2));
+                }
+                if (dy != -1) {
+                    post(mScrollRunnable);
+                }
+                break;
+        }
+    }
+
+    TimeSelectView mTimeSelectView = this;
+    private final Runnable mScrollRunnable = new Runnable() {
+        @Override
+        public void run()
+        {
+            fling(dy);
+            ViewCompat.postOnAnimation(mTimeSelectView, mScrollRunnable);
+        }
+    };
 
     /**
      * 若传入的时间处于上下边界附近无法居中的位置，则会使时间线处于顶部或尾部界面内，但不居中。
@@ -221,7 +273,7 @@ public class TimeSelectView extends ScrollView {
         });
     }
 
-    public int getSlippage() {
-        return getScrollY();
+    public interface IIsLongPress {
+        void longPress(int y);
     }
 }

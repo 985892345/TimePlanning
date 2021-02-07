@@ -1,4 +1,4 @@
-package com.ndhzs.timeplanning.myview;
+package com.ndhzs.timeplanning.weight.timeselectview;
 
 import android.content.Context;
 import android.graphics.Canvas;

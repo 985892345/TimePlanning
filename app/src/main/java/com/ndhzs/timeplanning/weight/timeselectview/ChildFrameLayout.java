@@ -1,9 +1,8 @@
-package com.ndhzs.timeplanning.myview;
+package com.ndhzs.timeplanning.weight.timeselectview;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
-import android.graphics.Rect;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.animation.AccelerateInterpolator;
@@ -14,9 +13,8 @@ import androidx.annotation.NonNull;
 public class ChildFrameLayout extends FrameLayout {
 
     private Context mContext;
-    private RectView mRectView;
+    private IUpEvent mRectView;
     private RectImgView mImgView;
-    private boolean mIsIntercept;
     private int mInitialX, mInitialY;//长按已选择的区域时的坐标
     private int mUpperLimit, mLowerLimit;//当前矩形的上下限，不能移动到其他矩形区域
     private int mIntervalLeft;//左边的时间间隔宽度、
@@ -30,7 +28,7 @@ public class ChildFrameLayout extends FrameLayout {
         this.mContext = context;
     }
 
-    public void setRectView(RectView rectView) {
+    public void setRectView(IUpEvent rectView) {
         this.mRectView = rectView;
     }
 
@@ -46,11 +44,14 @@ public class ChildFrameLayout extends FrameLayout {
                 onTouchEvent(ev);
                 break;
             case MotionEvent.ACTION_MOVE:
-                if (mIsIntercept) {
+                if (RectView.WHICH_CONDITION == RectView.INSIDE) {
                     return true;
                 }
-                break;
             case MotionEvent.ACTION_UP:
+                if (RectView.WHICH_CONDITION == RectView.INSIDE) {
+                    onTouchEvent(ev);//当只长按不移动，在松手的时候系统不会调用onTouchEvent()的UP，只能手动调用了
+                    return true;
+                }
                 break;
         }
         return false;
@@ -64,17 +65,16 @@ public class ChildFrameLayout extends FrameLayout {
         int dy = y - mInitialY;
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                Log.d("123", "onTouchEvent: ChildLayout");
                 mInitialX = x;
                 mInitialY = y;
                 break;
             case MotionEvent.ACTION_MOVE:
-                Log.d("123", "onTouchEvent: MOVE_ChildLayout");
+                Log.d(TAG, "onTouchEvent: MOVE");
                 dx = (Math.abs(dx) < X_KEEP_THRESHOLD) ? 0 : ((dx > 0) ? dx - X_KEEP_THRESHOLD : dx + X_KEEP_THRESHOLD);
                 mImgView.layout(dx, dy);
                 break;
             case MotionEvent.ACTION_UP:
-                mIsIntercept= false;
+                Log.d(TAG, "onTouchEvent: UP");
                 if (Math.abs(dx) > X_MOVE_THRESHOLD * getWidth()) {
                     mImgView.animate().x((dx > 0) ? getWidth() : -getWidth())
                             .scaleX(0)
@@ -84,10 +84,11 @@ public class ChildFrameLayout extends FrameLayout {
                             .setListener(new AnimatorListenerAdapter() {
                                 @Override
                                 public void onAnimationEnd(Animator animation) {
+                                    mRectView.deleteHashMap();
                                     removeView(mImgView);
+                                    Log.d(TAG, "onAnimationEnd: OK1");
                                 }
                             });
-                    mRectView.deleteHashMap();
                 }else {
                     int imgViewTop = mImgView.getTop();
 
@@ -106,8 +107,11 @@ public class ChildFrameLayout extends FrameLayout {
                             .setListener(new AnimatorListenerAdapter() {
                                 @Override
                                 public void onAnimationEnd(Animator animation) {
-                                    mRectView.addDeleteRect(trueY - mExtraHeight, mImgView.getHeight());
+                                    int top = trueY - mExtraHeight;
+                                    int bottom = top + mImgView.getHeight();
+                                    mRectView.addDeletedRect(top, bottom);
                                     removeView(mImgView);
+                                    Log.d(TAG, "onAnimationEnd: OK2");
                                 }
                             });
                 }
@@ -121,6 +125,12 @@ public class ChildFrameLayout extends FrameLayout {
         this.mUpperLimit = upperLimit + mExtraHeight;
         this.mLowerLimit = lowerLimit + mExtraHeight;
         addView(rectImgView, lp);
-        mIsIntercept = true;
+    }
+
+    private static final String TAG = "123";
+
+    interface IUpEvent {
+        void deleteHashMap();
+        void addDeletedRect(int top, int bottom);
     }
 }
