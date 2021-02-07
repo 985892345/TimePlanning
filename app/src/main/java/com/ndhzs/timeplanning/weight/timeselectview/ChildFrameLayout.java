@@ -69,12 +69,10 @@ public class ChildFrameLayout extends FrameLayout {
                 mInitialY = y;
                 break;
             case MotionEvent.ACTION_MOVE:
-                Log.d(TAG, "onTouchEvent: MOVE");
                 dx = (Math.abs(dx) < X_KEEP_THRESHOLD) ? 0 : ((dx > 0) ? dx - X_KEEP_THRESHOLD : dx + X_KEEP_THRESHOLD);
                 mImgView.layout(dx, dy);
                 break;
             case MotionEvent.ACTION_UP:
-                Log.d(TAG, "onTouchEvent: UP");
                 if (Math.abs(dx) > X_MOVE_THRESHOLD * getWidth()) {
                     mImgView.animate().x((dx > 0) ? getWidth() : -getWidth())
                             .scaleX(0)
@@ -86,7 +84,6 @@ public class ChildFrameLayout extends FrameLayout {
                                 public void onAnimationEnd(Animator animation) {
                                     mRectView.deleteHashMap();
                                     removeView(mImgView);
-                                    Log.d(TAG, "onAnimationEnd: OK1");
                                 }
                             });
                 }else {
@@ -111,7 +108,6 @@ public class ChildFrameLayout extends FrameLayout {
                                     int bottom = top + mImgView.getHeight();
                                     mRectView.addDeletedRect(top, bottom);
                                     removeView(mImgView);
-                                    Log.d(TAG, "onAnimationEnd: OK2");
                                 }
                             });
                 }

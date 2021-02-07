@@ -15,16 +15,18 @@ public class NowTimeView extends View {
     private int mIntervalLeft;//左边的时间间隔宽度
     private int mIntervalRight;//右边的间隔宽度
 
-    private final int BALL_DIAMETER = 14;//小球直径
+    public static final int BALL_DIAMETER = 14;//小球直径
+    public static final int DELAY_RUN_TIME = 30000;
 
     public NowTimeView(Context context) {
         super(context);
-        post(new Runnable() {
+        postDelayed(new Runnable() {
             @Override
             public void run() {
                 timeLineMove();
+                postDelayed(this, DELAY_RUN_TIME);
             }
-        });
+        }, DELAY_RUN_TIME);
         init();
     }
     private void init() {
@@ -60,15 +62,7 @@ public class NowTimeView extends View {
         canvas.drawLine(x, y, getWidth() - mIntervalRight, y, mTimeLinePaint);
     }
 
-    @Override
-    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
-        if (changed) {
-            Log.d("123", "onLayout: ");
-            timeLineMove();
-        }
-    }
-
-    public void layout(int y) {
+    private void layout(int y) {
         layout(0, y, getWidth(), y + getHeight());
     }
 

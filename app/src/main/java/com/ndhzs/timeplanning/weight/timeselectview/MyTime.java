@@ -52,13 +52,15 @@ public class MyTime {
         Calendar calendar = Calendar.getInstance();
         int hour = calendar.get(Calendar.HOUR_OF_DAY);
         int minute = calendar.get(Calendar.MINUTE);
-        return hour + minute/60.0f;
+        int second = calendar.get(Calendar.SECOND);
+        return hour + minute/60.0f + second/3600.0f;
     }
-    static int getNowTimeHeight() {
+    public static int getNowTimeHeight() {
         float nowTime = getNowTime();
-        int hour = (int) nowTime;
-        int minute = (int) ((nowTime - hour) * 60 + 0.5f);
-        return sExtraHeight + (hour - 3) * sIntervalHeight + (int)sEveryMinuteHeight[minute];
+        if (nowTime < sStartHour) {
+            nowTime += 24;
+        }
+        return (int) (sExtraHeight + (nowTime - sStartHour) * sIntervalHeight);
     }
 
     /**

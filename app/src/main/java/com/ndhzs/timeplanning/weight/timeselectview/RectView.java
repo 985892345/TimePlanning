@@ -6,7 +6,6 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
 import android.graphics.RectF;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -19,7 +18,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 
-public class RectView extends View implements ChildFrameLayout.IUpEvent, TimeSelectView.IIsLongPress {
+public class RectView extends View implements ChildFrameLayout.IUpEvent, TimeSelectView.IRectView {
 
     private final Context mContext;
     private final HashMap<Rect, String> mRectAndDTime = new HashMap<>();//矩形与时间段差值
@@ -60,9 +59,18 @@ public class RectView extends View implements ChildFrameLayout.IUpEvent, TimeSel
     private static final int TOP_BOTTOM_WIDTH = 17;//长按响应顶部和底部的宽度
     private static int START_TIME_INTERVAL = 5;//按下空白区域时起始时间的分钟间隔数(必须为60的因数)
 
-    private static float RECT_MIN_HEIGHT;//矩形最小高度，控制矩形能否保存,与字体大小有关
-    private static float RECT_LESSER_HEIGHT;//矩形较小高度，控制矩形上下线时间能否显示,与字体大小有关
-    private static float RECT_SHOE_START_TIME_HEIGHT;//矩形显示开始时间的最小高度，与字体大小有关
+    private float RECT_MIN_HEIGHT;//矩形最小高度，控制矩形能否保存,与字体大小有关
+    private float RECT_LESSER_HEIGHT;//矩形较小高度，控制矩形上下线时间能否显示,与字体大小有关
+    private float RECT_SHOE_START_TIME_HEIGHT;//矩形显示开始时间的最小高度，与字体大小有关
+    public List<Rect> getRects() {
+        return mRects;
+    }
+    public HashMap<Rect, String> getRectAndName() {
+        return mRectAndName;
+    }
+    public HashMap<Rect, String> getRectAndDTime() {
+        return mRectAndDTime;
+    }
 
     /**
      * 注意！该View是镶嵌于ChildFrameLayout中，请不要自己用addView()调用，除非你搞懂了原理
@@ -475,7 +483,6 @@ public class RectView extends View implements ChildFrameLayout.IUpEvent, TimeSel
                 initialRect.set(-100, -100, -100, -100);
                 break;
             case INSIDE://never
-                Log.d(TAG, "theUpEvent: ");
                 //已经被ChildFrameLayout拦截，此UP事件将不会被响应
                 //后面的事件处理，我放在了addDeleteRect()方法中，用接口回调调用
                 break;

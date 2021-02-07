@@ -2,14 +2,14 @@ package com.ndhzs.timeplanning.weight;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.graphics.Rect;
 import android.os.Vibrator;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
-import android.widget.FrameLayout;;
-
+import android.widget.FrameLayout;
+import android.widget.ScrollView;;
 import androidx.core.view.ViewCompat;
-import androidx.core.widget.NestedScrollView;
-
 import com.ndhzs.timeplanning.R;
 import com.ndhzs.timeplanning.weight.timeselectview.ChildFrameLayout;
 import com.ndhzs.timeplanning.weight.timeselectview.MyTime;
@@ -17,10 +17,13 @@ import com.ndhzs.timeplanning.weight.timeselectview.NowTimeView;
 import com.ndhzs.timeplanning.weight.timeselectview.RectView;
 import com.ndhzs.timeplanning.weight.timeselectview.TimeFrameView;
 
-public class TimeSelectView extends NestedScrollView {
+import java.util.HashMap;
+import java.util.List;
+
+public class TimeSelectView extends ScrollView {
 
     private Context context;
-    private IIsLongPress mIIsLongPress;
+    private IRectView mIRectView;
     private int mStartHour = 3;
     private int mEndHour = 24 + 3;
 
@@ -32,11 +35,21 @@ public class TimeSelectView extends NestedScrollView {
     private final int mTimeTextSide;//时间字体大小
     private final int mTaskTextSize;//任务字体大小
     private int mInitialX, mInitialY;//计入ACTION_DOWN时的坐标
-
     private float mCenterTime;
-
     private static final int MAX_AUTO_SLIDE_VELOCITY = 10;
-
+    private onScrollViewListener mOnScrollViewListener;
+    public List<Rect> getRects() {
+        return mIRectView.getRects();
+    }
+    public HashMap<Rect, String> getRectAndName() {
+        return mIRectView.getRectAndName();
+    }
+    public HashMap<Rect, String> getRectAndDTime() {
+        return mIRectView.getRectAndDTime();
+    }
+    public void setOnScrollViewListener(onScrollViewListener onScrollViewListener) {
+        this.mOnScrollViewListener = onScrollViewListener;
+    }
 
     /**
      * 不建议用addView()调用，因为我不打算开放一些设置字体大小、矩形颜色的set方法。
@@ -57,7 +70,7 @@ public class TimeSelectView extends NestedScrollView {
         mTimeTextSide = (int)ty.getDimension(R.styleable.TimeSelectView_timeTextSize, 40);
         mTaskTextSize = (int)ty.getDimension(R.styleable.TimeSelectView_taskTextSize, 45);
         mExtraHeight = (int)(mIntervalHeight * 0.5);
-        mCenterTime = ty.getFloat(R.styleable.TimeSelectView_centerTime, MyTime.getNowTime());
+        mCenterTime = ty.getFloat(R.styleable.TimeSelectView_centerTime, -1);
         ty.recycle();
         setCenterTime(mCenterTime);
         MyTime.loadData(TimeFrameView.HORIZONTAL_LINE_WIDTH, mExtraHeight, mIntervalHeight, mStartHour);
@@ -78,10 +91,11 @@ public class TimeSelectView extends NestedScrollView {
         NowTimeView nowTimeView = new NowTimeView(context);
         nowTimeView.setInterval(mIntervalLeft, TimeFrameView.INTERVAL_RIGHT);
         LayoutParams lpNowTimeView = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+        lpNowTimeView.topMargin = MyTime.getNowTimeHeight() - NowTimeView.BALL_DIAMETER;
         layoutParent.addView(nowTimeView, lpNowTimeView);
 
         RectView rectView = new RectView(context);
-        mIIsLongPress = rectView;
+        mIRectView = rectView;
         LayoutParams lpRectView = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
         lpRectView.leftMargin = mIntervalLeft;
         lpRectView.topMargin = mExtraHeight;
@@ -113,7 +127,7 @@ public class TimeSelectView extends NestedScrollView {
             mIsLongPress = true;
             Vibrator vibrator = (Vibrator)context.getSystemService(Context.VIBRATOR_SERVICE);
             vibrator.vibrate(15);
-            mIIsLongPress.longPress(mInitialY + getScrollY() - mExtraHeight);
+            mIRectView.longPress(mInitialY + getScrollY() - mExtraHeight);
         }
     };
 
@@ -191,8 +205,6 @@ public class TimeSelectView extends NestedScrollView {
                  * */
                 if (mInitialY < mExtraHeight || mInitialY > getHeight() - mExtraHeight - 5) {
                     removeCallbacks(mLongPressRun);
-                    //scrollTo(0, 100);//正值向上移动
-//                    Log.d("123", "onInterceptTouchEvent: DOWN");
                     return true;
                 }
 
@@ -203,16 +215,16 @@ public class TimeSelectView extends NestedScrollView {
                 onTouchEvent(ev);
                 return false;
             case MotionEvent.ACTION_MOVE:
-//                Log.d("123", "onInterceptTouchEvent: MOVE");
-                if (!mIsLongPress) {
+                Log.d("123", "onInterceptTouchEvent: MOVE");
+                if (!mIsLongPress) {//直接滑动ScrollView
                     super.onInterceptTouchEvent(ev);
                     return true;
                 }
-                //automaticSlide((int)ev.getY());
+                automaticSlide((int)ev.getY());
                 break;
             case MotionEvent.ACTION_UP:
                 removeCallbacks(mScrollRunnable);
-                dy = -1;
+                
                 break;
         }
         return false;
@@ -241,10 +253,25 @@ public class TimeSelectView extends NestedScrollView {
         @Override
         public void run()
         {
-            fling(dy);
+
             ViewCompat.postOnAnimation(mTimeSelectView, mScrollRunnable);
         }
     };
+
+    private void timeMove(float time) {
+        int windowHalfHeight = getHeight()/2;
+        time %= 24;
+        if (time < mStartHour) {
+            time += 24;
+        }
+        int nowTimeHeight = (int)(mExtraHeight + (time - mStartHour) * mIntervalHeight);
+        int totalHeight = (mEndHour - mStartHour) * mIntervalHeight + 2 * mExtraHeight;
+        if (nowTimeHeight > windowHalfHeight && nowTimeHeight < totalHeight - windowHalfHeight) {
+            scrollTo(0, nowTimeHeight - windowHalfHeight);
+        }else if (nowTimeHeight >= totalHeight - windowHalfHeight) {
+            scrollTo(0, totalHeight - windowHalfHeight * 2);
+        }
+    }
 
     /**
      * 若传入的时间处于上下边界附近无法居中的位置，则会使时间线处于顶部或尾部界面内，但不居中。
@@ -252,28 +279,50 @@ public class TimeSelectView extends NestedScrollView {
      * @param centerTime 设置居中的时间，支持小数。
      */
     public void setCenterTime(float centerTime) {
-        this.mCenterTime = centerTime;
-        post(new Runnable() {
-            @Override
-            public void run() {
-                float time = mCenterTime;
-                int parentHalfHeight = getHeight()/2;
-                time %= 24;
-                if (time < mStartHour) {
-                    time += 24;
+        if (centerTime == -1) {//不设置CenterTime以当前时间线为中线
+            post(new Runnable() {
+                @Override
+                public void run() {
+                    timeMove(MyTime.getNowTime());
                 }
-                int y = (int)(mExtraHeight + (time - mStartHour) * mIntervalHeight);
-                int height = (mEndHour - mStartHour) * mIntervalHeight + 2 * mExtraHeight;
-                if (y > parentHalfHeight && y < height - parentHalfHeight) {
-                    scrollTo(0, y - parentHalfHeight);
-                }else if (y >= height - parentHalfHeight) {
-                    scrollTo(0, height - parentHalfHeight * 2);
+            });
+            postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    timeMove(MyTime.getNowTime());
+                    postDelayed(this, NowTimeView.DELAY_RUN_TIME);
                 }
-            }
-        });
+            }, NowTimeView.DELAY_RUN_TIME);
+        }else {//设置CenterTime以CenterTime为中线，不随时间移动
+            post(new Runnable() {
+                @Override
+                public void run() {
+                    timeMove(mCenterTime);
+                }
+            });
+        }
+
     }
 
-    public interface IIsLongPress {
+    @Override
+    protected void onScrollChanged(int l, int t, int oldl, int oldt) {
+        super.onScrollChanged(l, t, oldl, oldt);
+        if (mOnScrollViewListener != null) {
+            if (oldt == 0) {
+                return;
+            }
+            mOnScrollViewListener.onScrollChanged(t, oldt - t);
+        }
+    }
+
+    public interface IRectView {
         void longPress(int y);
+        List<Rect> getRects();
+        HashMap<Rect, String> getRectAndName();
+        HashMap<Rect, String> getRectAndDTime();
+    }
+
+    public interface onScrollViewListener {
+        void onScrollChanged(int y, int dy);
     }
 }
