@@ -79,7 +79,7 @@ public class ChildLayout extends FrameLayout implements TimeSelectView.IIsAllowD
                     mImgView.animate().x((dx > 0) ? getWidth() : -getWidth())
                             .scaleX(0)
                             .scaleY(0)
-                            .setDuration((int) ((getWidth() - Math.abs(dx)) * 1.2f))
+                            .setDuration((int) (Math.abs(getWidth() - Math.abs(dx)) * 1.2f))
                             .setInterpolator(new AccelerateInterpolator())
                             .setListener(new AnimatorListenerAdapter() {
                                 @Override

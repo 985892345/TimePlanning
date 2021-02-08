@@ -188,8 +188,11 @@ public class TimeSelectView extends ScrollView {
     }
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
+        int x = (int) ev.getX();
+        int y = (int) ev.getY();
         switch (ev.getAction()) {
             case MotionEvent.ACTION_DOWN: {
+                Log.d(TAG, "onInterceptTouchEvent: " + (getHeight() - AUTO_MOVE_THRESHOLD));
                 //点击的是左部区域，直接拦截
                 if (mInitialX < mIntervalLeft + 3) {
                     return true;
@@ -218,8 +221,8 @@ public class TimeSelectView extends ScrollView {
                         mUpperLimit = mIRectView.getUpperLimit() + mExtraHeight;
                         mLowerLimit = mIRectView.getLowerLimit() + mExtraHeight;
                     }
-                    mMoveX = (int) ev.getX();
-                    mMoveY = (int) ev.getY();
+                    mMoveX = x;
+                    mMoveY = y;
                     automaticSlide(mMoveY);//只有在长按时才会调用自动滑动
                 }else {//如果直接滑动的ScrollView，不是长按，直接拦截
                     super.onInterceptTouchEvent(ev);
@@ -231,7 +234,11 @@ public class TimeSelectView extends ScrollView {
                 // DOWN：false | MOVE：true 时，UP事件不会被调用，但onTouchEvent()的UP会被系统调用
                 // 我找规律发现onInterceptTouchEvent()一旦在某时return true，以后的所有事件直接从
                 // dispatchTouchEvent ——> onTouchEvent()，再也不会出现onInterceptTouchEvent()被调用
-                removeCallbacks(mScrollRunnable);//当你在自动滑动区域松手时，取消掉自动滑动
+                if (mIsRun) {
+                    smoothScrollBy(0, dy * (Math.abs(dy) * 3 + 10));
+                    mIsRun = false;
+                }
+                removeCallbacks(mScrollRunnable);
                 break;
             }
         }
@@ -260,9 +267,11 @@ public class TimeSelectView extends ScrollView {
                 }else {//在滑动区域且在上下限以内
                     //先计算dy值，控制速度
                     if (y <= AUTO_MOVE_THRESHOLD) {//手指在顶部区域，ScrollView应该向下滑
-                        dy = (int) -Math.sqrt(Math.abs((y - AUTO_MOVE_THRESHOLD) * MULTIPLE));
+                        dy = (int) -Math.sqrt((AUTO_MOVE_THRESHOLD - y) * MULTIPLE);
+                        Log.d(TAG, "dy = " + dy + "   y = " + y + "   d = " + (AUTO_MOVE_THRESHOLD - y));
                     }else {//手指在底部区域，ScrollView应该向上滑
-                        dy = (int) Math.sqrt(Math.abs((getHeight() - AUTO_MOVE_THRESHOLD - y) * MULTIPLE));
+                        dy = (int) Math.sqrt((y - (getHeight() - AUTO_MOVE_THRESHOLD)) * MULTIPLE);
+                        Log.d(TAG, "dy = " + dy + "   y = " + y + "   d = " + (y - (getHeight() - AUTO_MOVE_THRESHOLD)));
                     }
                     //再判断是否重复调用延时Runnable
                     if (!mIsRun) {//mIsRun控制只调用一次Runnable
@@ -283,20 +292,18 @@ public class TimeSelectView extends ScrollView {
                     removeCallbacks(mScrollRunnable);
                     mIChildLayout.isAllowDraw(true);
                     mIsRun = false;
-                    Log.d(TAG, "============================");
                 }else {
                     if (mNowCenterY == mInitialY) {
                         //为了刷新mNowCenterY值，防止滑到不自动滑动区后再去滑动isWithinThreshold的判断问题
                         mNowCenterY = (mInitialY == getHeight()/2) ? getHeight()/2 : getHeight()/2 + 1;
                     }else {
                         if (isTopSlide) {
-                            dy = (int) -Math.sqrt(Math.abs((top - getScrollY() - AUTO_MOVE_THRESHOLD) * MULTIPLE));
+                            dy = (int) -Math.sqrt((AUTO_MOVE_THRESHOLD - (top - getScrollY())) * MULTIPLE);
                         }else if (isBottomSlide){
-                            dy = (int) Math.sqrt(Math.abs((bottom - getScrollY() - (getHeight() - AUTO_MOVE_THRESHOLD)) * MULTIPLE));
+                            dy = (int) Math.sqrt((bottom - getScrollY() - (getHeight() - AUTO_MOVE_THRESHOLD)) * MULTIPLE);
                         }
                     }
                     if (!mIsRun) {//控制只调用一次Runnable
-                        Log.d(TAG, "automaticSlide: ===============" + dy);
                         mIsRun = true;
                         mLastMoveY = y;//记录第一次开始滑动的值
                         mIChildLayout.isAllowDraw(false);
@@ -309,7 +316,6 @@ public class TimeSelectView extends ScrollView {
     private final Runnable mScrollRunnable = new Runnable() {
         @Override
         public void run() {
-            Log.d(TAG, "run: " + dy);
             int nowScrollY = getScrollY() + dy;
             scrollTo(0, nowScrollY);
             switch (RectView.WHICH_CONDITION) {
