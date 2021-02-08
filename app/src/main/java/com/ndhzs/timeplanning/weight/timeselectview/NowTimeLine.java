@@ -3,30 +3,25 @@ package com.ndhzs.timeplanning.weight.timeselectview;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.util.Log;
 import android.view.View;
 
-import java.util.Timer;
-import java.util.TimerTask;
-
-public class NowTimeView extends View {
+public class NowTimeLine extends View {
 
     private Paint mTimeLinePaint;
     private int mIntervalLeft;//左边的时间间隔宽度
     private int mIntervalRight;//右边的间隔宽度
 
     public static final int BALL_DIAMETER = 14;//小球直径
-    public static final int DELAY_RUN_TIME = 30000;
 
-    public NowTimeView(Context context) {
+    public NowTimeLine(Context context) {
         super(context);
         postDelayed(new Runnable() {
             @Override
             public void run() {
                 timeLineMove();
-                postDelayed(this, DELAY_RUN_TIME);
+                postDelayed(this, TimeTools.DELAY_RUN_TIME);
             }
-        }, DELAY_RUN_TIME);
+        }, TimeTools.DELAY_RUN_TIME);
         init();
     }
     private void init() {
@@ -53,10 +48,21 @@ public class NowTimeView extends View {
         }
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
+    @Override
+    public void layout(int l, int t, int r, int b) {
+        // 放在这里是有原因的，为什么不在addView()时直接设置LayoutParams.topMargin使时间线加载时处于开始位置？
+        // 因为如果我长按已选择了的区域，那么在ChildFrameLayout就会调用addView()，又因为时间线应在最顶层，
+        // 所以系统会重新layout()，如果你在LayoutParams.topMargin直接设置了开始位置，那么此时layout()就
+        // 会跑回去，所以只有在layout()中设置当前时间的高度，就不会重新返回以前的位置，可以避免这个问题
+        int nowTimeHeight = TimeTools.getNowTimeHeight() - BALL_DIAMETER;
+        t = nowTimeHeight;
+        b = nowTimeHeight + BALL_DIAMETER;
+        super.layout(l, t, r, b);
+    }
 
     @Override
     protected void onDraw(Canvas canvas) {
-        float x = mIntervalLeft - TimeFrameView.VERTICAL_LINE_WIDTH/2.0f;
+        float x = mIntervalLeft - FrameView.VERTICAL_LINE_WIDTH/2.0f;
         float y = BALL_DIAMETER/2.0f;
         canvas.drawCircle(x, y, BALL_DIAMETER/2.0f, mTimeLinePaint);
         canvas.drawLine(x, y, getWidth() - mIntervalRight, y, mTimeLinePaint);
@@ -65,8 +71,7 @@ public class NowTimeView extends View {
     private void layout(int y) {
         layout(0, y, getWidth(), y + getHeight());
     }
-
     private void timeLineMove() {
-        layout(MyTime.getNowTimeHeight() - BALL_DIAMETER/2);
+        layout(TimeTools.getNowTimeHeight() - BALL_DIAMETER/2);
     }
 }

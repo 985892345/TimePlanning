@@ -15,8 +15,8 @@ public class RectImgView extends View {
     private final String mTaskName;
     private final String mStDTime;
     private final RectView mRectView;
-    private boolean mIsFirst;//如果是最开始layout时，计入此时的mInitialL, mInitialT
-    private int mInitialL, mInitialT;
+    private int mInitialL = Integer.MAX_VALUE, mInitialT;//如果是最开始layout时，计入此时的mInitialL, mInitialT
+    private static final int X_KEEP_THRESHOLD = 50;//长按后左右移动时保持水平不移动的阀值
 
     /**
      * 必须传入这几个值才能绘制可移动的矩形，移动请调用layout(int dx, int dy)
@@ -31,7 +31,6 @@ public class RectImgView extends View {
         this.mTaskName = taskName;
         this.mStDTime = stDTime;
         this.mRectView = rectView;
-        mIsFirst = true;
         mRect = new Rect(0, 0, rect.width(), rect.height());
     }
 
@@ -57,33 +56,30 @@ public class RectImgView extends View {
         }
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
-
-    private static final String TAG = "123";
-
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
-        if (mIsFirst) {
-            mIsFirst = false;
+        if (mInitialL == Integer.MAX_VALUE) {//如果是最开始layout时，计入此时的mInitialL, mInitialT
             mInitialL = left;
             mInitialT = top;
         }
     }
-
     @Override
     protected void onDraw(Canvas canvas) {
         mRectView.drawRect(canvas, mRect, mTaskName);
         mRectView.drawArrows(canvas, mRect, mStDTime);
         mRectView.drawTopBottomTime(canvas, mRect,
-                MyTime.getTime(getTop()),
-                MyTime.getTime(getBottom()));
+                TimeTools.getTime(getTop()),
+                TimeTools.getTime(getBottom()));
     }
 
     /**
-     * 传入左上角坐标值，会调用layout()移动
-     * @param dx 移动值dx
-     * @param dy 移动值dy
+     * 传入移动量，会调用layout()移动
+     * @param dx 移动值dx，是与最初的位置的差值
+     * @param dy 移动值dy，是与最初的位置的差值
      */
     public void layout(int dx, int dy) {
+        dx = (Math.abs(dx) < X_KEEP_THRESHOLD) ? 0 :
+                ((dx > 0) ? dx - X_KEEP_THRESHOLD : dx + X_KEEP_THRESHOLD);
         int l = mInitialL + dx;
         int t = mInitialT + dy;
         int r = l + getWidth();
@@ -91,4 +87,22 @@ public class RectImgView extends View {
         layout(l, t, r, b);
         invalidate();
     }
+
+    /**
+     * 传入移动量，会调用layout()移动，(注意！dx与dy不同)
+     * @param dx 移动值dx，是与最初的位置的差值
+     * @param dy 移动值dy，是与上一次位置的差值
+     */
+    public void autoSlideLayout(int dx, int dy) {
+        dx = (Math.abs(dx) < X_KEEP_THRESHOLD) ? 0 :
+                ((dx > 0) ? dx - X_KEEP_THRESHOLD : dx + X_KEEP_THRESHOLD);
+        int l = mInitialL + dx;
+        int t = getTop() + dy;
+        int r = l + getWidth();
+        int b = t + getHeight();
+        layout(l, t, r, b);
+        invalidate();
+    }
+
+    private static final String TAG = "123";
 }

@@ -2,7 +2,7 @@ package com.ndhzs.timeplanning.weight.timeselectview;
 
 import java.util.Calendar;
 
-public class MyTime {
+public class TimeTools {
 
     private static int sHLineWidth;//水平线厚度
     private static int sExtraHeight;//上方或下方其中一方多余的高度
@@ -12,6 +12,8 @@ public class MyTime {
      * 保存0~60的每分钟的相对高度，0分钟就是[0]，60分钟就是[60]。使用时一般配合 HLineTopHeight一起使用
      */
     static final float[] sEveryMinuteHeight = new float[61];
+    public static final int DELAY_RUN_TIME = 30000;//刷新当前时间高度的间隔时间
+    public static int START_TIME_INTERVAL = 5;//按下空白区域时起始时间的分钟间隔数(必须为60的因数)
 
     public static void loadData(int hLineWidth, int extraHeight, int intervalHeight, int startHour) {
         sHLineWidth = hLineWidth;
@@ -88,7 +90,7 @@ public class MyTime {
      * @param y 传入y值(注意！此y值为加上了ExtraHeight的坐标系对应的y值，若在RectView中调用，必须加入ExtraHeight)
      * @return 当前y值对应的区域的水平线顶部对应高度
      */
-    static int getHLineTopHeight(int y) {
+    public static int getHLineTopHeight(int y) {
         return  (y - sExtraHeight + sHLineWidth) / sIntervalHeight * sIntervalHeight + sExtraHeight - sHLineWidth;
     }
 
@@ -104,13 +106,18 @@ public class MyTime {
      * @param y 传入y值(注意！此y值为加上了ExtraHeight的坐标系对应的y值，若在RectView中调用，必须加入ExtraHeight)
      * @return 当前y值对应的分钟数
      */
-    static int getMinute(int y) {
+    public static int getMinute(int y) {
         //先计算出一格占多少分钟
         int minute = (int)(((y - sExtraHeight + sHLineWidth) % sIntervalHeight) / (float) sIntervalHeight * 60);
         if (y < sExtraHeight)
             return (int)(((sIntervalHeight - (sExtraHeight - sHLineWidth - y)) % sIntervalHeight) / (float) sIntervalHeight * 60);
         return minute;
     }
+
+    public static void setStartTimeInterval(int startTimeInterval) {
+        START_TIME_INTERVAL = startTimeInterval;
+    }
+
     private static String getStringTime(int hour, int minute) {
         String stH;
         String stM;

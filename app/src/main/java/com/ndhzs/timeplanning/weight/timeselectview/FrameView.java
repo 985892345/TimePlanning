@@ -5,7 +5,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.view.View;
 
-public class TimeFrameView extends View {
+public class FrameView extends View {
 
     private int mStartHour, mEndHour;
 
@@ -40,11 +40,10 @@ public class TimeFrameView extends View {
      */
     public static final int HORIZONTAL_LINE_WIDTH = 1;
 
-    public TimeFrameView(Context context) {
+    public FrameView(Context context) {
         super(context);
         init();
     }
-
     private void init() {
         //Vertical Line 垂直线画笔
         mVLinePaint = new Paint();
@@ -103,7 +102,6 @@ public class TimeFrameView extends View {
         }
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
-
     @Override
     protected void onDraw(Canvas canvas) {
         canvas.drawLine(mIntervalLeft - VERTICAL_LINE_WIDTH/2.0f, 0,
