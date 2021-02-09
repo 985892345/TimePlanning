@@ -287,8 +287,7 @@ public class TimeSelectView extends ScrollView {
                 boolean isWithinThreshold = y < mNowCenterY + CENTER_DISTANCE_THRESHOLD && y > mNowCenterY - CENTER_DISTANCE_THRESHOLD;
                 boolean isBottomSlide = bottom - getScrollY() >= getHeight() - AUTO_MOVE_THRESHOLD;
                 boolean isTopSlide = top - getScrollY() <= AUTO_MOVE_THRESHOLD;
-                isWithinLimit = top > mUpperLimit && bottom < mLowerLimit;//是否在上下线以内
-                if (isWithinThreshold || (!isBottomSlide && !isTopSlide) || !isWithinLimit) {
+                if (isWithinThreshold || (!isBottomSlide && !isTopSlide)) {
                     removeCallbacks(mScrollRunnable);
                     mIChildLayout.isAllowDraw(true);
                     mIsRun = false;

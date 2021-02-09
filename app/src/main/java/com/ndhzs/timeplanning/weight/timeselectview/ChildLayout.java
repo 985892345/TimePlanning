@@ -90,7 +90,9 @@ public class ChildLayout extends FrameLayout implements TimeSelectView.IIsAllowD
                             });
                 }else {
                     int imgViewTop = mImgView.getTop();
-
+                    int imgViewBottom = mImgView.getBottom();
+                    int newUpperLimit = mIRectView.getNewUpperLimit(imgViewBottom - mExtraHeight);
+                    int newLowerLimit = mIRectView.getNewLowerLimit(imgViewTop - mExtraHeight);
                     boolean isOverUpperLimit = imgViewTop < mUpperLimit;
                     boolean isOverLowerLimit = mImgView.getBottom() > mLowerLimit;
 
@@ -107,8 +109,7 @@ public class ChildLayout extends FrameLayout implements TimeSelectView.IIsAllowD
                                 @Override
                                 public void onAnimationEnd(Animator animation) {
                                     int top = correctTop - mExtraHeight;
-                                    int bottom = top + mImgView.getHeight();
-                                    mIRectView.addDeletedRect(top, bottom);
+                                    mIRectView.addDeletedRect(top);
                                     removeView(mImgView);
                                 }
                             });
@@ -118,10 +119,10 @@ public class ChildLayout extends FrameLayout implements TimeSelectView.IIsAllowD
         return true;
     }
 
-    public void addImgViewRect(RectImgView rectImgView, LayoutParams lp, int upperLimit, int lowerLimit) {
+    public void addImgViewRect(RectImgView rectImgView, LayoutParams lp, int currentUpperLimit, int currentLowerLimit) {
         this.mImgView = rectImgView;
-        this.mUpperLimit = upperLimit + mExtraHeight;
-        this.mLowerLimit = lowerLimit + mExtraHeight;
+        this.mUpperLimit = currentUpperLimit + mExtraHeight;
+        this.mLowerLimit = currentLowerLimit + mExtraHeight;
         addView(rectImgView, lp);
     }
 
@@ -132,7 +133,9 @@ public class ChildLayout extends FrameLayout implements TimeSelectView.IIsAllowD
 
     interface IUpEvent {
         void deleteHashMap();
-        void addDeletedRect(int top, int bottom);
+        void addDeletedRect(int top);
+        int getNewUpperLimit(int y);
+        int getNewLowerLimit(int y);
     }
 
     private static final String TAG = "123";

@@ -68,8 +68,8 @@ public class RectImgView extends View {
         mRectView.drawRect(canvas, mRect, mTaskName);
         mRectView.drawArrows(canvas, mRect, mStDTime);
         mRectView.drawTopBottomTime(canvas, mRect,
-                TimeTools.getTime(getTop()),
-                TimeTools.getTime(getBottom()));
+                TimeTools.getTopTime(getTop()),
+                TimeTools.getBottomTime(mStDTime));
     }
 
     /**

@@ -1,5 +1,7 @@
 package com.ndhzs.timeplanning.weight.timeselectview;
 
+import android.util.Log;
+
 import java.util.Calendar;
 
 public class TimeTools {
@@ -8,12 +10,16 @@ public class TimeTools {
     private static int sExtraHeight;//上方或下方其中一方多余的高度
     private static int sIntervalHeight;//一个小时的间隔高度
     private static int sStartHour;
+    private static int sTopTimeHour;
+    private static int sTopTimeMinute;
+    private static int sBottomTimeHour;
+    private static int sBottomTimeMinute;
     /**
      * 保存0~60的每分钟的相对高度，0分钟就是[0]，60分钟就是[60]。使用时一般配合 HLineTopHeight一起使用
      */
     static final float[] sEveryMinuteHeight = new float[61];
     public static final int DELAY_RUN_TIME = 30000;//刷新当前时间高度的间隔时间
-    public static int START_TIME_INTERVAL = 5;//按下空白区域时起始时间的分钟间隔数(必须为60的因数)
+    public static int START_TIME_INTERVAL = 15;//按下空白区域时起始时间的分钟间隔数(必须为60的因数)
 
     public static void loadData(int hLineWidth, int extraHeight, int intervalHeight, int startHour) {
         sHLineWidth = hLineWidth;
@@ -30,12 +36,12 @@ public class TimeTools {
         sStartHour = startHour;
     }
 
-    static String getTime(int y) {
+    public static String getTime(int y) {
         int h = getHour(y);
         int m = getMinute(y);
         return getStringTime(h, m);
     }
-    static String getDiffTime(int top, int bottom) {
+    public static String getDiffTime(int top, int bottom) {
         int lastH = getHour(top);
         int lastM = getMinute(top);
         int h = getHour(bottom);
@@ -48,6 +54,30 @@ public class TimeTools {
             h -= lastH + 1;
         }
         return getStringTime(h, m);
+    }
+    public static String getTopTime(int y) {
+        sTopTimeHour = getHour(y);
+        sTopTimeMinute = getMinute(y);
+        return getStringTime(sTopTimeHour, sTopTimeMinute);
+    }
+    public static String getBottomTime(String dTime) {
+        int dH = Integer.parseInt(dTime.substring(0, 2));
+        int dM = Integer.parseInt(dTime.substring(3));
+        sBottomTimeHour = sTopTimeHour + dH;
+        sBottomTimeMinute = sTopTimeMinute + dM;
+        if (sBottomTimeMinute >= 60) {
+            sBottomTimeHour++;
+            sBottomTimeMinute -= 60;
+        }
+        return getStringTime(sBottomTimeHour, sBottomTimeMinute);
+    }
+    public static int getBottomTimeHeight(int top, String dTime) {//本方法是在RectImgView放置过后才调用的
+        top += sExtraHeight;//转换坐标系
+        getTopTime(top);
+        getBottomTime(dTime);//重新计算sBottomTimeHour和sBottomTimeMinute，原因在于划出上下边界，图形会回来，要重新计算时间
+        // 后面加个1是为了粗略计算，最后的高度还要到RectView中的getEndTimeCorrectHeight(int bottom)进行精确计算
+        // 里面的sBottomTimeHour和sBottomTimeMinute是重新计算后的值
+        return (sBottomTimeHour - sStartHour)* sIntervalHeight - sHLineWidth + (int)sEveryMinuteHeight[sBottomTimeMinute] + 1;
     }
 
     public static float getNowTime() {
