@@ -1,7 +1,5 @@
 package com.ndhzs.timeplanning.weight.timeselectview;
 
-import android.util.Log;
-
 import java.util.Calendar;
 
 public class TimeTools {
@@ -72,12 +70,11 @@ public class TimeTools {
         return getStringTime(sBottomTimeHour, sBottomTimeMinute);
     }
     public static int getBottomTimeHeight(int top, String dTime) {//本方法是在RectImgView放置过后才调用的
-        top += sExtraHeight;//转换坐标系
         getTopTime(top);
         getBottomTime(dTime);//重新计算sBottomTimeHour和sBottomTimeMinute，原因在于划出上下边界，图形会回来，要重新计算时间
         // 后面加个1是为了粗略计算，最后的高度还要到RectView中的getEndTimeCorrectHeight(int bottom)进行精确计算
         // 里面的sBottomTimeHour和sBottomTimeMinute是重新计算后的值
-        return (sBottomTimeHour - sStartHour)* sIntervalHeight - sHLineWidth + (int)sEveryMinuteHeight[sBottomTimeMinute] + 1;
+        return sExtraHeight + (sBottomTimeHour - sStartHour)* sIntervalHeight - sHLineWidth + (int)sEveryMinuteHeight[sBottomTimeMinute] + 1;
     }
 
     public static float getNowTime() {

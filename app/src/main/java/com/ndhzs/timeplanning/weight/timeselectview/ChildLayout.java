@@ -3,6 +3,7 @@ package com.ndhzs.timeplanning.weight.timeselectview;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
@@ -59,13 +60,12 @@ public class ChildLayout extends FrameLayout implements TimeSelectView.IIsAllowD
         return false;
     }
 
-    private int dx, dy;
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         int x = (int) event.getX();
         int y = (int) event.getY();
-        dx = x - mInitialX;
-        dy = y - mInitialY;
+        int dx = x - mInitialX;
+        int dy = y - mInitialY;
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 break;

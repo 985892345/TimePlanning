@@ -6,6 +6,7 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -61,7 +62,7 @@ public class RectView extends View implements ChildLayout.IUpEvent, TimeSelectVi
 
     private float RECT_MIN_HEIGHT;//矩形最小高度，控制矩形能否保存,与字体大小有关
     private float RECT_LESSER_HEIGHT;//矩形较小高度，控制矩形上下线时间能否显示,与字体大小有关
-    private float RECT_SHOE_START_TIME_HEIGHT;//矩形显示开始时间的最小高度，与字体大小有关
+    private float RECT_SHOE_START_TIME_HEIGHT;//矩形显示开始时间的最小高度，与字体大小有关(大于它不一定能保存矩形)
     public List<Rect> getRects() {
         return mRects;
     }
@@ -405,7 +406,7 @@ public class RectView extends View implements ChildLayout.IUpEvent, TimeSelectVi
                 tops.add(top);
             }
         }
-        return (tops.size() == 0) ? getHeight():
+        return (tops.size() == 0) ? getHeight() - FrameView.HORIZONTAL_LINE_WIDTH:
                 Collections.min(tops, new Comparator<Integer>() {
                     @Override
                     public int compare(Integer o1, Integer o2) {
@@ -530,13 +531,18 @@ public class RectView extends View implements ChildLayout.IUpEvent, TimeSelectVi
     @Override
     public void addDeletedRect(int top) {//在ChildFrameLayout的移动矩形回来时调用
         String dTime = mRectAndDTime.get(deletedRect);
+        Log.d(TAG, "addDeletedRect: t = " + top);
         top = getStartTimeCorrectHeight(top);
-        int bottom = getEndTimeCorrectHeight(TimeTools.getBottomTimeHeight(top, dTime));
+        //bottom以时间差值来计算高度，如果不用时间差，就会出现上下边界时间出错的问题
+        Log.d(TAG, "addDeletedRect: TimeTools = " + TimeTools.getBottomTimeHeight(top + mExtraHeight, dTime));
+        int bottom = getEndTimeCorrectHeight(TimeTools.getBottomTimeHeight(top + mExtraHeight, dTime) - mExtraHeight);
+        Log.d(TAG, "addDeletedRect: t = " + top + "   b = " + bottom);
+        Log.d(TAG, "addDeletedRect: deleteH = " + deletedRect.height() + "    H = " + (bottom - top));
         Rect rect = new Rect(0, top, getWidth(), bottom);
         mRects.add(rect);
         mRectAndName.put(rect, mRectAndName.get(deletedRect));
         mRectAndDTime.put(rect, dTime);
-        invalidate(deletedRect);
+        invalidate();
         if (!rect.equals(deletedRect)) {
             deleteHashMap();
         }
