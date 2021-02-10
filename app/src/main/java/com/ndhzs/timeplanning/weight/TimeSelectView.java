@@ -248,7 +248,10 @@ public class TimeSelectView extends ScrollView {
                             dY = (dy > 0) ? y - (getHeight() - AUTO_MOVE_THRESHOLD) + 10 : y - AUTO_MOVE_THRESHOLD - 10;
                             break;
                         case RectView.INSIDE:
-
+                            int top = mIRectView.getImgViewRect().getTop() - getScrollY();
+                            int bottom = mIRectView.getImgViewRect().getBottom() - getScrollY();
+                            dY = (dy > 0) ? bottom - (getHeight() - AUTO_MOVE_THRESHOLD) + 10 : top - AUTO_MOVE_THRESHOLD - 10;
+                            break;
                     }
                     smoothScrollBy(0, dY);
                 }
@@ -281,10 +284,8 @@ public class TimeSelectView extends ScrollView {
                     //先计算dy值，控制速度
                     if (y <= AUTO_MOVE_THRESHOLD) {//手指在顶部区域，ScrollView应该向下滑
                         dy = (int) -Math.sqrt((AUTO_MOVE_THRESHOLD - y) * MULTIPLE);
-                        Log.d(TAG, "dy = " + dy + "   y = " + y + "   d = " + (AUTO_MOVE_THRESHOLD - y));
                     }else {//手指在底部区域，ScrollView应该向上滑
                         dy = (int) Math.sqrt((y - (getHeight() - AUTO_MOVE_THRESHOLD)) * MULTIPLE);
-                        Log.d(TAG, "dy = " + dy + "   y = " + y + "   d = " + (y - (getHeight() - AUTO_MOVE_THRESHOLD)));
                     }
                     //再判断是否重复调用延时Runnable
                     if (!mIsRun) {//mIsRun控制只调用一次Runnable
@@ -297,9 +298,10 @@ public class TimeSelectView extends ScrollView {
             case RectView.INSIDE:
                 int top = mIRectView.getImgViewRect().getTop();
                 int bottom = mIRectView.getImgViewRect().getBottom();
+                //下面这个是：当长按下去，矩形的顶部或底部已经在滑动区，则必须移动一个范围才能开启滑动，在成功滑动后NowCenterY会设置成中心值
                 boolean isWithinThreshold = y < mNowCenterY + CENTER_DISTANCE_THRESHOLD && y > mNowCenterY - CENTER_DISTANCE_THRESHOLD;
-                boolean isBottomSlide = bottom - getScrollY() >= getHeight() - AUTO_MOVE_THRESHOLD;
-                boolean isTopSlide = top - getScrollY() <= AUTO_MOVE_THRESHOLD;
+                boolean isBottomSlide = bottom - getScrollY() >= getHeight() - AUTO_MOVE_THRESHOLD * 0.4f;//乘以0.4限制滑动区
+                boolean isTopSlide = top - getScrollY() <= AUTO_MOVE_THRESHOLD * 0.4f;//乘以0.4限制滑动区
                 if (isWithinThreshold || (!isBottomSlide && !isTopSlide)) {
                     removeCallbacks(mScrollRunnable);
                     mIChildLayout.isAllowDraw(true);
@@ -311,12 +313,18 @@ public class TimeSelectView extends ScrollView {
                     }
                     if (isTopSlide) {
                         dy = (int) -Math.sqrt((AUTO_MOVE_THRESHOLD - (top - getScrollY())) * MULTIPLE);
-                        if (getScrollY() == 0) {
+                        if (getScrollY() == 0) {//如果ScrollView在顶部则速度为0，必须设置这个，因为下面的ImgViewRect的y轴移动量加了dy
+                            dy = 0;
+                        }
+                        if (mMoveY > mLastMoveY + 1) {//如果在顶部区域往下滑，但你往下滑后还停在滑动区仍然会滑动
                             dy = 0;
                         }
                     }else {
                         dy = (int) Math.sqrt((bottom - getScrollY() - (getHeight() - AUTO_MOVE_THRESHOLD)) * MULTIPLE);
-                        if (getScrollY() + getHeight() == mTotalHeight) {
+                        if (getScrollY() + getHeight() == mTotalHeight) {//如果ScrollView在底部则速度为0，必须设置这个，因为下面的ImgViewRect的y轴移动量加了dy
+                            dy = 0;
+                        }
+                        if (mMoveY < mLastMoveY - 1) {//如果在底部区域往上滑，但你往上滑后还停在滑动区仍然会滑动
                             dy = 0;
                         }
                     }
@@ -330,12 +338,11 @@ public class TimeSelectView extends ScrollView {
                 break;
         }
     }
-    private int i = 0;
+    private int i = 0;//用来刷新，防止一直不判断，一直调用
     private final Runnable mScrollRunnable = new Runnable() {
         @Override
         public void run() {
             int nowScrollY = getScrollY() + dy;
-            Log.d(TAG, "run: ");
             scrollTo(0, nowScrollY);
             switch (RectView.WHICH_CONDITION) {
                 case RectView.TOP:
@@ -354,7 +361,7 @@ public class TimeSelectView extends ScrollView {
             }
             if (i == 10) {
                 i = 0;
-                automaticSlide(mMoveY);//刷新，防止一直不判断，一直移动
+                automaticSlide(mMoveY);//刷新，防止一直不判断，一直调用
             }
         }
     };

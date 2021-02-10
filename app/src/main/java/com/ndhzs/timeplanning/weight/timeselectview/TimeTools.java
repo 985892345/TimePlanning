@@ -53,12 +53,12 @@ public class TimeTools {
         }
         return getStringTime(h, m);
     }
-    public static String getTopTime(int y) {
+    public static String getTopTime(int y) {//RectImgView中与getBottomTime(String dTime)方法一起使用，得到正确的顶部时间
         sTopTimeHour = getHour(y);
         sTopTimeMinute = getMinute(y);
         return getStringTime(sTopTimeHour, sTopTimeMinute);
     }
-    public static String getBottomTime(String dTime) {
+    public static String getBottomTime(String dTime) {//RectImgView中与getTopTime(int y)方法一起使用，用时间差得到正确的底部时间
         int dH = Integer.parseInt(dTime.substring(0, 2));
         int dM = Integer.parseInt(dTime.substring(3));
         sBottomTimeHour = sTopTimeHour + dH;
@@ -69,12 +69,38 @@ public class TimeTools {
         }
         return getStringTime(sBottomTimeHour, sBottomTimeMinute);
     }
-    public static int getBottomTimeHeight(int top, String dTime) {//本方法是在RectImgView放置过后才调用的
+    public static int getBottomTimeHeight(int top, String dTime) {//本方法是在RectImgView放置过后在RectView中调用，通过上边界的下边界
         getTopTime(top);
         getBottomTime(dTime);//重新计算sBottomTimeHour和sBottomTimeMinute，原因在于划出上下边界，图形会回来，要重新计算时间
-        // 后面加个1是为了粗略计算，最后的高度还要到RectView中的getEndTimeCorrectHeight(int bottom)进行精确计算
-        // 里面的sBottomTimeHour和sBottomTimeMinute是重新计算后的值
-        return sExtraHeight + (sBottomTimeHour - sStartHour)* sIntervalHeight - sHLineWidth + (int)sEveryMinuteHeight[sBottomTimeMinute] + 1;
+        /*
+         * 后面用ceil为了粗略计算，例如：(计算bottom是要计算当前分钟最 顶 部的那根线)
+         *        一、该分钟线高为 12.5 我要得到这一分钟的最顶部的线，就为13，用ceil取13即可
+         *        二、该分钟线高为 12.0 我要得到这一分钟的最顶部的线，就为12，用ceil取12即可
+         * 最后的bottom高度还要到RectView中的getEndTimeCorrectHeight(int bottom)进行精确计算
+         * 里面的sBottomTimeHour和sBottomTimeMinute是重新计算后的值
+         * */
+        return sExtraHeight + (sBottomTimeHour - sStartHour) * sIntervalHeight - sHLineWidth + (int)Math.ceil(sEveryMinuteHeight[sBottomTimeMinute]);
+    }
+    public static int getTopTimeHeight(int bottom, String dTime) {
+        sBottomTimeHour = getHour(bottom);
+        sBottomTimeMinute = getMinute(bottom);
+        int dH = Integer.parseInt(dTime.substring(0, 2));
+        int dM = Integer.parseInt(dTime.substring(3));
+        sTopTimeHour = sBottomTimeHour - dH;
+        sTopTimeMinute = sBottomTimeMinute - dM;
+        if (sTopTimeMinute < 0) {
+            sTopTimeHour--;
+            sTopTimeMinute += 60;
+        }
+        /*
+         * 后面用ceil为了粗略计算，例如：(计算top是要计算当前分钟最 底 部的那根线)
+         *        我要取2分钟的最后一根线，则我可以去3分钟的顶部线在减1
+         *        一、3分钟线高为 12.5 我要得到这一分钟的最顶部的线，用ceil取大于等于12.5的数13，再减 1 得到2分钟的最后一根线
+         *        二、3分钟线高为 12.0 我要得到这一分钟的最顶部的线，就为12，用ceil取12，再减 1 得到2分钟的最后一根线
+         * 最后的bottom高度还要到RectView中的getEndTimeCorrectHeight(int bottom)进行精确计算
+         * 里面的sBottomTimeHour和sBottomTimeMinute是重新计算后的值
+         * */
+        return sExtraHeight + (sTopTimeHour - sStartHour) * sIntervalHeight - sHLineWidth + (int)Math.ceil(sEveryMinuteHeight[sTopTimeMinute + 1]) -1;
     }
 
     public static float getNowTime() {
