@@ -44,31 +44,6 @@ public class MainActivity extends AppCompatActivity {
 //        mRightTimeVP.registerOnPageChangeCallback(new VpLinkCallback(mRightTimeVP, mLeftTimeVP));
     }
 
-    @Override
-    public boolean dispatchTouchEvent(MotionEvent event) {
-
-//        switch (event.getAction()) {
-//            case MotionEvent.ACTION_DOWN:
-//                mLeftTimeVP.requestDisallowInterceptTouchEvent(true);
-//                mRightTimeVP.requestDisallowInterceptTouchEvent(true);
-//                break;
-//        }
-        return super.dispatchTouchEvent(event);
-    }
-
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_MOVE:
-                Log.d(TAG, "onTouchEvent: ACTIVITY_MOVE==========================");
-                break;
-            case MotionEvent.ACTION_UP:
-                Log.d(TAG, "onTouchEvent: ACTIVITY_UP============================");
-                break;
-        }
-        return super.onTouchEvent(event);
-    }
-
     private long exitTime = 0;
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {

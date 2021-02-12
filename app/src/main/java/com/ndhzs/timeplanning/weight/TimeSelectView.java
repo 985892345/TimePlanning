@@ -127,7 +127,6 @@ public class TimeSelectView extends ScrollView {
      */
     public void setLinkViewPager2(ViewPager2 viewPager2) {
         this.mViewPager = viewPager2;
-        viewPager2.requestDisallowInterceptTouchEvent(true);
     }
 
     /**
@@ -318,7 +317,8 @@ public class TimeSelectView extends ScrollView {
                     mMoveY = y;
                     automaticSlide(mMoveY);//只有在长按时才会调用自动滑动
                 }else {//如果直接滑动的ScrollView，不是长按，直接拦截
-                    super.onInterceptTouchEvent(ev);
+                    //super.onInterceptTouchEvent(ev);
+                    //不知道为什么调用这个会造成ViewPager2在右边区域较难滑动，但这个写不写好像对ScrollView的滑动没有影响
                     return true;
                 }
                 break;
@@ -369,21 +369,15 @@ public class TimeSelectView extends ScrollView {
         if (mViewPager != null) {
             switch (ev.getAction()) {
                 case MotionEvent.ACTION_DOWN:
-                    Log.d(TAG, "onTouchEvent: DOWN");
                     mViewPager.setUserInputEnabled(false);
                     break;
                 case MotionEvent.ACTION_MOVE:
-//                    Log.d(TAG, "onTouchEvent: MOVE");
                     if (getScrollY() <= mExtraHeight/10 && y > mInitialY) {
-                        Log.d(TAG, "onTouchEvent: 0");
                         mViewPager.setUserInputEnabled(true);
-                        mViewPager.requestDisallowInterceptTouchEvent(false);
                         return false;
                     }
                     if (getScrollY() + getHeight() >= mTotalHeight - mExtraHeight/10 && y < mInitialY) {
-                        Log.d(TAG, "onTouchEvent: mTotalHeight");
                         mViewPager.setUserInputEnabled(true);
-                        mViewPager.requestDisallowInterceptTouchEvent(false);
                         return false;
                     }
                     break;
