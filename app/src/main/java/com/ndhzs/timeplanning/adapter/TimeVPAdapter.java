@@ -48,7 +48,7 @@ public class TimeVPAdapter extends RecyclerView.Adapter<TimeVPAdapter.LeftViewHo
         holder.leftTimeView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                holder.rightTimeView.setName("点击的左边");
+                holder.leftTimeView.setName("点击的左边");
             }
         });
         holder.rightTimeView.setOnClickListener(new View.OnClickListener() {
