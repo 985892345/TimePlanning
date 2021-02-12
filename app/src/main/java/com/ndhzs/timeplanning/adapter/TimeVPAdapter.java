@@ -13,8 +13,6 @@ import com.ndhzs.timeplanning.weight.TimeSelectView;
 
 public class TimeVPAdapter extends RecyclerView.Adapter<TimeVPAdapter.LeftViewHolder> {
 
-    private TimeSelectView mLTimeView;
-    private TimeSelectView mRTimeView;
     private ViewPager2 mViewPager;
 
     public TimeVPAdapter(ViewPager2 vp) {
@@ -30,35 +28,33 @@ public class TimeVPAdapter extends RecyclerView.Adapter<TimeVPAdapter.LeftViewHo
 
     @Override
     public void onBindViewHolder(@NonNull LeftViewHolder holder, int position) {
-        mLTimeView = holder.leftTimeView;
-        mRTimeView = holder.rightTimeView;
-        mLTimeView.setLinkViewPager2(mViewPager);
-        mLTimeView.setOnScrollViewListener(new TimeSelectView.onScrollViewListener() {
+        holder.leftTimeView.setLinkViewPager2(mViewPager);
+        holder.leftTimeView.setOnScrollViewListener(new TimeSelectView.onScrollViewListener() {
             @Override
             public void onScrollChanged(int y) {
-                mRTimeView.setIsOpenScrollCallBack(false);
-                mRTimeView.scrollTo(0, y);
+                holder.rightTimeView.setIsOpenScrollCallBack(false);
+                holder.rightTimeView.scrollTo(0, y);
             }
         });
-        mRTimeView.setLinkViewPager2(mViewPager);
-        mRTimeView.setOnScrollViewListener(new TimeSelectView.onScrollViewListener() {
+        holder.rightTimeView.setLinkViewPager2(mViewPager);
+        holder.rightTimeView.setOnScrollViewListener(new TimeSelectView.onScrollViewListener() {
             @Override
             public void onScrollChanged(int y) {
-                mLTimeView.setIsOpenScrollCallBack(false);
-                mLTimeView.scrollTo(0, y);
+                holder.leftTimeView.setIsOpenScrollCallBack(false);
+                holder.leftTimeView.scrollTo(0, y);
             }
         });
 
-        mLTimeView.setOnClickListener(new View.OnClickListener() {
+        holder.leftTimeView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mLTimeView.setName("点击的左边");
+                holder.rightTimeView.setName("点击的左边");
             }
         });
-        mRTimeView.setOnClickListener(new View.OnClickListener() {
+        holder.rightTimeView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mRTimeView.setName("点击的右边");
+                holder.rightTimeView.setName("点击的右边");
             }
         });
     }
