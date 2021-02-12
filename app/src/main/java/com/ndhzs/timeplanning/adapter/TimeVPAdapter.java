@@ -1,5 +1,6 @@
 package com.ndhzs.timeplanning.adapter;
 
+import android.content.Context;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,13 +10,16 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.ndhzs.timeplanning.R;
+import com.ndhzs.timeplanning.weight.NameDialog;
 import com.ndhzs.timeplanning.weight.TimeSelectView;
 
 public class TimeVPAdapter extends RecyclerView.Adapter<TimeVPAdapter.LeftViewHolder> {
 
+    private Context mContext;
     private ViewPager2 mViewPager;
 
-    public TimeVPAdapter(ViewPager2 vp) {
+    public TimeVPAdapter(Context context, ViewPager2 vp) {
+        this.mContext = context;
         this.mViewPager = vp;
     }
 
@@ -48,13 +52,13 @@ public class TimeVPAdapter extends RecyclerView.Adapter<TimeVPAdapter.LeftViewHo
         holder.leftTimeView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                holder.leftTimeView.setName("点击的左边");
+                click(holder.leftTimeView);
             }
         });
         holder.rightTimeView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                holder.rightTimeView.setName("点击的右边");
+                click(holder.rightTimeView);
             }
         });
     }
@@ -62,6 +66,17 @@ public class TimeVPAdapter extends RecyclerView.Adapter<TimeVPAdapter.LeftViewHo
     @Override
     public int getItemCount() {
         return 21;
+    }
+
+    private void click(TimeSelectView timeView) {
+        NameDialog nameDialog = new NameDialog(mContext, R.style.NameDialog);
+        nameDialog.setOnDlgCloseListener(new NameDialog.onDlgCloseListener() {
+            @Override
+            public void onClose(String name, String describe) {
+                timeView.setName(name);
+            }
+        });
+        nameDialog.show();
     }
 
     static class LeftViewHolder extends RecyclerView.ViewHolder{

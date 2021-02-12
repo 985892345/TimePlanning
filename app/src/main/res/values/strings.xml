@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">TimePlanning</string>
+<!--    set Task Name时的dialog文本框的hit-->
+    <string name="dlg_et_hit_top">What&#x0020;do&#x0020;you&#x0020;want&#x0020;to&#x0020;do?</string>
+    <string name="dlg_ed_hit_bottom">Anything&#x0020;else?</string>
+<!--    set Task Name时的dialog的button-->
+    <string name="dlg_button">完成</string>
 </resources>

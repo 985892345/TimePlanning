@@ -14,6 +14,7 @@ import com.ndhzs.timeplanning.weight.TimeSelectView;
 
 public class RectImgView extends View {
 
+    private Context mContext;
     private final Rect mRect;//这个是坐标从(0,0)开始的矩形
     private final String mTaskName;
     private final String mStDTime;
@@ -32,6 +33,7 @@ public class RectImgView extends View {
      */
     public RectImgView(Context context, Rect rect, String taskName, String stDTime, RectView rectView, int startHour) {
         super(context);
+        this.mContext = context;
         this.mTaskName = taskName;
         this.mStDTime = stDTime;
         this.mRectView = rectView;
@@ -109,6 +111,14 @@ public class RectImgView extends View {
         int b = t + getHeight();
         layout(l, t, r, b);
         invalidate();
+    }
+
+    /**
+     * 用于FissureView添加相同的RectImgView
+     * @return 返回new的一样的副本
+     */
+    public RectImgView getSameImgView() {
+        return new RectImgView(mContext, mRect, mTaskName, mStDTime, mRectView, mStartHour);
     }
 
     private static final String TAG = "123";

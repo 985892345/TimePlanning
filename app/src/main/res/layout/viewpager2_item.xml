@@ -64,4 +64,13 @@
 
     </androidx.cardview.widget.CardView>
 
+    <com.ndhzs.timeplanning.weight.timeselectview.FissureView
+        android:layout_width="50dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="@+id/cardView2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.53"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/cardView2" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

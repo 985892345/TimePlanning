@@ -15,6 +15,7 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import com.ndhzs.timeplanning.R;
 import com.ndhzs.timeplanning.weight.timeselectview.ChildLayout;
+import com.ndhzs.timeplanning.weight.timeselectview.FissureView;
 import com.ndhzs.timeplanning.weight.timeselectview.TimeTools;
 import com.ndhzs.timeplanning.weight.timeselectview.NowTimeLine;
 import com.ndhzs.timeplanning.weight.timeselectview.RectImgView;
@@ -28,8 +29,8 @@ public class TimeSelectView extends ScrollView {
 
     private Context context;
     private IRectView mIRectView;
-    private IIsAllowDraw mIChildLayout;
     private ViewPager2 mViewPager;
+    private ChildLayout mLayoutChild;
     private int mStartHour;
     private int mEndHour;
     private int mMoveX, mMoveY;//从MOVE事件中得到的x、y值，用来给自动滑动使用
@@ -65,6 +66,9 @@ public class TimeSelectView extends ScrollView {
     }
     public HashMap<Rect, String> getRectAndDTime() {
         return mIRectView.getRectAndDTime();
+    }
+    public ChildLayout getChildLayout() {
+        return mLayoutChild;
     }
 
     /**
@@ -129,6 +133,16 @@ public class TimeSelectView extends ScrollView {
     }
 
     /**
+     * FissureView用于扩充移动整个任务区域的边界，若你使用了两个并排的TimeSelectView
+     * 又想在这两个TimeSelectView的整体移动能互相传递任务，设置它是一个不错的选择，
+     * 请在两个的空隙处连接，请设置成固定大小
+     * @param fissureView 在xml上写上这个View，用findViewById()传入
+     */
+    public void setLinkToFissureView(FissureView fissureView) {
+        mLayoutChild.setLinkToFissureLayout(fissureView);
+    }
+
+    /**
      * 不建议用addView()调用，因为我不打算开放一些设置字体大小、矩形颜色的set方法。
      * 调用后会以默认值绘制图形
      * @param context 传入context
@@ -162,10 +176,9 @@ public class TimeSelectView extends ScrollView {
         FrameLayout layoutParent = new FrameLayout(context);
         LayoutParams lpLayoutParent = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
 
-        ChildLayout layoutChild= new ChildLayout(context);
+        mLayoutChild = new ChildLayout(context);
         LayoutParams lpLayoutChild = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
-        layoutChild.setInterval(mIntervalLeft, mExtraHeight);
-        mIChildLayout = layoutChild;
+        mLayoutChild.setInterval(mIntervalLeft, mExtraHeight);
 
         NowTimeLine nowTimeLine = new NowTimeLine(context, mStartHour);
         LayoutParams lpNowTimeView = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
@@ -177,11 +190,11 @@ public class TimeSelectView extends ScrollView {
         lpRectView.topMargin = mExtraHeight;
         lpRectView.rightMargin = FrameView.INTERVAL_RIGHT;
         lpRectView.bottomMargin = mExtraHeight + FrameView.HORIZONTAL_LINE_WIDTH;
-        rectView.setChildLayout(layoutChild);
+        rectView.setChildLayout(mLayoutChild);
         rectView.setRectColor(mBorderColor, mInsideColor);
         rectView.setTextSize((int)(0.8f * mTimeTextSide), mTaskTextSize);
         rectView.setInterval(mExtraHeight);
-        layoutChild.setIRectView(rectView);
+        mLayoutChild.setIRectView(rectView);
         mIRectView = rectView;
 
         FrameView frameView = new FrameView(context);
@@ -191,9 +204,9 @@ public class TimeSelectView extends ScrollView {
         frameView.setInterval(mIntervalLeft, FrameView.INTERVAL_RIGHT, mExtraHeight, mIntervalHeight);
 
         //addView()，顺序不能调换
-        layoutChild.addView(rectView, lpRectView);
-        layoutChild.addView(frameView, lpTimeFrameView);
-        layoutParent.addView(layoutChild, lpLayoutChild);
+        mLayoutChild.addView(rectView, lpRectView);
+        mLayoutChild.addView(frameView, lpTimeFrameView);
+        layoutParent.addView(mLayoutChild, lpLayoutChild);
         layoutParent.addView(nowTimeLine, lpNowTimeView);
         addView(layoutParent, lpLayoutParent);
     }
@@ -433,7 +446,7 @@ public class TimeSelectView extends ScrollView {
                 boolean isTopSlide = top - getScrollY() <= AUTO_MOVE_THRESHOLD * 0.4f;//乘以0.4限制滑动区
                 if (isWithinThreshold || (!isBottomSlide && !isTopSlide)) {
                     removeCallbacks(mScrollRunnable);
-                    mIChildLayout.isAllowDraw(true);
+                    mLayoutChild.isAllowDraw(true);
                     mIsRun = false;
                 }else {
                     if (mNowCenterY == mInitialY) {
@@ -443,7 +456,7 @@ public class TimeSelectView extends ScrollView {
                     if (!mIsRun) {//控制只调用一次Runnable
                         mIsRun = true;
                         mLastMoveY = y;//记录第一次开始滑动的值
-                        mIChildLayout.isAllowDraw(false);
+                        mLayoutChild.isAllowDraw(false);
                         post(mScrollRunnable);
                     }
                     if (isTopSlide) {

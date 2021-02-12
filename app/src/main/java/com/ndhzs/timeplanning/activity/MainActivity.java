@@ -26,7 +26,7 @@ public class MainActivity extends AppCompatActivity {
         mViewPager = findViewById(R.id.viewpager);
     }
     private void initEvent() {
-        TimeVPAdapter timeVPAdapter = new TimeVPAdapter(mViewPager);
+        TimeVPAdapter timeVPAdapter = new TimeVPAdapter(this, mViewPager);
         mViewPager.setAdapter(timeVPAdapter);
     }
 

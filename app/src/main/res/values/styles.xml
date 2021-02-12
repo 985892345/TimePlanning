@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="NameDialog" parent="Theme.AppCompat.Light.Dialog">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowFrame">@null</item>
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:backgroundDimEnabled">true</item>
+    </style>
+
+    <style name="NameDialogAnim" mce_bogus="1" parent="android:Animation.Dialog">
+        <item name="android:windowEnterAnimation">@anim/anim_dlg_in</item>
+        <item name="android:windowExitAnimation">@anim/anim_dlg_out</item>
+    </style>
+
+    <style name="RoundedHead" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+
+    </style>
+</resources>
