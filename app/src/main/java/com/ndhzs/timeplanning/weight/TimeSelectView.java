@@ -6,7 +6,6 @@ import android.content.res.TypedArray;
 import android.graphics.Rect;
 import android.os.Vibrator;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.FrameLayout;
@@ -122,7 +121,7 @@ public class TimeSelectView extends ScrollView {
     }
 
     /**
-     * 解决与ViewPager2的联合方式
+     * 解决与ViewPager2的同向滑动冲突
      * @param viewPager2 传入ViewPager2，不是ViewPager
      */
     public void setLinkViewPager2(ViewPager2 viewPager2) {
@@ -206,7 +205,6 @@ public class TimeSelectView extends ScrollView {
         public void run() {
             mIsLongPress = true;
             Vibrator vibrator = (Vibrator)context.getSystemService(Context.VIBRATOR_SERVICE);
-//            vibrator.vibrate(15);
             vibrator.vibrate(30);
             mIRectView.longPress(mInitialY + getScrollY() - mExtraHeight);
         }
@@ -265,8 +263,8 @@ public class TimeSelectView extends ScrollView {
                 break;
             case MotionEvent.ACTION_UP:
                 removeCallbacks(mLongPressRun);
-                if (mCenterTime != -1 && y != mInitialY) {//这个自动回到CenterTime不能写在onInterceptTouchEvent()的UP，详细看下方注释
-                    postDelayed(mGoBackCenterTimeRun, TimeTools.DELAY_RUN_TIME);
+                if (y != mInitialY) {//这个自动回到CenterTime不能写在onInterceptTouchEvent()的UP，详细看下方注释
+                    postDelayed(mGoBackCenterTimeRun, TimeTools.DELAY_BACK_CURRENT_TIME);
                 }
                 break;
         }
@@ -317,8 +315,6 @@ public class TimeSelectView extends ScrollView {
                     mMoveY = y;
                     automaticSlide(mMoveY);//只有在长按时才会调用自动滑动
                 }else {//如果直接滑动的ScrollView，不是长按，直接拦截
-                    //super.onInterceptTouchEvent(ev);
-                    //不知道为什么调用这个会造成ViewPager2在右边区域较难滑动，但这个写不写好像对ScrollView的滑动没有影响
                     return true;
                 }
                 break;
@@ -372,17 +368,14 @@ public class TimeSelectView extends ScrollView {
                     mViewPager.setUserInputEnabled(false);
                     break;
                 case MotionEvent.ACTION_MOVE:
-                    if (getScrollY() <= mExtraHeight/10 && y > mInitialY) {
+                    if (getScrollY() ==  0 && y > mInitialY) {
                         mViewPager.setUserInputEnabled(true);
                         return false;
                     }
-                    if (getScrollY() + getHeight() >= mTotalHeight - mExtraHeight/10 && y < mInitialY) {
+                    if (getScrollY() + getHeight() == mTotalHeight && y < mInitialY) {
                         mViewPager.setUserInputEnabled(true);
                         return false;
                     }
-                    break;
-                case MotionEvent.ACTION_CANCEL:
-                    Log.d(TAG, "onTouchEvent: CANCEL");
                     break;
                 case MotionEvent.ACTION_UP:
                     break;
@@ -421,18 +414,14 @@ public class TimeSelectView extends ScrollView {
                     if (y <= AUTO_MOVE_THRESHOLD) {//手指在顶部区域，ScrollView应该向下滑
                         dy = (int) -Math.sqrt((AUTO_MOVE_THRESHOLD - y) * MULTIPLE);
                         if (mMoveY > mLastMoveY + 5) {//如果在顶部区域往下滑，但你往下滑后还停在滑动区仍然会滑动
-                            Log.d(TAG, "automaticSlide: >");
                             dy = 0;
                         }
                     }else {//手指在底部区域，ScrollView应该向上滑
                         dy = (int) Math.sqrt((y - (getHeight() - AUTO_MOVE_THRESHOLD)) * MULTIPLE);
                         if (mMoveY < mLastMoveY - 5) {//如果在底部区域往上滑，但你往上滑后还停在滑动区仍然会滑动
-                            Log.d(TAG, "automaticSlide: <");
                             dy = 0;
                         }
                     }
-                    Log.d(TAG, "automaticSlide: dy = " + dy);
-
                 }
                 break;
             case RectView.INSIDE:
@@ -516,7 +505,7 @@ public class TimeSelectView extends ScrollView {
                 @Override
                 public void run() {
                     fastTimeMove(TimeTools.getNowTime());
-                    postDelayed(mTimeMoveRun, TimeTools.DELAY_RUN_TIME);
+                    postDelayed(mTimeMoveRun, TimeTools.DELAY_NOW_TIME_REFRESH);
                 }
             });
         }else {//设置CenterTime，以CenterTime为中线，不随时间移动
@@ -527,7 +516,6 @@ public class TimeSelectView extends ScrollView {
                 }
             });
         }
-
     }
     private void fastTimeMove(float time) {
         mCenterTimeHeight = getCenterTimeHeight(time);
@@ -537,7 +525,7 @@ public class TimeSelectView extends ScrollView {
         @Override
         public void run() {
             slowlyTimeMove();
-            postDelayed(this, TimeTools.DELAY_RUN_TIME);
+            postDelayed(this, TimeTools.DELAY_NOW_TIME_REFRESH);
         }
     };
     private ValueAnimator mAnimator;

@@ -4,20 +4,15 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.viewpager2.widget.ViewPager2;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.KeyEvent;
-import android.view.MotionEvent;
 import android.widget.Toast;
 
 import com.ndhzs.timeplanning.R;
-import com.ndhzs.timeplanning.adapter.LeftTimeVPAdapter;
-import com.ndhzs.timeplanning.adapter.RightTimeVPAdapter;
-import com.ndhzs.timeplanning.callback.VpLinkCallback;
+import com.ndhzs.timeplanning.adapter.TimeVPAdapter;
 
 public class MainActivity extends AppCompatActivity {
 
-    private ViewPager2 mLeftTimeVP;
-    private ViewPager2 mRightTimeVP;
+    private ViewPager2 mViewPager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,20 +23,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initView() {
-        mLeftTimeVP = findViewById(R.id.vp_left);
-        mRightTimeVP = findViewById(R.id.vp_right);
+        mViewPager = findViewById(R.id.viewpager);
     }
     private void initEvent() {
-        LeftTimeVPAdapter leftTimeVPAdapter = new LeftTimeVPAdapter();
-        RightTimeVPAdapter rightTimeVPAdapter = new RightTimeVPAdapter();
-        mLeftTimeVP.setAdapter(leftTimeVPAdapter);
-        mRightTimeVP.setAdapter(rightTimeVPAdapter);
-        leftTimeVPAdapter.setSelfViewPager(mLeftTimeVP);
-        leftTimeVPAdapter.setLinkViewPager(mRightTimeVP);
-        rightTimeVPAdapter.setSelfViewPager(mRightTimeVP);
-        rightTimeVPAdapter.setLinkViewPager(mLeftTimeVP);
-//        mLeftTimeVP.registerOnPageChangeCallback(new VpLinkCallback(mLeftTimeVP, mRightTimeVP));
-//        mRightTimeVP.registerOnPageChangeCallback(new VpLinkCallback(mRightTimeVP, mLeftTimeVP));
+        TimeVPAdapter timeVPAdapter = new TimeVPAdapter(mViewPager);
+        mViewPager.setAdapter(timeVPAdapter);
     }
 
     private long exitTime = 0;

@@ -1,7 +1,5 @@
 package com.ndhzs.timeplanning.weight.timeselectview;
 
-import android.util.Log;
-
 import java.util.Calendar;
 
 public class TimeTools {
@@ -17,7 +15,8 @@ public class TimeTools {
      * 保存0~60的每分钟的相对高度，0分钟就是[0]，60分钟就是[60]。使用时一般配合 HLineTopHeight一起使用
      */
     static final float[] sEveryMinuteHeight = new float[61];
-    public static final int DELAY_RUN_TIME = 30000;//刷新当前时间高度的间隔时间
+    public static final int DELAY_NOW_TIME_REFRESH = 30000;//刷新当前时间高度的间隔时间
+    public static final int DELAY_BACK_CURRENT_TIME = 10000;//回到当前时间的延缓时间
     public static int TIME_INTERVAL = 15;//按下空白区域时起始时间的分钟间隔数(必须为60的因数)
 
     public static void loadData(int hLineWidth, int extraHeight, int intervalHeight) {

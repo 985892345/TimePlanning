@@ -23,7 +23,7 @@ public class ChildLayout extends FrameLayout implements TimeSelectView.IIsAllowD
     private int mExtraHeight;//上方或下方其中一方多余的高度
     private boolean mIsAllowDraw;//说明正在自动滑动，通知onTouchEvent()的MOVE不要处理，不然绘图会卡
 
-    private final float X_MOVE_THRESHOLD = 0.4f;//长按后左右移动删除的阀值，为getWidth()的倍数
+    private final float X_MOVE_THRESHOLD = 0.6f;//长按后左右移动删除的阀值，为getWidth()的倍数
 
     private int WHERE_TO_DRAW;
     private final int TOP_TO_DRAW = -1;
@@ -99,7 +99,6 @@ public class ChildLayout extends FrameLayout implements TimeSelectView.IIsAllowD
                     int imgViewBottom = mImgView.getBottom();
                     int nowUpperLimit = mIRectView.getNowUpperLimit(imgViewBottom - mExtraHeight) + mExtraHeight;
                     int nowLowerLimit = mIRectView.getNowLowerLimit(imgViewTop - mExtraHeight) + mExtraHeight;
-                    Log.d(TAG, "onTouchEvent: mU = " + mUpperLimit + "   mL = " + mLowerLimit + "   nU = " + nowUpperLimit + "   nL = " + nowLowerLimit);
                     //每个if对应了一种情况，具体请以序号看纸上的草图
                     if (mImgView.getHeight() <= nowLowerLimit - nowUpperLimit) {
                         if (imgViewTop <= nowLowerLimit && imgViewBottom >= nowLowerLimit) {//1

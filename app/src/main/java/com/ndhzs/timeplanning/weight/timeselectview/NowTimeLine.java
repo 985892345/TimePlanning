@@ -21,9 +21,9 @@ public class NowTimeLine extends View {
             @Override
             public void run() {
                 timeLineMove();
-                postDelayed(this, TimeTools.DELAY_RUN_TIME);
+                postDelayed(this, TimeTools.DELAY_NOW_TIME_REFRESH);
             }
-        }, TimeTools.DELAY_RUN_TIME);
+        }, TimeTools.DELAY_NOW_TIME_REFRESH);
         init();
     }
     private void init() {
