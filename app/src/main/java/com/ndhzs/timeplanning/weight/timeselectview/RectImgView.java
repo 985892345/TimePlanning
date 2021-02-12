@@ -10,14 +10,17 @@ import android.graphics.Rect;
 import android.util.Log;
 import android.view.View;
 
+import com.ndhzs.timeplanning.weight.TimeSelectView;
+
 public class RectImgView extends View {
 
     private final Rect mRect;//这个是坐标从(0,0)开始的矩形
     private final String mTaskName;
     private final String mStDTime;
     private final RectView mRectView;
+    private final int mStartHour;
     private int mInitialL = Integer.MAX_VALUE, mInitialT;//如果是最开始layout时，计入此时的mInitialL, mInitialT
-    private static final int X_KEEP_THRESHOLD = 50;//长按后左右移动时保持水平不移动的阀值
+    public static final int X_KEEP_THRESHOLD = 50;//长按后左右移动时保持水平不移动的阀值
 
     /**
      * 必须传入这几个值才能绘制可移动的矩形，移动请调用layout(int dx, int dy)
@@ -27,11 +30,12 @@ public class RectImgView extends View {
      * @param stDTime 任务段时间差值
      * @param rectView 与RectView进行绑定
      */
-    public RectImgView(Context context, Rect rect, String taskName, String stDTime, RectView rectView) {
+    public RectImgView(Context context, Rect rect, String taskName, String stDTime, RectView rectView, int startHour) {
         super(context);
         this.mTaskName = taskName;
         this.mStDTime = stDTime;
         this.mRectView = rectView;
+        this.mStartHour = startHour;
         mRect = new Rect(0, 0, rect.width(), rect.height());
     }
 
@@ -67,10 +71,12 @@ public class RectImgView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         mRectView.drawRect(canvas, mRect, mTaskName);
-        mRectView.drawArrows(canvas, mRect, mStDTime);
         mRectView.drawTopBottomTime(canvas, mRect,
-                TimeTools.getTopTime(getTop()),
+                TimeTools.getTopTime(mStartHour, getTop()),
                 TimeTools.getBottomTime(mStDTime));
+        if (TimeSelectView.IS_SHOW_DIFFERENT_TIME) {
+            mRectView.drawArrows(canvas, mRect, mStDTime);
+        }
     }
 
     /**

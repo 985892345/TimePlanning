@@ -10,11 +10,13 @@ public class NowTimeLine extends View {
     private Paint mTimeLinePaint;
     private int mIntervalLeft;//左边的时间间隔宽度
     private int mIntervalRight;//右边的间隔宽度
+    private final int mStartHour;
 
     public static final int BALL_DIAMETER = 14;//小球直径
 
-    public NowTimeLine(Context context) {
+    public NowTimeLine(Context context, int startHour) {
         super(context);
+        this.mStartHour = startHour;
         postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -54,7 +56,7 @@ public class NowTimeLine extends View {
         // 因为如果我长按已选择了的区域，那么在ChildFrameLayout就会调用addView()，又因为时间线应在最顶层，
         // 所以系统会重新layout()，如果你在LayoutParams.topMargin直接设置了开始位置，那么此时layout()就
         // 会跑回去，所以只有在layout()中设置当前时间的高度，就不会重新返回以前的位置，可以避免这个问题
-        int nowTimeHeight = TimeTools.getNowTimeHeight() - BALL_DIAMETER/2;
+        int nowTimeHeight = TimeTools.getNowTimeHeight(mStartHour) - BALL_DIAMETER/2;
         t = nowTimeHeight;
         b = nowTimeHeight + BALL_DIAMETER;
         super.layout(l, t, r, b);
@@ -72,6 +74,6 @@ public class NowTimeLine extends View {
         layout(0, y, getWidth(), y + getHeight());
     }
     private void timeLineMove() {
-        layout(TimeTools.getNowTimeHeight() - BALL_DIAMETER/2);
+        layout(TimeTools.getNowTimeHeight(mStartHour) - BALL_DIAMETER/2);
     }
 }

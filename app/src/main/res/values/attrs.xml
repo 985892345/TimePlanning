@@ -17,5 +17,17 @@
 <!--        若传入的时间处于上下边界附近无法居中的位置，则会使时间线处于顶部或尾部界面内，但不居中。-->
 <!--        若不设置，则会自动以当前时间居中。-->
         <attr name="centerTime" format="float"/>
+<!--        设置开始时间，不设置默认为2-->
+        <attr name="startHour" format="integer"/>
+<!--        设置结束时间，不设置默认为明天2点-->
+<!--        支持设置明天的时间，但请加上24，如：设置成明天的2点，就输入26-->
+        <attr name="endHour" format="integer"/>
+<!--        最终的任务区域是否展示上下边界时间，在移动和改变大小时任然会展示-->
+<!--        该boolean为static，一旦设置，所有的TimeSelectView都会设置-->
+        <attr name="isShowTopBottomTime" format="boolean"/>
+<!--        最终的任务区域是否展示时间差，在移动和改变大小时任然会展示-->
+<!--        该boolean为static，一旦设置，所有的TimeSelectView都会设置-->
+        <attr name="isShowDifferentTime" format="boolean"/>
+
     </declare-styleable>
 </resources>

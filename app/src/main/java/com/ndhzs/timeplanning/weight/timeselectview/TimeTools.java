@@ -1,5 +1,7 @@
 package com.ndhzs.timeplanning.weight.timeselectview;
 
+import android.util.Log;
+
 import java.util.Calendar;
 
 public class TimeTools {
@@ -7,7 +9,6 @@ public class TimeTools {
     private static int sHLineWidth;//水平线厚度
     private static int sExtraHeight;//上方或下方其中一方多余的高度
     private static int sIntervalHeight;//一个小时的间隔高度
-    private static int sStartHour;
     private static int sTopTimeHour;
     private static int sTopTimeMinute;
     private static int sBottomTimeHour;
@@ -17,32 +18,28 @@ public class TimeTools {
      */
     static final float[] sEveryMinuteHeight = new float[61];
     public static final int DELAY_RUN_TIME = 30000;//刷新当前时间高度的间隔时间
-    public static int START_TIME_INTERVAL = 15;//按下空白区域时起始时间的分钟间隔数(必须为60的因数)
+    public static int TIME_INTERVAL = 15;//按下空白区域时起始时间的分钟间隔数(必须为60的因数)
 
-    public static void loadData(int hLineWidth, int extraHeight, int intervalHeight, int startHour) {
+    public static void loadData(int hLineWidth, int extraHeight, int intervalHeight) {
         sHLineWidth = hLineWidth;
         sExtraHeight = extraHeight;
         sIntervalHeight = intervalHeight;
-        sStartHour = startHour;
         float everyMinuteWidth = intervalHeight / 60.0f;//计算出一分钟要多少格，用小数表示
         for (int i = 0; i < 60; i++) {
             sEveryMinuteHeight[i] = i * everyMinuteWidth;
         }
         sEveryMinuteHeight[60] = intervalHeight;
     }
-    public static void refreshData(int startHour) {
-        sStartHour = startHour;
-    }
 
-    public static String getTime(int y) {
-        int h = getHour(y);
+    public static String getTime(int startHour, int y) {
+        int h = getHour(startHour, y);
         int m = getMinute(y);
         return getStringTime(h, m);
     }
-    public static String getDiffTime(int top, int bottom) {
-        int lastH = getHour(top);
+    public static String getDiffTime(int startHour, int top, int bottom) {
+        int lastH = getHour(startHour, top);
         int lastM = getMinute(top);
-        int h = getHour(bottom);
+        int h = getHour(startHour, bottom);
         int m = getMinute(bottom);
         if (m >= lastM) {
             m -= lastM;
@@ -53,8 +50,8 @@ public class TimeTools {
         }
         return getStringTime(h, m);
     }
-    public static String getTopTime(int y) {//RectImgView中与getBottomTime(String dTime)方法一起使用，得到正确的顶部时间
-        sTopTimeHour = getHour(y);
+    public static String getTopTime(int startHour, int y) {//RectImgView中与getBottomTime(String dTime)方法一起使用，得到正确的顶部时间
+        sTopTimeHour = getHour(startHour, y);
         sTopTimeMinute = getMinute(y);
         return getStringTime(sTopTimeHour, sTopTimeMinute);
     }
@@ -69,9 +66,9 @@ public class TimeTools {
         }
         return getStringTime(sBottomTimeHour, sBottomTimeMinute);
     }
-    public static int getBottomTimeHeight(int top, String dTime) {//本方法是在RectImgView放置过后在RectView中调用，通过上边界的下边界
-        getTopTime(top);
-        getBottomTime(dTime);//重新计算sBottomTimeHour和sBottomTimeMinute，原因在于划出上下边界，图形会回来，要重新计算时间
+    public static int getBottomTimeHeight(int startHour, int top, String dTime) {//本方法是在RectImgView放置过后在RectView中调用，通过时间差得下边界
+        getTopTime(startHour, top);
+        getBottomTime(dTime);//重新计算sBottomTimeHour和sBottomTimeMinute，原因在于划出上下边界，图形会回来，要重新计算边界时间
         /*
          * 后面用ceil为了粗略计算，例如：(计算bottom是要计算当前分钟最 顶 部的那根线)
          *        一、该分钟线高为 12.5 我要得到这一分钟的最顶部的线，就为13，用ceil取13即可
@@ -79,19 +76,15 @@ public class TimeTools {
          * 最后的bottom高度还要到RectView中的getEndTimeCorrectHeight(int bottom)进行精确计算
          * 里面的sBottomTimeHour和sBottomTimeMinute是重新计算后的值
          * */
-        return sExtraHeight + (sBottomTimeHour - sStartHour) * sIntervalHeight - sHLineWidth + (int)Math.ceil(sEveryMinuteHeight[sBottomTimeMinute]);
+        return sExtraHeight + (sBottomTimeHour - startHour) * sIntervalHeight - sHLineWidth + (int)Math.ceil(sEveryMinuteHeight[sBottomTimeMinute]);
     }
-    public static int getTopTimeHeight(int bottom, String dTime) {
-        sBottomTimeHour = getHour(bottom);
+    public static int getTopTimeHeight(int startHour, int bottom, String dTime) {//本方法是在RectImgView放置过后在RectView中调用，通过时间差得上边界
+        sBottomTimeHour = getHour(startHour, bottom);
         sBottomTimeMinute = getMinute(bottom);
         int dH = Integer.parseInt(dTime.substring(0, 2));
         int dM = Integer.parseInt(dTime.substring(3));
         sTopTimeHour = sBottomTimeHour - dH;
         sTopTimeMinute = sBottomTimeMinute - dM;
-        if (sTopTimeMinute < 0) {
-            sTopTimeHour--;
-            sTopTimeMinute += 60;
-        }
         /*
          * 后面用ceil为了粗略计算，例如：(计算top是要计算当前分钟最 底 部的那根线)
          *        我要取2分钟的最后一根线，则我可以去3分钟的顶部线在减1
@@ -100,7 +93,7 @@ public class TimeTools {
          * 最后的bottom高度还要到RectView中的getEndTimeCorrectHeight(int bottom)进行精确计算
          * 里面的sBottomTimeHour和sBottomTimeMinute是重新计算后的值
          * */
-        return sExtraHeight + (sTopTimeHour - sStartHour) * sIntervalHeight - sHLineWidth + (int)Math.ceil(sEveryMinuteHeight[sTopTimeMinute + 1]) -1;
+        return sExtraHeight + (sTopTimeHour - startHour) * sIntervalHeight - sHLineWidth + (int)Math.ceil(sEveryMinuteHeight[sTopTimeMinute + 1]) -1;
     }
 
     public static float getNowTime() {
@@ -110,12 +103,12 @@ public class TimeTools {
         int second = calendar.get(Calendar.SECOND);
         return hour + minute/60.0f + second/3600.0f;
     }
-    public static int getNowTimeHeight() {
+    public static int getNowTimeHeight(int startHour) {
         float nowTime = getNowTime();
-        if (nowTime < sStartHour) {
+        if (nowTime < startHour) {
             nowTime += 24;
         }
-        return (int) (sExtraHeight + (nowTime - sStartHour) * sIntervalHeight);
+        return (int) (sExtraHeight + (nowTime - startHour) * sIntervalHeight);
     }
 
     /**
@@ -147,10 +140,10 @@ public class TimeTools {
         return  (y - sExtraHeight + sHLineWidth) / sIntervalHeight * sIntervalHeight + sExtraHeight - sHLineWidth;
     }
 
-    private static int getHour(int y) {
-        int hour = ((y - sExtraHeight + sHLineWidth) / sIntervalHeight) + sStartHour;
-        if (y < sExtraHeight)
-            return sStartHour - 1;
+    private static int getHour(int startHour, int y) {
+        int hour = ((y - sExtraHeight + sHLineWidth) / sIntervalHeight) + startHour;
+        if (y < sExtraHeight - sHLineWidth)
+            return startHour - ((sExtraHeight - sHLineWidth - y) / sIntervalHeight + 1);
         return hour;
     }
 
@@ -160,15 +153,12 @@ public class TimeTools {
      * @return 当前y值对应的分钟数
      */
     public static int getMinute(int y) {
-        //先计算出一格占多少分钟
+        //通过计算出一格占多少分钟来计算
         int minute = (int)(((y - sExtraHeight + sHLineWidth) % sIntervalHeight) / (float) sIntervalHeight * 60);
-        if (y < sExtraHeight)
-            return (int)(((sIntervalHeight - (sExtraHeight - sHLineWidth - y)) % sIntervalHeight) / (float) sIntervalHeight * 60);
+        if (y < sExtraHeight - sHLineWidth) {//因为有一个额外高度，时间计算方式要更改
+            return (int) ((sIntervalHeight - (sExtraHeight - sHLineWidth - y) % sIntervalHeight) / (float) sIntervalHeight * 60);
+        }
         return minute;
-    }
-
-    public static void setStartTimeInterval(int startTimeInterval) {
-        START_TIME_INTERVAL = startTimeInterval;
     }
 
     private static String getStringTime(int hour, int minute) {
@@ -188,4 +178,6 @@ public class TimeTools {
         }
         return stH + ":" + stM;
     }
+
+    private static final String TAG = "123";
 }

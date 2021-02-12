@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_margin="5dp"
+    android:background="@color/white"
+    app:cardCornerRadius="8dp">
+
+    <com.ndhzs.timeplanning.weight.TimeSelectView
+        android:id="@+id/time_view_right"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:intervalHeight="@dimen/time_view_intervalHeight"
+        app:intervalWidth="@dimen/time_view_intervalWidth"
+        app:taskTextSize="@dimen/time_view_taskSize"
+        app:timeTextSize="@dimen/time_view_timeSize"
+        app:startHour="9"
+        app:endHour="26"
+        app:centerTime="17.5" />
+
+</androidx.cardview.widget.CardView>

@@ -99,6 +99,7 @@ public class ChildLayout extends FrameLayout implements TimeSelectView.IIsAllowD
                     int imgViewBottom = mImgView.getBottom();
                     int nowUpperLimit = mIRectView.getNowUpperLimit(imgViewBottom - mExtraHeight) + mExtraHeight;
                     int nowLowerLimit = mIRectView.getNowLowerLimit(imgViewTop - mExtraHeight) + mExtraHeight;
+                    Log.d(TAG, "onTouchEvent: mU = " + mUpperLimit + "   mL = " + mLowerLimit + "   nU = " + nowUpperLimit + "   nL = " + nowLowerLimit);
                     //每个if对应了一种情况，具体请以序号看纸上的草图
                     if (mImgView.getHeight() <= nowLowerLimit - nowUpperLimit) {
                         if (imgViewTop <= nowLowerLimit && imgViewBottom >= nowLowerLimit) {//1
@@ -108,7 +109,15 @@ public class ChildLayout extends FrameLayout implements TimeSelectView.IIsAllowD
                             correctTop = nowUpperLimit;
                             WHERE_TO_DRAW = TOP_TO_DRAW;
                         }else if (nowUpperLimit == mUpperLimit && nowLowerLimit == mLowerLimit) {//3
-                            WHERE_TO_DRAW = DECIDE_BY_ONESELF;
+                            if (imgViewBottom < mExtraHeight) {//整体移动到mExtraHeight以上
+                                correctTop = mUpperLimit;
+                                WHERE_TO_DRAW = TOP_TO_DRAW;
+                            }else if (imgViewTop > getHeight() - mExtraHeight) {//整体移动到getHeight() - mExtraHeight以下
+                                correctBottom = mLowerLimit;
+                                WHERE_TO_DRAW = BOTTOM_TO_DRAW;
+                            }else {
+                                WHERE_TO_DRAW = DECIDE_BY_ONESELF;
+                            }
                         }else if (nowUpperLimit == mUpperLimit) {//4
                             correctBottom = mLowerLimit;
                             WHERE_TO_DRAW = BOTTOM_TO_DRAW;
@@ -170,10 +179,9 @@ public class ChildLayout extends FrameLayout implements TimeSelectView.IIsAllowD
                             break;
                         case DECIDE_BY_ONESELF:
                             topHeight = imgViewTop;
-                            duration = 10;
+                            duration = (Math.abs(dx) < RectImgView.X_KEEP_THRESHOLD) ? 0 : (int) Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
                             break;
                     }
-                    Log.d(TAG, "onTouchEvent: duration = " + duration);
                     int finalCorrectTop = correctTop;
                     int finalCorrectBottom = correctBottom;
                     mImgView.animate().x(mIntervalLeft)
@@ -193,7 +201,6 @@ public class ChildLayout extends FrameLayout implements TimeSelectView.IIsAllowD
                                             mIRectView.addDeletedRectFromBottom(bottom);
                                             break;
                                         case DECIDE_BY_ONESELF:
-                                            Log.d(TAG, "onAnimationEnd: ");
                                             mIRectView.addDeletedRectFromTop(imgViewTop - mExtraHeight);
                                             break;
                                     }

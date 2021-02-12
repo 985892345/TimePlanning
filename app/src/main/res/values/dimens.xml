@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<!--    TimeSelectView的时间大小-->
+    <dimen name="time_view_timeSize">12dp</dimen>
+<!--    TimeSelectView的任务字体大小-->
+    <dimen name="time_view_taskSize">14dp</dimen>
+<!--    TimeSelectView的intervalHeight-->
+    <dimen name="time_view_intervalHeight">70dp</dimen>
+<!--    TimeSelectView的intervalWidth-->
+    <dimen name="time_view_intervalWidth">34dp</dimen>
+<!--    TimeSelectView的height-->
+    <dimen name="time_view_height">560dp</dimen>
+
+
+</resources>

@@ -22,7 +22,7 @@ import java.util.List;
 public class RectView extends View implements ChildLayout.IUpEvent, TimeSelectView.IRectView {
 
     private final Context mContext;
-    private final HashMap<Rect, String> mRectAndDTime = new HashMap<>();//矩形与时间段差值
+    private final int mStartHour;
 
     private Paint mInsidePaint;//圆角矩形内部画笔
     private Paint mBorderPaint;//圆角矩形边框画笔
@@ -34,7 +34,8 @@ public class RectView extends View implements ChildLayout.IUpEvent, TimeSelectVi
     private final Path mArrowsPath = new Path();//箭头的路径
     private int mInitialRectY;//长按生成矩形时的不动的y值
     private int mUpperLimit, mLowerLimit;//当前矩形的上下限，不能移动到其他矩形区域
-    private float mTextCenter, mDTimeCenter;//文字的水平线高度
+    private float mTextCenter, mDTimeCenter;//任务名称和时间差值的水平线
+//    private float mTextAscent, mTextDescent;//任务的ascent和descent线
     private float mRectTimeAscent, mRectTimeDescent;//矩形内部时间的ascent和descent线
     private float mDTimeHalfHeight;//右侧时间的字体高度的一半
     private ChildLayout mChildLayout;
@@ -43,6 +44,7 @@ public class RectView extends View implements ChildLayout.IUpEvent, TimeSelectVi
     private final RectF rectF = new RectF();//用来给圆角矩形转换
     private final List<Rect> mRects = new ArrayList<>();
     private final HashMap<Rect, String> mRectAndName = new HashMap<>();//矩形与任务名称
+    private final HashMap<Rect, String> mRectAndDTime = new HashMap<>();//矩形与时间段差值
     private RectImgView mImgViewRect;
 
     private boolean mIsAllowDraw;//说明正在自动滑动，通知onTouchEvent()的MOVE不要处理，不然绘图会卡
@@ -73,13 +75,10 @@ public class RectView extends View implements ChildLayout.IUpEvent, TimeSelectVi
         return mRectAndDTime;
     }
 
-    /**
-     * 注意！该View是镶嵌于ChildFrameLayout中，请不要自己用addView()调用，除非你搞懂了原理
-     * @param context 传入context
-     */
-    public RectView(Context context) {
+    public RectView(Context context, int startHour) {
         super(context);
         this.mContext = context;
+        this.mStartHour = startHour;
         initPaint();
     }
     private void initPaint() {
@@ -135,6 +134,8 @@ public class RectView extends View implements ChildLayout.IUpEvent, TimeSelectVi
 
         fontMetrics = mTextPaint.getFontMetrics();
         mTextCenter = (fontMetrics.bottom - fontMetrics.top) / 2 - fontMetrics.bottom;
+//        mTextAscent = fontMetrics.ascent;
+//        mTextDescent = fontMetrics.descent;
         RECT_MIN_HEIGHT = fontMetrics.descent - fontMetrics.ascent;
 
         fontMetrics = mDTimePaint.getFontMetrics();
@@ -181,8 +182,12 @@ public class RectView extends View implements ChildLayout.IUpEvent, TimeSelectVi
         }
         for (Rect rect : mRects) {
             drawRect(canvas, rect, mRectAndName.get(rect));
-            drawArrows(canvas, rect, mRectAndDTime.get(rect));
-            drawTopBottomTime(canvas, rect, null, null);
+            if (TimeSelectView.IS_SHOW_DIFFERENT_TIME) {
+                drawArrows(canvas, rect, mRectAndDTime.get(rect));
+            }
+            if (TimeSelectView.IS_SHOW_TOP_BOTTOM_TIME) {
+                drawTopBottomTime(canvas, rect, null, null);
+            }
         }
     }
     public void drawRect(Canvas canvas, Rect rect, String taskName) {
@@ -204,7 +209,7 @@ public class RectView extends View implements ChildLayout.IUpEvent, TimeSelectVi
             if (initialRect.height() > RECT_SHOE_START_TIME_HEIGHT) {
                 //绘制开始的时间，就是顶部中间那个时间
                 int uniformY = initialRect.top + mExtraHeight;//统一坐标系
-                canvas.drawText(TimeTools.getTime(uniformY), initialRect.centerX(),
+                canvas.drawText(TimeTools.getTime(mStartHour, uniformY), initialRect.centerX(),
                         initialRect.top - mRectTimeAscent + RECT_BORDER_WIDTH - 4, mStartTimePaint);
             }
         }
@@ -217,7 +222,7 @@ public class RectView extends View implements ChildLayout.IUpEvent, TimeSelectVi
         }else {
             int uniformT = rect.top + mExtraHeight;//统一坐标系
             int uniformB = rect.bottom + mExtraHeight;//统一坐标系
-            canvas.drawText(TimeTools.getDiffTime(uniformT, uniformB),
+            canvas.drawText(TimeTools.getDiffTime(mStartHour, uniformT, uniformB),
                     timeRight, rect.centerY() + mDTimeCenter, mDTimePaint);
         }
         {
@@ -252,8 +257,8 @@ public class RectView extends View implements ChildLayout.IUpEvent, TimeSelectVi
         float t = rect.top - mRectTimeAscent + RECT_BORDER_WIDTH - 4;
         float b = rect.bottom - mRectTimeDescent - RECT_BORDER_WIDTH + 4;
         if (topTime == null) {
-            canvas.drawText(TimeTools.getTime(rect.top + mExtraHeight), l, t, mRectTimePaint);
-            canvas.drawText(TimeTools.getTime(rect.bottom + mExtraHeight), l, b, mRectTimePaint);
+            canvas.drawText(TimeTools.getTime(mStartHour, rect.top + mExtraHeight), l, t, mRectTimePaint);
+            canvas.drawText(TimeTools.getTime(mStartHour, rect.bottom + mExtraHeight), l, b, mRectTimePaint);
         }else {
             canvas.drawText(topTime, l, t, mRectTimePaint);
             canvas.drawText(bottomTime, l, b, mRectTimePaint);
@@ -283,7 +288,7 @@ public class RectView extends View implements ChildLayout.IUpEvent, TimeSelectVi
             }
             case INSIDE: {
                 mImgViewRect = new RectImgView(mContext, deletedRect,
-                    mRectAndName.get(deletedRect), mRectAndDTime.get(deletedRect), this);
+                    mRectAndName.get(deletedRect), mRectAndDTime.get(deletedRect), this, mStartHour);
                 FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT);
                 lp.leftMargin = getLeft();
                 lp.topMargin = getTop() + deletedRect.top;
@@ -330,7 +335,7 @@ public class RectView extends View implements ChildLayout.IUpEvent, TimeSelectVi
         mUpperLimit = getUpperLimit(y);//之后会在longPress()中重新赋值
         int hLineTopHeight = TimeTools.getHLineTopHeight(y + mExtraHeight) - mExtraHeight;//装换成自身的坐标系
         int relativeHeight = y - hLineTopHeight;
-        int minuteInterval = (60 % TimeTools.START_TIME_INTERVAL == 0) ? TimeTools.START_TIME_INTERVAL : 5;
+        int minuteInterval = TimeTools.TIME_INTERVAL;
         for (int i = 0; i < TimeTools.sEveryMinuteHeight.length - minuteInterval; i += minuteInterval) {
             if (relativeHeight <= TimeTools.sEveryMinuteHeight[i + minuteInterval]) {
                 /*
@@ -460,7 +465,7 @@ public class RectView extends View implements ChildLayout.IUpEvent, TimeSelectVi
                     Rect re = new Rect(initialRect);
                     mRects.add(re);
                     mRectAndName.put(re, "请设置任务名称！");
-                    mRectAndDTime.put(re, TimeTools.getDiffTime(re.top + mExtraHeight, re.bottom + mExtraHeight));
+                    mRectAndDTime.put(re, TimeTools.getDiffTime(mStartHour, re.top + mExtraHeight, re.bottom + mExtraHeight));
                 }
                 WHICH_CONDITION = 0;
                 Rect refreshRect = new Rect(initialRect.left, initialRect.top - 100, initialRect.right, initialRect.bottom + 100);
@@ -478,7 +483,7 @@ public class RectView extends View implements ChildLayout.IUpEvent, TimeSelectVi
                     if (!re.equals(deletedRect)) {//如果大小和位置改变
                         mRectAndName.put(re, mRectAndName.remove(deletedRect));
                         mRectAndDTime.remove(deletedRect);
-                        mRectAndDTime.put(re, TimeTools.getDiffTime(re.top + mExtraHeight, re.bottom + mExtraHeight));
+                        mRectAndDTime.put(re, TimeTools.getDiffTime(mStartHour, re.top + mExtraHeight, re.bottom + mExtraHeight));
                     }
                     mRects.add(re);//之前在isContain()中被删掉了
                 }else {
@@ -496,13 +501,29 @@ public class RectView extends View implements ChildLayout.IUpEvent, TimeSelectVi
         }
     }
 
+    private int mClickLocation;
+    @Override
+    public boolean isClick(int y) {
+        for (int i = 0; i < mRects.size(); i++) {
+            Rect rect = mRects.get(i);
+            if (y >= rect.top && y <= rect.bottom) {
+                mClickLocation = i;
+                return true;
+            }
+        }
+        return false;
+    }
     @Override
     public void isAllowDraw(boolean isAllowDraw) {
         mIsAllowDraw = isAllowDraw;
     }
     @Override
+    public void click(String name) {
+        mRectAndName.put(mRects.get(mClickLocation), name);
+        invalidate(mRects.get(mClickLocation));
+    }
+    @Override
     public void refresh(int y) {//用来自动滑动中的回调刷新矩形
-        mIsAllowDraw = true;
         if (y >= mInitialRectY) {
             initialRect.bottom = Math.min(y, mLowerLimit);
         }else {
@@ -532,9 +553,10 @@ public class RectView extends View implements ChildLayout.IUpEvent, TimeSelectVi
     @Override
     public void addDeletedRectFromTop(int top) {//在ChildFrameLayout的移动矩形回来时调用
         String dTime = mRectAndDTime.get(deletedRect);
+        Log.d(TAG, "addDeletedRectFromTop: top = " + top + "   ex = " + mExtraHeight);
         top = getStartTimeCorrectHeight(top);
         //bottom以时间差值来计算高度，如果不用时间差，就会出现上下边界时间出错的问题
-        int bottom = getEndTimeCorrectHeight(TimeTools.getBottomTimeHeight(top + mExtraHeight, dTime) - mExtraHeight);
+        int bottom = getEndTimeCorrectHeight(TimeTools.getBottomTimeHeight(mStartHour, top + mExtraHeight, dTime) - mExtraHeight);
         Rect rect = new Rect(0, top, getWidth(), bottom);
         mRects.add(rect);
         mRectAndName.put(rect, mRectAndName.get(deletedRect));
@@ -549,7 +571,7 @@ public class RectView extends View implements ChildLayout.IUpEvent, TimeSelectVi
         String dTime = mRectAndDTime.get(deletedRect);
         bottom = getEndTimeCorrectHeight(bottom);
         //top以时间差值来计算高度，如果不用时间差，就会出现上下边界时间出错的问题
-        int top = getStartTimeCorrectHeight(TimeTools.getTopTimeHeight(bottom + mExtraHeight, dTime) - mExtraHeight);
+        int top = getStartTimeCorrectHeight(TimeTools.getTopTimeHeight(mStartHour, bottom + mExtraHeight, dTime) - mExtraHeight);
         Rect rect = new Rect(0, top, getWidth(), bottom);
         mRects.add(rect);
         mRectAndName.put(rect, mRectAndName.get(deletedRect));
