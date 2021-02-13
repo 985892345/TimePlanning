@@ -33,6 +33,7 @@ public class TimeVPAdapter extends RecyclerView.Adapter<TimeVPAdapter.LeftViewHo
     @Override
     public void onBindViewHolder(@NonNull LeftViewHolder holder, int position) {
         holder.leftTimeView.setLinkViewPager2(mViewPager);
+        holder.leftTimeView.setLinkTimeSelectView(holder.rightTimeView);
         holder.leftTimeView.setOnScrollViewListener(new TimeSelectView.onScrollViewListener() {
             @Override
             public void onScrollChanged(int y) {
@@ -41,6 +42,7 @@ public class TimeVPAdapter extends RecyclerView.Adapter<TimeVPAdapter.LeftViewHo
             }
         });
         holder.rightTimeView.setLinkViewPager2(mViewPager);
+        holder.rightTimeView.setLinkTimeSelectView(holder.leftTimeView);
         holder.rightTimeView.setOnScrollViewListener(new TimeSelectView.onScrollViewListener() {
             @Override
             public void onScrollChanged(int y) {
@@ -85,7 +87,6 @@ public class TimeVPAdapter extends RecyclerView.Adapter<TimeVPAdapter.LeftViewHo
         TimeSelectView rightTimeView;
         public LeftViewHolder(@NonNull View itemView) {
             super(itemView);
-            Log.d(TAG, "LeftViewHolder: ");
             leftTimeView = itemView.findViewById(R.id.time_view_left);
             rightTimeView = itemView.findViewById(R.id.time_view_right);
         }

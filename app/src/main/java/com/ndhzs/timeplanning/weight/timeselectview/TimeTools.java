@@ -1,5 +1,7 @@
 package com.ndhzs.timeplanning.weight.timeselectview;
 
+import android.util.Log;
+
 import java.util.Calendar;
 
 public class TimeTools {
@@ -84,6 +86,11 @@ public class TimeTools {
         int dM = Integer.parseInt(dTime.substring(3));
         sTopTimeHour = sBottomTimeHour - dH;
         sTopTimeMinute = sBottomTimeMinute - dM;
+        Log.d(TAG, "getTopTimeHeight: =================" + sTopTimeMinute);
+        if (sTopTimeMinute < 0) {
+            sTopTimeHour--;
+            sTopTimeMinute += 60;
+        }
         /*
          * 后面用ceil为了粗略计算，例如：(计算top是要计算当前分钟最 底 部的那根线)
          *        我要取2分钟的最后一根线，则我可以去3分钟的顶部线在减1
@@ -92,6 +99,7 @@ public class TimeTools {
          * 最后的bottom高度还要到RectView中的getEndTimeCorrectHeight(int bottom)进行精确计算
          * 里面的sBottomTimeHour和sBottomTimeMinute是重新计算后的值
          * */
+        Log.d(TAG, "getTopTimeHeight: " + sTopTimeMinute);
         return sExtraHeight + (sTopTimeHour - startHour) * sIntervalHeight - sHLineWidth + (int)Math.ceil(sEveryMinuteHeight[sTopTimeMinute + 1]) -1;
     }
 

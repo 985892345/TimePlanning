@@ -51,8 +51,8 @@ public class RectView extends View implements ChildLayout.IUpEvent, TimeSelectVi
 
     private int mExtraHeight;
 
-    private static final int RADIUS = 8;//圆角矩形的圆角半径
-    private static final int RECT_BORDER_WIDTH = 4;//圆角矩形边框厚度
+    public static final int RADIUS = 8;//圆角矩形的圆角半径
+    public static final int RECT_BORDER_WIDTH = 4;//圆角矩形边框厚度
 
     public static int WHICH_CONDITION = 0;//保存长按的情况
     public static final int TOP = 1;//长按的顶部区域
@@ -553,7 +553,6 @@ public class RectView extends View implements ChildLayout.IUpEvent, TimeSelectVi
     @Override
     public void addDeletedRectFromTop(int top) {//在ChildFrameLayout的移动矩形回来时调用
         String dTime = mRectAndDTime.get(deletedRect);
-        Log.d(TAG, "addDeletedRectFromTop: top = " + top + "   ex = " + mExtraHeight);
         top = getStartTimeCorrectHeight(top);
         //bottom以时间差值来计算高度，如果不用时间差，就会出现上下边界时间出错的问题
         int bottom = getEndTimeCorrectHeight(TimeTools.getBottomTimeHeight(mStartHour, top + mExtraHeight, dTime) - mExtraHeight);

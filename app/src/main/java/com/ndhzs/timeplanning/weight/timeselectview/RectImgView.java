@@ -7,8 +7,9 @@ package com.ndhzs.timeplanning.weight.timeselectview;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Rect;
-import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
 
 import com.ndhzs.timeplanning.weight.TimeSelectView;
 
@@ -19,9 +20,12 @@ public class RectImgView extends View {
     private final String mTaskName;
     private final String mStDTime;
     private final RectView mRectView;
+    private RectImgView mSelfImgView;
+    private RectImgView mLinkImgView;
     private final int mStartHour;
+    private int mDiffDistance = 0;
     private int mInitialL = Integer.MAX_VALUE, mInitialT;//如果是最开始layout时，计入此时的mInitialL, mInitialT
-    public static final int X_KEEP_THRESHOLD = 50;//长按后左右移动时保持水平不移动的阀值
+    public static final int X_KEEP_THRESHOLD = 40;//长按后左右移动时保持水平不移动的阀值
 
     /**
      * 必须传入这几个值才能绘制可移动的矩形，移动请调用layout(int dx, int dy)
@@ -87,8 +91,10 @@ public class RectImgView extends View {
      * @param dy 移动值dy，是与最初的位置的差值
      */
     public void layout(int dx, int dy) {
-        dx = (Math.abs(dx) < X_KEEP_THRESHOLD) ? 0 :
-                ((dx > 0) ? dx - X_KEEP_THRESHOLD : dx + X_KEEP_THRESHOLD);
+        if (mLinkImgView != null) {
+            mLinkImgView.layout(dx, dy);
+        }
+        dx = getCorrectDx(dx);
         int l = mInitialL + dx;
         int t = mInitialT + dy;
         int r = l + getWidth();
@@ -97,14 +103,26 @@ public class RectImgView extends View {
         invalidate();
     }
 
+    public void setSelfImgView(RectImgView imgView) {
+        this.mSelfImgView = imgView;
+    }
+    public void setLinkImgView(RectImgView imgView) {
+        this.mLinkImgView = imgView;
+    }
+    public void setDiffDistance(int diffDistance) {
+        this.mDiffDistance = diffDistance;
+    }
+
     /**
      * 传入移动量，会调用layout()移动，(注意！dx与dy不同)
      * @param dx 移动值dx，是与最初的位置的差值
      * @param dy 移动值dy，是与上一次位置的差值
      */
     public void autoSlideLayout(int dx, int dy) {
-        dx = (Math.abs(dx) < X_KEEP_THRESHOLD) ? 0 :
-                ((dx > 0) ? dx - X_KEEP_THRESHOLD : dx + X_KEEP_THRESHOLD);
+        if (mLinkImgView != null) {
+            mLinkImgView.autoSlideLayout(dx, dy);
+        }
+        dx = getCorrectDx(dx);
         int l = mInitialL + dx;
         int t = getTop() + dy;
         int r = l + getWidth();
@@ -113,12 +131,44 @@ public class RectImgView extends View {
         invalidate();
     }
 
+    private int getCorrectDx(int dx) {
+        int dx1 = (Math.abs(dx) < X_KEEP_THRESHOLD) ? 0 :
+                ((dx > 0) ? dx - X_KEEP_THRESHOLD : dx + X_KEEP_THRESHOLD);
+        if (mDiffDistance == 0) {
+            return dx1;
+        }else if (mDiffDistance > 0) {
+            if (mSelfImgView.getLeft() > 0) {
+                return dx1;
+            }else {
+                if (-dx >= mDiffDistance + X_KEEP_THRESHOLD && -dx <= mDiffDistance + 3 * X_KEEP_THRESHOLD) {
+                    return -mDiffDistance;
+                }else if (-dx < mDiffDistance + X_KEEP_THRESHOLD){
+                    return dx + X_KEEP_THRESHOLD;
+                }else {
+                    return dx + 3 * X_KEEP_THRESHOLD;
+                }
+            }
+        }else {
+            if (mSelfImgView.getRight() < ((ViewGroup)getParent()).getWidth()) {
+                return dx1;
+            }else {
+                if (dx >= -mDiffDistance + X_KEEP_THRESHOLD && dx <= -mDiffDistance + 2 * X_KEEP_THRESHOLD) {
+                    return -mDiffDistance;
+                }else if (dx < -mDiffDistance + X_KEEP_THRESHOLD) {
+                    return dx - X_KEEP_THRESHOLD;
+                }else {
+                    return dx - 3 * X_KEEP_THRESHOLD;
+                }
+            }
+        }
+    }
+
     /**
-     * 用于FissureView添加相同的RectImgView
+     * 用于添加相同，但开始时间不同的RectImgView
      * @return 返回new的一样的副本
      */
-    public RectImgView getSameImgView() {
-        return new RectImgView(mContext, mRect, mTaskName, mStDTime, mRectView, mStartHour);
+    public RectImgView getSameImgView(int startHour) {
+        return new RectImgView(mContext, mRect, mTaskName, mStDTime, mRectView, startHour);
     }
 
     private static final String TAG = "123";

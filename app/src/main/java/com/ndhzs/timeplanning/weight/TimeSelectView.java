@@ -6,6 +6,7 @@ import android.content.res.TypedArray;
 import android.graphics.Rect;
 import android.os.Vibrator;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.FrameLayout;
@@ -15,7 +16,6 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import com.ndhzs.timeplanning.R;
 import com.ndhzs.timeplanning.weight.timeselectview.ChildLayout;
-import com.ndhzs.timeplanning.weight.timeselectview.FissureView;
 import com.ndhzs.timeplanning.weight.timeselectview.TimeTools;
 import com.ndhzs.timeplanning.weight.timeselectview.NowTimeLine;
 import com.ndhzs.timeplanning.weight.timeselectview.RectImgView;
@@ -28,7 +28,7 @@ import java.util.List;
 public class TimeSelectView extends ScrollView {
 
     private Context context;
-    private IRectView mIRectView;
+    private RectView mRectView;
     private ViewPager2 mViewPager;
     private ChildLayout mLayoutChild;
     private int mStartHour;
@@ -59,13 +59,13 @@ public class TimeSelectView extends ScrollView {
 
     private onScrollViewListener mOnScrollViewListener;
     public List<Rect> getRects() {
-        return mIRectView.getRects();
+        return mRectView.getRects();
     }
     public HashMap<Rect, String> getRectAndName() {
-        return mIRectView.getRectAndName();
+        return mRectView.getRectAndName();
     }
     public HashMap<Rect, String> getRectAndDTime() {
-        return mIRectView.getRectAndDTime();
+        return mRectView.getRectAndDTime();
     }
     public ChildLayout getChildLayout() {
         return mLayoutChild;
@@ -121,7 +121,7 @@ public class TimeSelectView extends ScrollView {
      * @param name 任务名称，不建议字符长度大于7
      */
     public void setName(String name) {
-        mIRectView.click(name);
+        mRectView.click(name);
     }
 
     /**
@@ -132,14 +132,18 @@ public class TimeSelectView extends ScrollView {
         this.mViewPager = viewPager2;
     }
 
-    /**
-     * FissureView用于扩充移动整个任务区域的边界，若你使用了两个并排的TimeSelectView
-     * 又想在这两个TimeSelectView的整体移动能互相传递任务，设置它是一个不错的选择，
-     * 请在两个的空隙处连接，请设置成固定大小
-     * @param fissureView 在xml上写上这个View，用findViewById()传入
-     */
-    public void setLinkToFissureView(FissureView fissureView) {
-        mLayoutChild.setLinkToFissureLayout(fissureView);
+    public void setLinkTimeSelectView(TimeSelectView linkTimeView) {
+        postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                int[] selfPosition = new int[2];
+                getLocationInWindow(selfPosition);
+                int[] linkPosition = new int[2];
+                linkTimeView.getLocationInWindow(linkPosition);
+                int diffDistance = selfPosition[0] - linkPosition[0];
+                mLayoutChild.setLinkAnotherChildLayout(linkTimeView.mLayoutChild, linkTimeView.mStartHour, diffDistance);
+            }
+        }, 200);
     }
 
     /**
@@ -195,7 +199,7 @@ public class TimeSelectView extends ScrollView {
         rectView.setTextSize((int)(0.8f * mTimeTextSide), mTaskTextSize);
         rectView.setInterval(mExtraHeight);
         mLayoutChild.setIRectView(rectView);
-        mIRectView = rectView;
+        mRectView = rectView;
 
         FrameView frameView = new FrameView(context);
         LayoutParams lpTimeFrameView = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
@@ -219,7 +223,7 @@ public class TimeSelectView extends ScrollView {
             mIsLongPress = true;
             Vibrator vibrator = (Vibrator)context.getSystemService(Context.VIBRATOR_SERVICE);
             vibrator.vibrate(30);
-            mIRectView.longPress(mInitialY + getScrollY() - mExtraHeight);
+            mRectView.longPress(mInitialY + getScrollY() - mExtraHeight);
         }
     };
     private final Runnable mGoBackCenterTimeRun = new Runnable() {
@@ -321,8 +325,8 @@ public class TimeSelectView extends ScrollView {
             case MotionEvent.ACTION_MOVE: {
                 if (mIsLongPress) {//如果是长按
                     if (mUpperLimit == Integer.MIN_VALUE) {//保证值只赋值一次
-                        mUpperLimit = mIRectView.getUpperLimit() + mExtraHeight;
-                        mLowerLimit = mIRectView.getLowerLimit() + mExtraHeight;
+                        mUpperLimit = mRectView.getUpperLimit() + mExtraHeight;
+                        mLowerLimit = mRectView.getLowerLimit() + mExtraHeight;
                     }
                     mMoveX = x;
                     mMoveY = y;
@@ -353,17 +357,17 @@ public class TimeSelectView extends ScrollView {
                             break;
                         case RectView.INSIDE:
                             if (dy > 0) {
-                                int bottom = mIRectView.getImgViewRect().getBottom() - getScrollY();
+                                int bottom = mRectView.getImgViewRect().getBottom() - getScrollY();
                                 dY = bottom - (getHeight() - AUTO_MOVE_THRESHOLD) + 10;
                             }else {
-                                int top = mIRectView.getImgViewRect().getTop() - getScrollY();
+                                int top = mRectView.getImgViewRect().getTop() - getScrollY();
                                 dY = top - AUTO_MOVE_THRESHOLD - 10;
                             }
                             break;
                     }
                     slowlyMoveBy(dY);
                 }
-                if (!mIsLongPress && Math.abs(x - mInitialX) < MOVE_THRESHOLD && Math.abs(y - mInitialY) < MOVE_THRESHOLD && mIRectView.isClick(y + getScrollY() - mExtraHeight)) {
+                if (!mIsLongPress && Math.abs(x - mInitialX) < MOVE_THRESHOLD && Math.abs(y - mInitialY) < MOVE_THRESHOLD && mRectView.isClick(y + getScrollY() - mExtraHeight)) {
                     performClick();
                 }
                 break;
@@ -414,13 +418,13 @@ public class TimeSelectView extends ScrollView {
             case RectView.EMPTY_AREA:
                 if (isWithin || !isWithinLimit) {//在内部或在上下限以外，不再滑动
                     removeCallbacks(mScrollRunnable);
-                    mIRectView.isAllowDraw(true);
+                    mRectView.isAllowDraw(true);
                     mIsRun = false;//刷新，为false时Run才可以执行
                 }else {//在滑动区域且在上下限以内
                     //判断是否重复调用延时Runnable
                     if (!mIsRun) {//mIsRun控制只调用一次Runnable
                         mIsRun = true;
-                        mIRectView.isAllowDraw(false);
+                        mRectView.isAllowDraw(false);
                         post(mScrollRunnable);
                     }
                     //计算dy值，控制速度
@@ -438,8 +442,8 @@ public class TimeSelectView extends ScrollView {
                 }
                 break;
             case RectView.INSIDE:
-                int top = mIRectView.getImgViewRect().getTop();
-                int bottom = mIRectView.getImgViewRect().getBottom();
+                int top = mRectView.getImgViewRect().getTop();
+                int bottom = mRectView.getImgViewRect().getBottom();
                 //下面这个是：当长按下去，矩形的顶部或底部已经在滑动区，则必须移动一个范围才能开启滑动，在成功滑动后NowCenterY会设置成中心值
                 boolean isWithinThreshold = y < mNowCenterY + CENTER_DISTANCE_THRESHOLD && y > mNowCenterY - CENTER_DISTANCE_THRESHOLD;
                 boolean isBottomSlide = bottom - getScrollY() >= getHeight() - AUTO_MOVE_THRESHOLD * 0.4f;//乘以0.4限制滑动区
@@ -489,10 +493,10 @@ public class TimeSelectView extends ScrollView {
                 case RectView.TOP:
                 case RectView.BOTTOM:
                 case RectView.EMPTY_AREA:
-                    mIRectView.refresh(getScrollY() + dy + mMoveY - mExtraHeight);
+                    mRectView.refresh(getScrollY() + dy + mMoveY - mExtraHeight);
                     break;
                 case RectView.INSIDE:
-                    mIRectView.getImgViewRect().autoSlideLayout(mMoveX - mInitialX, dy + mMoveY - mLastMoveY);
+                    mRectView.getImgViewRect().autoSlideLayout(mMoveX - mInitialX, dy + mMoveY - mLastMoveY);
                     break;
             }
             mLastMoveY = mMoveY;
