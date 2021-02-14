@@ -42,7 +42,7 @@ public class TimeTools {
     public int getTopHeight(String startTime) {//开始加载数据时使用
         mTopTimeHour = Integer.parseInt(startTime.substring(0, 2));
         mTopTimeMinute = Integer.parseInt(startTime.substring(3));
-        return (mTopTimeHour - mStartHour) * mIntervalHeight - mHLineWidth + (int)Math.ceil(mEveryMinuteHeight[mTopTimeMinute + 1]) - 1;
+        return (mTopTimeHour - mStartHour) * mIntervalHeight + (int)Math.ceil(mEveryMinuteHeight[mTopTimeMinute + 1]) - 1;
     }
 
     /**
@@ -59,7 +59,7 @@ public class TimeTools {
             mBottomTimeHour++;
             mBottomTimeMinute -= 60;
         }
-        return (mBottomTimeHour - mStartHour) * mIntervalHeight - mHLineWidth + (int)Math.ceil(mEveryMinuteHeight[mBottomTimeMinute]);
+        return (mBottomTimeHour - mStartHour) * mIntervalHeight + (int)Math.ceil(mEveryMinuteHeight[mBottomTimeMinute]);
     }
 
     /**
@@ -137,7 +137,7 @@ public class TimeTools {
          * 最后的bottom高度还要到RectView中的getEndTimeCorrectHeight(int bottom)进行精确计算
          * 里面的mBottomTimeHour和sBottomTimeMinute是重新计算后的值
          * */
-        return (mBottomTimeHour - mStartHour) * mIntervalHeight - mHLineWidth + (int)Math.ceil(mEveryMinuteHeight[mBottomTimeMinute]);
+        return (mBottomTimeHour - mStartHour) * mIntervalHeight + (int)Math.ceil(mEveryMinuteHeight[mBottomTimeMinute]);
     }
 
     /**
@@ -153,7 +153,6 @@ public class TimeTools {
         int dM = Integer.parseInt(dTime.substring(3));
         mTopTimeHour = mBottomTimeHour - dH;
         mTopTimeMinute = mBottomTimeMinute - dM;
-        Log.d(TAG, "getTopTimeHeight: =================" + mTopTimeMinute);
         if (mTopTimeMinute < 0) {
             mTopTimeHour--;
             mTopTimeMinute += 60;
@@ -166,8 +165,7 @@ public class TimeTools {
          * 最后的bottom高度还要到RectView中的getEndTimeCorrectHeight(int bottom)进行精确计算
          * 里面的mBottomTimeHour和mBottomTimeMinute是重新计算后的值
          * */
-        Log.d(TAG, "getTopTimeHeight: " + mTopTimeMinute);
-        return (mTopTimeHour - mStartHour) * mIntervalHeight - mHLineWidth + (int)Math.ceil(mEveryMinuteHeight[mTopTimeMinute + 1]) - 1;
+        return (mTopTimeHour - mStartHour) * mIntervalHeight + (int)Math.ceil(mEveryMinuteHeight[mTopTimeMinute + 1]) - 1;
     }
 
     public float getNowTime() {

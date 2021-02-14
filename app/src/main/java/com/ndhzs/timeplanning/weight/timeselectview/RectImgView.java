@@ -138,9 +138,9 @@ public class RectImgView extends View {
     private int getCorrectDx(int dx) {
         int dx1 = (Math.abs(dx) < X_KEEP_THRESHOLD) ? 0 :
                 ((dx > 0) ? dx - X_KEEP_THRESHOLD : dx + X_KEEP_THRESHOLD);
-        if (mDiffDistance == 0) {
+        if (mDiffDistance == 0) {//没有与另一个TimeView连接时
             return dx1;
-        }else if (mDiffDistance > 0) {
+        }else if (mDiffDistance > 0) {//该TimeView在右边时
             if (mSelfImgView.getLeft() > 0) {
                 return dx1;
             }else {
@@ -152,11 +152,11 @@ public class RectImgView extends View {
                     return dx + 3 * X_KEEP_THRESHOLD;
                 }
             }
-        }else {
+        }else {//mDiffDistance < 0 该TimeView在左边时
             if (mSelfImgView.getRight() < ((ViewGroup)getParent()).getWidth()) {
                 return dx1;
             }else {
-                if (dx >= -mDiffDistance + X_KEEP_THRESHOLD && dx <= -mDiffDistance + 2 * X_KEEP_THRESHOLD) {
+                if (dx >= -mDiffDistance + X_KEEP_THRESHOLD && dx <= -mDiffDistance + 3 * X_KEEP_THRESHOLD) {
                     return -mDiffDistance;
                 }else if (dx < -mDiffDistance + X_KEEP_THRESHOLD) {
                     return dx - X_KEEP_THRESHOLD;

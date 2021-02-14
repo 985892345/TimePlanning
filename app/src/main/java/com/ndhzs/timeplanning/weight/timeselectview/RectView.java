@@ -263,7 +263,6 @@ public class RectView extends View implements ChildLayout.IUpEvent, TimeSelectVi
     @Override
     public void longPress(int y) {
         WHICH_CONDITION = isContain(y);//这里会执行一些操作
-        Log.d(TAG, "longPress: size = " + mRectAndData.size());
         switch (WHICH_CONDITION) {
             case EMPTY_AREA: {
                 int l, t, r, b;
@@ -448,7 +447,6 @@ public class RectView extends View implements ChildLayout.IUpEvent, TimeSelectVi
         }
     }
     private void theUpEvent(int y) {
-        Log.d(TAG, "theUpEvent: size = " + mRectAndData.size());
         switch (WHICH_CONDITION) {
             case EMPTY_AREA: {
                 if (initialRect.height() > RECT_MIN_HEIGHT) {

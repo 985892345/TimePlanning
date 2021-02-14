@@ -327,6 +327,7 @@ public class ChildLayout extends FrameLayout implements TimeSelectView.IIsAllowD
                 }
             }
         }else {//包括 a 的所有情况
+            Log.d(TAG, "isLayDown: ");
             return false;
         }
         int topHeight = mExtraHeight;
@@ -339,7 +340,7 @@ public class ChildLayout extends FrameLayout implements TimeSelectView.IIsAllowD
                 duration = Math.min(duration, 300);
                 break;
             case BOTTOM_TO_DRAW:
-                topHeight = correctBottom - mImgView.getHeight();
+                topHeight = correctBottom - childLayout.mImgView.getHeight();
                 duration = (int) (Math.sqrt(Math.pow(dx, 2) + Math.pow(linkImgViewBottom - correctBottom, 2)) * 0.6);
                 duration = Math.min(duration, 300);
                 break;
