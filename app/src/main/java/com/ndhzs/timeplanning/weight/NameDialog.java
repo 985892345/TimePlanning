@@ -14,13 +14,15 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 
 import com.ndhzs.timeplanning.R;
+import com.ndhzs.timeplanning.weight.timeselectview.bean.TaskBean;
 
 public class NameDialog extends Dialog {
 
     private Context mContext;
+    private TaskBean mTaskBean;
     private ImageView mImgHead;
-    private EditText mEtTop;
-    private EditText mEtBottom;
+    private EditText mEtName;
+    private EditText mEtDescribe;
     private TextView mTv1;
     private TextView mTv2;
     private TextView mTv3;
@@ -30,13 +32,10 @@ public class NameDialog extends Dialog {
     private Button mBtnFinish;
     private onDlgCloseListener mCloseListener;
 
-    public NameDialog(@NonNull Context context) {
-        this(context, 0);
-    }
-
-    public NameDialog(@NonNull Context context, int themeResId) {
+    public NameDialog(@NonNull Context context, int themeResId, TaskBean taskBean) {
         super(context, themeResId);
         this.mContext = context;
+        this.mTaskBean = taskBean;
     }
 
     @Override
@@ -61,8 +60,8 @@ public class NameDialog extends Dialog {
 
     private void initView() {
         mImgHead = findViewById(R.id.img_head);
-        mEtTop = findViewById(R.id.et_name);
-        mEtBottom = findViewById(R.id.et_describe);
+        mEtName = findViewById(R.id.et_name);
+        mEtDescribe = findViewById(R.id.et_describe);
         mTv1 = findViewById(R.id.tv_1);
         mTv2 = findViewById(R.id.tv_2);
         mTv3 = findViewById(R.id.tv_3);
@@ -70,6 +69,15 @@ public class NameDialog extends Dialog {
         mBtnBack = findViewById(R.id.btn_back);
         mBtnMenu = findViewById(R.id.btn_menu);
         mBtnFinish = findViewById(R.id.btn_finish);
+
+        String name = mTaskBean.getName();
+        if (name != null && name.length() > 0) {
+            mEtName.setText(name);
+        }
+        String describe = mTaskBean.getDescribe();
+        if (describe != null && describe.length() > 0) {
+            mEtDescribe.setText(describe);
+        }
     }
     private void initEvent() {
         mBtnFinish.setOnClickListener(new View.OnClickListener() {
@@ -88,10 +96,12 @@ public class NameDialog extends Dialog {
 
     private void close() {
         if (mCloseListener != null) {
-            String name = mEtTop.getText().toString();
-            String describe = mEtBottom.getText().toString();
+            String name = mEtName.getText().toString();
+            String describe = mEtDescribe.getText().toString();
             if (name.length() > 0) {
-                mCloseListener.onClose(name, describe);
+                mTaskBean.setName(name);
+                mTaskBean.setDescribe(describe);
+                mCloseListener.onClose();
             }
         }
         dismiss();
@@ -102,6 +112,6 @@ public class NameDialog extends Dialog {
     }
 
     public interface onDlgCloseListener {
-        void onClose(String name, String describe);
+        void onClose();
     }
 }

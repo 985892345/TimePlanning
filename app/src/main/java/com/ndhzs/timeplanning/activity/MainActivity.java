@@ -9,10 +9,15 @@ import android.widget.Toast;
 
 import com.ndhzs.timeplanning.R;
 import com.ndhzs.timeplanning.adapter.TimeVPAdapter;
+import com.ndhzs.timeplanning.weight.timeselectview.bean.TaskBean;
+
+import java.util.HashMap;
+import java.util.HashSet;
 
 public class MainActivity extends AppCompatActivity {
 
     private ViewPager2 mViewPager;
+    private HashMap<Integer, HashSet<TaskBean>> mEveryDayData = new HashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,7 +31,10 @@ public class MainActivity extends AppCompatActivity {
         mViewPager = findViewById(R.id.viewpager);
     }
     private void initEvent() {
-        TimeVPAdapter timeVPAdapter = new TimeVPAdapter(this, mViewPager);
+        for (int i = 0; i < 12; i++) {
+            mEveryDayData.put(i, new HashSet<>());
+        }
+        TimeVPAdapter timeVPAdapter = new TimeVPAdapter(this, mViewPager, mEveryDayData);
         mViewPager.setAdapter(timeVPAdapter);
     }
 

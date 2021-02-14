@@ -3,13 +3,10 @@ package com.ndhzs.timeplanning.weight;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.TypedArray;
-import android.graphics.Rect;
 import android.os.Vibrator;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.animation.DecelerateInterpolator;
-import android.widget.FrameLayout;
 import android.widget.ScrollView;
 ;
 import androidx.viewpager2.widget.ViewPager2;
@@ -21,8 +18,9 @@ import com.ndhzs.timeplanning.weight.timeselectview.NowTimeLine;
 import com.ndhzs.timeplanning.weight.timeselectview.RectImgView;
 import com.ndhzs.timeplanning.weight.timeselectview.RectView;
 import com.ndhzs.timeplanning.weight.timeselectview.FrameView;
+import com.ndhzs.timeplanning.weight.timeselectview.bean.TaskBean;
 
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 public class TimeSelectView extends ScrollView {
@@ -43,6 +41,7 @@ public class TimeSelectView extends ScrollView {
     private final int mInsideColor;//矩形内部颜色
     private final int mTimeTextSide;//时间字体大小
     private final int mTaskTextSize;//任务字体大小
+    private final TimeTools mTimeTools;
     private boolean mIsOpenScrollCallBack = true;//设置mIsCloseUserActionJudge，将在被其他非触摸操作滑动时不会回调滑动的接口
 
     /**
@@ -58,17 +57,13 @@ public class TimeSelectView extends ScrollView {
     public static boolean IS_SHOW_DIFFERENT_TIME = true;//是否绘制时间差
 
     private onScrollViewListener mOnScrollViewListener;
-    public List<Rect> getRects() {
-        return mRectView.getRects();
+    private onDataChangeListener mOnDataChangeListener;
+    public TaskBean getTaskBean() {
+        return mRectView.getClickTaskBean();
     }
-    public HashMap<Rect, String> getRectAndName() {
-        return mRectView.getRectAndName();
-    }
-    public HashMap<Rect, String> getRectAndDTime() {
-        return mRectView.getRectAndDTime();
-    }
-    public ChildLayout getChildLayout() {
-        return mLayoutChild;
+
+    public void setData(HashSet<TaskBean> taskBeans) {
+        mRectView.setData(taskBeans);
     }
 
     /**
@@ -91,11 +86,11 @@ public class TimeSelectView extends ScrollView {
     }
 
     /**
-     * 时间间隔数为static，一旦设置，所有的TimeSelectView的时间间隔数都会修改
+     * 时间间隔数
      * @param timeInterval 必须为60的因数，若不是，将以15为间隔数
      */
     public void setTimeInterval(int timeInterval) {
-        TimeTools.TIME_INTERVAL = (60 % timeInterval == 0) ? timeInterval : 15;
+        mTimeTools.TIME_INTERVAL = (60 % timeInterval == 0) ? timeInterval : 15;
     }
 
     /**
@@ -118,10 +113,9 @@ public class TimeSelectView extends ScrollView {
 
     /**
      * 设置当前点击区域的任务名称
-     * @param name 任务名称，不建议字符长度大于7
      */
-    public void setName(String name) {
-        mRectView.click(name);
+    public void refreshName() {
+        mRectView.refreshName();
     }
 
     /**
@@ -132,6 +126,14 @@ public class TimeSelectView extends ScrollView {
         this.mViewPager = viewPager2;
     }
 
+    /**
+     * 若你使用了两个并排的TimeSelectView，又想实现整体移动互相传递数据，可以使用该方法。
+     * (使用前提：请设置TimeSelectView的父布局的 android:clipChildren="false"，如果你父布局为
+     * CardView，该属性会设置无效，请使用其他布局。如果你的确想使用CardView，可以尝试将CardView单独设置
+     * 为背景，用另一个Layout覆盖在其上，但请将该Layout的android:elevation设置为合适值，不然将无法覆盖
+     * 在CardView上方)
+     * @param linkTimeView 传入要连接的另一个TimeSelectView，请保证他们的高度相同
+     */
     public void setLinkTimeSelectView(TimeSelectView linkTimeView) {
         postDelayed(new Runnable() {
             @Override
@@ -141,9 +143,13 @@ public class TimeSelectView extends ScrollView {
                 int[] linkPosition = new int[2];
                 linkTimeView.getLocationInWindow(linkPosition);
                 int diffDistance = selfPosition[0] - linkPosition[0];
-                mLayoutChild.setLinkAnotherChildLayout(linkTimeView.mLayoutChild, linkTimeView.mStartHour, diffDistance);
+                mLayoutChild.setLinkChildLayout(linkTimeView.mLayoutChild, linkTimeView.mTimeTools, diffDistance);
             }
         }, 200);
+    }
+
+    public void setOnDataChangeListener(onDataChangeListener onDataChangeListener) {
+        this.mOnDataChangeListener = onDataChangeListener;
     }
 
     /**
@@ -172,23 +178,21 @@ public class TimeSelectView extends ScrollView {
         IS_SHOW_DIFFERENT_TIME = ty.getBoolean(R.styleable.TimeSelectView_isShowDifferentTime, false);
         ty.recycle();
         setCenterTime(mCenterTime);
-        TimeTools.loadData(FrameView.HORIZONTAL_LINE_WIDTH, mExtraHeight, mIntervalHeight);
+        mTimeTools = new TimeTools(FrameView.HORIZONTAL_LINE_WIDTH, mExtraHeight, mIntervalHeight, mStartHour);
         setVerticalScrollBarEnabled(false);
         initLayout(context);
     }
     private void initLayout(Context context) {
-        FrameLayout layoutParent = new FrameLayout(context);
-        LayoutParams lpLayoutParent = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
-
         mLayoutChild = new ChildLayout(context);
         LayoutParams lpLayoutChild = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
         mLayoutChild.setInterval(mIntervalLeft, mExtraHeight);
 
-        NowTimeLine nowTimeLine = new NowTimeLine(context, mStartHour);
+        NowTimeLine nowTimeLine = new NowTimeLine(context, mTimeTools);
         LayoutParams lpNowTimeView = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
         nowTimeLine.setInterval(mIntervalLeft, FrameView.INTERVAL_RIGHT);
+        nowTimeLine.setElevation(1);
 
-        RectView rectView = new RectView(context, mStartHour);
+        RectView rectView = new RectView(context, mTimeTools);
         LayoutParams lpRectView = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
         lpRectView.leftMargin = mIntervalLeft;
         lpRectView.topMargin = mExtraHeight;
@@ -207,12 +211,13 @@ public class TimeSelectView extends ScrollView {
         frameView.setTextSize(mTimeTextSide);
         frameView.setInterval(mIntervalLeft, FrameView.INTERVAL_RIGHT, mExtraHeight, mIntervalHeight);
 
-        //addView()，顺序不能调换
+        //addView()，顺序不能调换，也可以设置elevation来控制高度
         mLayoutChild.addView(rectView, lpRectView);
         mLayoutChild.addView(frameView, lpTimeFrameView);
-        layoutParent.addView(mLayoutChild, lpLayoutChild);
-        layoutParent.addView(nowTimeLine, lpNowTimeView);
-        addView(layoutParent, lpLayoutParent);
+        mLayoutChild.addView(nowTimeLine, lpNowTimeView);
+        mLayoutChild.setClipChildren(false);
+        addView(mLayoutChild, lpLayoutChild);
+        setClipChildren(false);
     }
 
     private boolean mIsLongPress;//是否是长按
@@ -521,7 +526,7 @@ public class TimeSelectView extends ScrollView {
             post(new Runnable() {
                 @Override
                 public void run() {
-                    fastTimeMove(TimeTools.getNowTime());
+                    fastTimeMove(mTimeTools.getNowTime());
                     postDelayed(mTimeMoveRun, TimeTools.DELAY_NOW_TIME_REFRESH);
                 }
             });
@@ -549,7 +554,7 @@ public class TimeSelectView extends ScrollView {
     private void slowlyTimeMove() {
         int height;
         if (mCenterTime == -1) {//以当前时间线为中线
-            height = getCenterTimeHeight(TimeTools.getNowTime());
+            height = getCenterTimeHeight(mTimeTools.getNowTime());
         }else {//以CenterTime为中线，不随时间移动
             height = mCenterTimeHeight;
         }
@@ -604,16 +609,16 @@ public class TimeSelectView extends ScrollView {
 
     public interface IRectView {
         boolean isClick(int y);
+        void setOnDataChangeListener(onDataChangeListener onDataChangeListener);
+        void setData(HashSet<TaskBean> taskBeans);
         void isAllowDraw(boolean isAllowDraw);
-        void click(String name);
         void longPress(int y);
         void refresh(int y);
+        void refreshName();
         int getUpperLimit();
         int getLowerLimit();
         RectImgView getImgViewRect();
-        List<Rect> getRects();
-        HashMap<Rect, String> getRectAndName();
-        HashMap<Rect, String> getRectAndDTime();
+        TaskBean getClickTaskBean();
     }
     public interface IIsAllowDraw {
         void isAllowDraw(boolean isAllowDraw);
@@ -624,6 +629,9 @@ public class TimeSelectView extends ScrollView {
          * @param y 当前ScrollView的ScrollY
          */
         void onScrollChanged(int y);
+    }
+    public interface onDataChangeListener {
+        void onDataChanged(TaskBean newData);
     }
 
     private static final String TAG = "123";

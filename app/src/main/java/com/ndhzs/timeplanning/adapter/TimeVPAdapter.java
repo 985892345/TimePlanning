@@ -1,7 +1,6 @@
 package com.ndhzs.timeplanning.adapter;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,15 +11,23 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.ndhzs.timeplanning.R;
 import com.ndhzs.timeplanning.weight.NameDialog;
 import com.ndhzs.timeplanning.weight.TimeSelectView;
+import com.ndhzs.timeplanning.weight.timeselectview.bean.TaskBean;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 
 public class TimeVPAdapter extends RecyclerView.Adapter<TimeVPAdapter.LeftViewHolder> {
 
     private Context mContext;
     private ViewPager2 mViewPager;
+    private HashSet<TaskBean> mTaskBeans;
+    private HashMap<Integer, HashSet<TaskBean>> mEveryDayData;
 
-    public TimeVPAdapter(Context context, ViewPager2 vp) {
+    public TimeVPAdapter(Context context, ViewPager2 vp, HashMap<Integer, HashSet<TaskBean>> everyDayData) {
         this.mContext = context;
         this.mViewPager = vp;
+        this.mEveryDayData = everyDayData;
     }
 
     @NonNull
@@ -34,6 +41,10 @@ public class TimeVPAdapter extends RecyclerView.Adapter<TimeVPAdapter.LeftViewHo
     public void onBindViewHolder(@NonNull LeftViewHolder holder, int position) {
         holder.leftTimeView.setLinkViewPager2(mViewPager);
         holder.leftTimeView.setLinkTimeSelectView(holder.rightTimeView);
+
+        holder.leftTimeView.setData(mEveryDayData.get(position));
+        holder.rightTimeView.setData(mEveryDayData.get(position));
+
         holder.leftTimeView.setOnScrollViewListener(new TimeSelectView.onScrollViewListener() {
             @Override
             public void onScrollChanged(int y) {
@@ -67,15 +78,20 @@ public class TimeVPAdapter extends RecyclerView.Adapter<TimeVPAdapter.LeftViewHo
 
     @Override
     public int getItemCount() {
-        return 21;
+        return mEveryDayData.size();
+    }
+
+    public void setEveryDayData(HashMap<Integer, HashSet<TaskBean>> everyDayData) {
+        this.mEveryDayData = everyDayData;
+        notifyDataSetChanged();
     }
 
     private void click(TimeSelectView timeView) {
-        NameDialog nameDialog = new NameDialog(mContext, R.style.NameDialog);
+        NameDialog nameDialog = new NameDialog(mContext, R.style.NameDialog, timeView.getTaskBean());
         nameDialog.setOnDlgCloseListener(new NameDialog.onDlgCloseListener() {
             @Override
-            public void onClose(String name, String describe) {
-                timeView.setName(name);
+            public void onClose() {
+                timeView.refreshName();
             }
         });
         nameDialog.show();

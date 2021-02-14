@@ -3,6 +3,7 @@ package com.ndhzs.timeplanning.weight.timeselectview;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.util.Log;
 import android.view.View;
 
 public class NowTimeLine extends View {
@@ -10,13 +11,13 @@ public class NowTimeLine extends View {
     private Paint mTimeLinePaint;
     private int mIntervalLeft;//左边的时间间隔宽度
     private int mIntervalRight;//右边的间隔宽度
-    private final int mStartHour;
+    private final TimeTools mTimeTools;
 
     public static final int BALL_DIAMETER = 14;//小球直径
 
-    public NowTimeLine(Context context, int startHour) {
+    public NowTimeLine(Context context, TimeTools timeTools) {
         super(context);
-        this.mStartHour = startHour;
+        this.mTimeTools = timeTools;
         postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -53,10 +54,10 @@ public class NowTimeLine extends View {
     @Override
     public void layout(int l, int t, int r, int b) {
         // 放在这里是有原因的，为什么不在addView()时直接设置LayoutParams.topMargin使时间线加载时处于开始位置？
-        // 因为如果我长按已选择了的区域，那么在ChildFrameLayout就会调用addView()，又因为时间线应在最顶层，
+        // 因为如果我长按已选择了的区域，那么在ChildLayout就会调用addView()，又因为时间线应在最顶层，
         // 所以系统会重新layout()，如果你在LayoutParams.topMargin直接设置了开始位置，那么此时layout()就
         // 会跑回去，所以只有在layout()中设置当前时间的高度，就不会重新返回以前的位置，可以避免这个问题
-        int nowTimeHeight = TimeTools.getNowTimeHeight(mStartHour) - BALL_DIAMETER/2;
+        int nowTimeHeight = mTimeTools.getNowTimeHeight() - BALL_DIAMETER/2;
         t = nowTimeHeight;
         b = nowTimeHeight + BALL_DIAMETER;
         super.layout(l, t, r, b);
@@ -74,6 +75,6 @@ public class NowTimeLine extends View {
         layout(0, y, getWidth(), y + getHeight());
     }
     private void timeLineMove() {
-        layout(TimeTools.getNowTimeHeight(mStartHour) - BALL_DIAMETER/2);
+        layout(mTimeTools.getNowTimeHeight() - BALL_DIAMETER/2);
     }
 }
