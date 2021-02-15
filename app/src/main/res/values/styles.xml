@@ -1,20 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <style name="NameDialog" parent="Theme.AppCompat.Light.Dialog">
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="dialog" parent="Theme.AppCompat.Light.Dialog">
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:windowFrame">@null</item>
         <item name="android:windowIsFloating">true</item>
         <item name="android:backgroundDimEnabled">true</item>
     </style>
 
-    <style name="NameDialogAnim" mce_bogus="1" parent="android:Animation.Dialog">
+    <style name="dialogAnim" mce_bogus="1" parent="android:Animation.Dialog">
         <item name="android:windowEnterAnimation">@anim/anim_dlg_in</item>
         <item name="android:windowExitAnimation">@anim/anim_dlg_out</item>
     </style>
 
-    <style name="RoundedHead" parent="">
+    <style name="roundedHead">
         <item name="cornerFamily">rounded</item>
         <item name="cornerSize">50%</item>
-
     </style>
+
+    <style name="textInputLayout">
+        <item name="android:textColorHint">#808080</item>
+        <item name="colorControlNormal">#222222</item>
+        <item name="colorControlActivated">@color/blue</item>
+        <item name="colorControlHighlight">@color/blue</item>
+        <item name="colorError">@android:color/holo_red_dark</item>
+    </style>
+
 </resources>

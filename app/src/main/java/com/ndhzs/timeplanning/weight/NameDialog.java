@@ -23,13 +23,9 @@ public class NameDialog extends Dialog {
     private ImageView mImgHead;
     private EditText mEtName;
     private EditText mEtDescribe;
-    private TextView mTv1;
-    private TextView mTv2;
-    private TextView mTv3;
-    private TextView mTv4;
-    private Button mBtnBack;
-    private Button mBtnMenu;
-    private Button mBtnFinish;
+    private TextView mTv1, mTv2, mTv3, mTv4;
+    private Button mBtnBack, mBtnFinish;
+    private RoundCornerView mColorBorder, mColorInside;
     private onDlgCloseListener mCloseListener;
 
     public NameDialog(@NonNull Context context, int themeResId, TaskBean taskBean) {
@@ -45,9 +41,8 @@ public class NameDialog extends Dialog {
         setContentView(R.layout.dlg_set_name);
         //设置窗口
         Window dialogWindow = getWindow();
-        dialogWindow.setWindowAnimations(R.style.NameDialogAnim);
+        dialogWindow.setWindowAnimations(R.style.dialogAnim);
         WindowManager.LayoutParams lp = dialogWindow.getAttributes();
-//        DisplayMetrics d = mContext.getResources().getDisplayMetrics(); // 获取屏幕宽、高用
         lp.width = WindowManager.LayoutParams.WRAP_CONTENT;
         lp.height = WindowManager.LayoutParams.WRAP_CONTENT;
         dialogWindow.setAttributes(lp);
@@ -62,22 +57,25 @@ public class NameDialog extends Dialog {
         mImgHead = findViewById(R.id.img_head);
         mEtName = findViewById(R.id.et_name);
         mEtDescribe = findViewById(R.id.et_describe);
-        mTv1 = findViewById(R.id.tv_1);
-        mTv2 = findViewById(R.id.tv_2);
+        mTv1 = findViewById(R.id.tv_week_1);
+        mTv2 = findViewById(R.id.tv_week_2);
         mTv3 = findViewById(R.id.tv_3);
         mTv4 = findViewById(R.id.tv_4);
         mBtnBack = findViewById(R.id.btn_back);
-        mBtnMenu = findViewById(R.id.btn_menu);
         mBtnFinish = findViewById(R.id.btn_finish);
+        mColorBorder = findViewById(R.id.view_color_border);
+        mColorInside = findViewById(R.id.view_color_inside);
 
         String name = mTaskBean.getName();
-        if (name != null && name.length() > 0) {
+        if (!name.equals("点击设置任务名称")) {
             mEtName.setText(name);
         }
         String describe = mTaskBean.getDescribe();
         if (describe != null && describe.length() > 0) {
             mEtDescribe.setText(describe);
         }
+        mColorBorder.setColor(mTaskBean.getBorderColor());
+        mColorInside.setColor(mTaskBean.getInsideColor());
     }
     private void initEvent() {
         mBtnFinish.setOnClickListener(new View.OnClickListener() {

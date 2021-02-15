@@ -15,7 +15,6 @@ import com.ndhzs.timeplanning.weight.timeselectview.bean.TaskBean;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 
 public class TimeVPAdapter extends RecyclerView.Adapter<TimeVPAdapter.LeftViewHolder> {
 
@@ -33,7 +32,7 @@ public class TimeVPAdapter extends RecyclerView.Adapter<TimeVPAdapter.LeftViewHo
     @NonNull
     @Override
     public LeftViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.viewpager2_item, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.viewpager2_item_timeplan, parent, false);
         return new LeftViewHolder(view);
     }
 
@@ -87,7 +86,7 @@ public class TimeVPAdapter extends RecyclerView.Adapter<TimeVPAdapter.LeftViewHo
     }
 
     private void click(TimeSelectView timeView) {
-        NameDialog nameDialog = new NameDialog(mContext, R.style.NameDialog, timeView.getTaskBean());
+        NameDialog nameDialog = new NameDialog(mContext, R.style.dialog, timeView.getClickTaskBean());
         nameDialog.setOnDlgCloseListener(new NameDialog.onDlgCloseListener() {
             @Override
             public void onClose() {

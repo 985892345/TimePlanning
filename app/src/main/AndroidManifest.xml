@@ -11,6 +11,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.TimePlanning">
+        <activity android:name=".activity.ExplainActivity"></activity>
+        <activity android:name=".activity.SetActivity" />
         <activity
             android:name=".activity.MainActivity"
             android:screenOrientation="portrait">
@@ -20,6 +22,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".activity.LoginActivity"
+            android:screenOrientation="portrait" />
     </application>
 
 </manifest>

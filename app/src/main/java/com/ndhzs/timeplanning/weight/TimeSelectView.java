@@ -9,24 +9,24 @@ import android.view.MotionEvent;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.ScrollView;
 ;
+import androidx.core.content.ContextCompat;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.ndhzs.timeplanning.R;
 import com.ndhzs.timeplanning.weight.timeselectview.ChildLayout;
+import com.ndhzs.timeplanning.weight.timeselectview.RectView;
 import com.ndhzs.timeplanning.weight.timeselectview.TimeTools;
 import com.ndhzs.timeplanning.weight.timeselectview.NowTimeLine;
 import com.ndhzs.timeplanning.weight.timeselectview.RectImgView;
-import com.ndhzs.timeplanning.weight.timeselectview.RectView;
 import com.ndhzs.timeplanning.weight.timeselectview.FrameView;
 import com.ndhzs.timeplanning.weight.timeselectview.bean.TaskBean;
 
 import java.util.HashSet;
-import java.util.List;
 
 public class TimeSelectView extends ScrollView {
 
     private Context context;
-    private RectView mRectView;
+    private IRectView mRectView;
     private ViewPager2 mViewPager;
     private ChildLayout mLayoutChild;
     private int mStartHour;
@@ -58,10 +58,19 @@ public class TimeSelectView extends ScrollView {
 
     private onScrollViewListener mOnScrollViewListener;
     private onDataChangeListener mOnDataChangeListener;
-    public TaskBean getTaskBean() {
+
+    /**
+     * 得到点击的数据对象
+     * @return 点击的数据对象
+     */
+    public TaskBean getClickTaskBean() {
         return mRectView.getClickTaskBean();
     }
 
+    /**
+     * 加载数据时使用
+     * @param taskBeans 传入新的数据
+     */
     public void setData(HashSet<TaskBean> taskBeans) {
         mRectView.setData(taskBeans);
     }
@@ -164,8 +173,8 @@ public class TimeSelectView extends ScrollView {
         super(context, attrs);
         this.context = context;
         TypedArray ty = context.obtainStyledAttributes(attrs, R.styleable.TimeSelectView);
-        mBorderColor = ty.getColor(R.styleable.TimeSelectView_borderColor, 0xFFFF0000);
-        mInsideColor = ty.getColor(R.styleable.TimeSelectView_insideColor, 0xFFDCCC48);
+        mBorderColor = ty.getColor(R.styleable.TimeSelectView_borderColor, ContextCompat.getColor(context, R.color.inside_color));
+        mInsideColor = ty.getColor(R.styleable.TimeSelectView_insideColor, ContextCompat.getColor(context, R.color.border_color));
         mIntervalLeft = (int)ty.getDimension(R.styleable.TimeSelectView_intervalWidth, 110);
         mIntervalHeight = (int)ty.getDimension(R.styleable.TimeSelectView_intervalHeight, 194);
         mExtraHeight = (int)(mIntervalHeight * 0.5f);

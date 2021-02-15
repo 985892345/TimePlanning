@@ -42,7 +42,7 @@ public class TimeTools {
     public int getTopHeight(String startTime) {//开始加载数据时使用
         mTopTimeHour = Integer.parseInt(startTime.substring(0, 2));
         mTopTimeMinute = Integer.parseInt(startTime.substring(3));
-        return (mTopTimeHour - mStartHour) * mIntervalHeight + (int)Math.ceil(mEveryMinuteHeight[mTopTimeMinute + 1]) - 1;
+        return (mTopTimeHour - mStartHour) * mIntervalHeight - mHLineWidth + (int)Math.ceil(mEveryMinuteHeight[mTopTimeMinute + 1]) - 1;
     }
 
     /**
@@ -59,7 +59,7 @@ public class TimeTools {
             mBottomTimeHour++;
             mBottomTimeMinute -= 60;
         }
-        return (mBottomTimeHour - mStartHour) * mIntervalHeight + (int)Math.ceil(mEveryMinuteHeight[mBottomTimeMinute]);
+        return (mBottomTimeHour - mStartHour) * mIntervalHeight - mHLineWidth + (int)Math.ceil(mEveryMinuteHeight[mBottomTimeMinute]);
     }
 
     /**
@@ -136,8 +136,9 @@ public class TimeTools {
          *        二、该分钟线高为 12.0 我要得到这一分钟的最顶部的线，就为12，用ceil取12即可
          * 最后的bottom高度还要到RectView中的getEndTimeCorrectHeight(int bottom)进行精确计算
          * 里面的mBottomTimeHour和sBottomTimeMinute是重新计算后的值
+         * 减mHLineWidth时为了转换为RectView的坐标系，因为RectView是从mExtraHeight开始的
          * */
-        return (mBottomTimeHour - mStartHour) * mIntervalHeight + (int)Math.ceil(mEveryMinuteHeight[mBottomTimeMinute]);
+        return (mBottomTimeHour - mStartHour) * mIntervalHeight - mHLineWidth + (int)Math.ceil(mEveryMinuteHeight[mBottomTimeMinute]);
     }
 
     /**
@@ -159,13 +160,14 @@ public class TimeTools {
         }
         /*
          * 后面用ceil为了粗略计算，例如：(计算top是要计算当前分钟最 底 部的那根线)
-         *        我要取2分钟的最后一根线，则我可以去3分钟的顶部线在减1
+         *        我要取2分钟的最后一根线，则我可以去3分钟的顶部线再减1
          *        一、3分钟线高为 12.5 我要得到这一分钟的最顶部的线，用ceil取大于等于12.5的数13，再减 1 得到2分钟的最后一根线
          *        二、3分钟线高为 12.0 我要得到这一分钟的最顶部的线，就为12，用ceil取12，再减 1 得到2分钟的最后一根线
          * 最后的bottom高度还要到RectView中的getEndTimeCorrectHeight(int bottom)进行精确计算
          * 里面的mBottomTimeHour和mBottomTimeMinute是重新计算后的值
+         * 减mHLineWidth时为了转换为RectView的坐标系，因为RectView是从mExtraHeight开始的
          * */
-        return (mTopTimeHour - mStartHour) * mIntervalHeight + (int)Math.ceil(mEveryMinuteHeight[mTopTimeMinute + 1]) - 1;
+        return (mTopTimeHour - mStartHour) * mIntervalHeight - mHLineWidth + (int)Math.ceil(mEveryMinuteHeight[mTopTimeMinute + 1]) - 1;
     }
 
     public float getNowTime() {

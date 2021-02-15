@@ -34,6 +34,7 @@ public class RectView extends View implements ChildLayout.IUpEvent, TimeSelectVi
     private Paint mTextPaint;//任务名称画笔
     private Paint mDTimePaint;//时间差值画笔
     private final Path mArrowsPath = new Path();//箭头的路径
+    private int mBorderColor, mInsideColor;
     private int mInitialRectY;//长按生成矩形时的不动的y值
     private int mUpperLimit, mLowerLimit;//当前矩形的上下限，不能移动到其他矩形区域
     private float mTextCenter, mDTimeCenter;//任务名称和时间差值的水平线
@@ -41,7 +42,7 @@ public class RectView extends View implements ChildLayout.IUpEvent, TimeSelectVi
     private float mRectTimeAscent, mRectTimeDescent;//矩形内部时间的ascent和descent线
     private float mDTimeHalfHeight;//右侧时间的字体高度的一半
     private ChildLayout mChildLayout;
-    private final Rect initialRect = new Rect(-100, -100, -100, -100);//初始矩形
+    private final Rect initialRect = new Rect(-500, -500, -500, -500);//初始矩形
     private final Rect deletedRect = new Rect();//被删掉的矩形
     private final RectF rectF = new RectF();//用来给圆角矩形转换
     private final List<Rect> mRects = new ArrayList<>();
@@ -107,8 +108,8 @@ public class RectView extends View implements ChildLayout.IUpEvent, TimeSelectVi
         this.mChildLayout = childLayout;
     }
     public void setRectColor(int borderColor, int insideColor) {
-        this.mBorderPaint.setColor(borderColor);
-        this.mInsidePaint.setColor(insideColor);
+        this.mBorderColor = borderColor;
+        this.mInsideColor = insideColor;
     }
     public void setTextSize(int timeTextSize, int taskTextSize) {
         mRectTimePaint.setTextSize(timeTextSize);
@@ -184,6 +185,13 @@ public class RectView extends View implements ChildLayout.IUpEvent, TimeSelectVi
         }
     }
     public void drawRect(Canvas canvas, Rect rect, String taskName) {
+        if (mRectAndData.containsKey(rect)) {
+            mBorderPaint.setColor(mRectAndData.get(rect).getBorderColor());
+            mInsidePaint.setColor(mRectAndData.get(rect).getInsideColor());
+        }else {
+            mBorderPaint.setColor(mBorderColor);
+            mInsidePaint.setColor(mInsideColor);
+        }
         float l = rect.left + RECT_BORDER_WIDTH /2.0f;
         float t = rect.top + RECT_BORDER_WIDTH /2.0f;
         float r = rect.right - RECT_BORDER_WIDTH /2.0f;
@@ -457,13 +465,15 @@ public class RectView extends View implements ChildLayout.IUpEvent, TimeSelectVi
                     TaskBean taskBean = new TaskBean(mTimeTools.getTime(re.top),
                             mTimeTools.getDiffTime(re.top, re.bottom));
                     taskBean.setName("点击设置任务名称");
+                    taskBean.setBorderColor(mBorderColor);
+                    taskBean.setInsideColor(mInsideColor);
                     mRectAndData.put(re, taskBean);
                     dataChange(taskBean);
                 }
                 WHICH_CONDITION = 0;
                 Rect refreshRect = new Rect(initialRect.left, initialRect.top - 100, initialRect.right, initialRect.bottom + 100);
                 invalidate(refreshRect);
-                initialRect.set(-100, -100, -100, -100);
+                initialRect.set(-500, -500, -500, -500);
                 break;
             }
             case TOP:
@@ -486,7 +496,7 @@ public class RectView extends View implements ChildLayout.IUpEvent, TimeSelectVi
                 WHICH_CONDITION = 0;
                 Rect refreshRect = new Rect(initialRect.left, initialRect.top - 100, initialRect.right, initialRect.bottom + 100);
                 invalidate(refreshRect);
-                initialRect.set(-100, -100, -100, -100);
+                initialRect.set(-500, -500, -500, -500);
                 break;
             case INSIDE://never
                 //已经被ChildFrameLayout拦截，此UP事件将不会被响应
@@ -556,7 +566,8 @@ public class RectView extends View implements ChildLayout.IUpEvent, TimeSelectVi
     }
     @Override
     public TaskBean getClickTaskBean() {
-        return mRectAndData.get(mClickLocation);
+        Log.d(TAG, "getClickTaskBean: " + mRectAndData.size());
+        return mRectAndData.get(mRects.get(mClickLocation));
     }
 
     @Override

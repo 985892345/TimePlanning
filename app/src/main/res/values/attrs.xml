@@ -5,9 +5,9 @@
         <attr name="intervalWidth" format="dimension"/>
 <!--        每根水平线间隔的高度-->
         <attr name="intervalHeight" format="dimension"/>
-<!--        任务边框颜色-->
+<!--        默认的任务边框颜色-->
         <attr name="borderColor" format="color"/>
-<!--        任务内部颜色-->
+<!--        默认的任务内部颜色-->
         <attr name="insideColor" format="color"/>
 <!--        左侧时间文字大小，其他时间文字大小会依据该值进行缩小-->
         <attr name="timeTextSize" format="dimension"/>

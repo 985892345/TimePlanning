@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/img_left_head"
+        android:layout_width="146dp"
+        android:layout_height="146dp"
+        android:layout_marginStart="16dp"
+        android:background="@drawable/ic_head_portrait"
+        android:clickable="true"
+        android:focusable="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.35000002"
+        tools:ignore="ContentDescription" />
+
+    <TextView
+        android:id="@+id/tv_left_explain"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:focusable="true"
+        android:text="@string/left_menu_1"
+        android:textColor="@color/black"
+        android:textSize="24sp"
+        android:clickable="true"
+        app:layout_constraintEnd_toEndOf="@+id/img_left_head"
+        app:layout_constraintStart_toStartOf="@+id/img_left_head"
+        app:layout_constraintTop_toBottomOf="@+id/img_left_head" />
+
+    <TextView
+        android:id="@+id/tv_left_set"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:focusable="true"
+        android:text="@string/left_menu_2"
+        android:textColor="@color/black"
+        android:textSize="24sp"
+        android:clickable="true"
+        app:layout_constraintEnd_toEndOf="@+id/tv_left_explain"
+        app:layout_constraintStart_toStartOf="@+id/tv_left_explain"
+        app:layout_constraintTop_toBottomOf="@+id/tv_left_explain" />
+
+    <TextView
+        android:id="@+id/tv_left_donate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:focusable="true"
+        android:text="@string/left_menu_3"
+        android:textColor="@color/black"
+        android:textSize="24sp"
+        android:clickable="true"
+        app:layout_constraintBottom_toTopOf="@+id/tv_left_no_idea"
+        app:layout_constraintEnd_toEndOf="@+id/tv_left_set"
+        app:layout_constraintStart_toStartOf="@+id/tv_left_set"
+        app:layout_constraintTop_toBottomOf="@+id/tv_left_set" />
+
+    <TextView
+        android:id="@+id/tv_left_no_idea"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        android:focusable="true"
+        android:text="@string/left_menu_4"
+        android:textColor="@color/black"
+        android:textSize="24sp"
+        app:layout_constraintEnd_toEndOf="@+id/tv_left_donate"
+        app:layout_constraintStart_toStartOf="@+id/tv_left_donate"
+        app:layout_constraintTop_toBottomOf="@+id/tv_left_donate" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

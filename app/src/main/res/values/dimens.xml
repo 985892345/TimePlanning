@@ -1,14 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-<!--    TimeSelectView的时间大小-->
+
+<!--    星期字体大小-->
+    <dimen name="week_textSize">10dp</dimen>
+
+<!--    TimeView-->
+    <dimen name="out_distance">20dp</dimen>
+    <dimen name="inside_distance">12dp</dimen>
+    <!--    TimeSelectView的时间大小-->
     <dimen name="time_view_timeSize">12dp</dimen>
-<!--    TimeSelectView的任务字体大小-->
+    <!--    TimeSelectView的任务字体大小-->
     <dimen name="time_view_taskSize">14dp</dimen>
-<!--    TimeSelectView的intervalHeight-->
-    <dimen name="time_view_intervalHeight">70dp</dimen>
-<!--    TimeSelectView的intervalWidth-->
+    <!--    TimeSelectView的intervalHeight-->
+    <dimen name="time_view_intervalHeight">75dp</dimen>
+    <!--    TimeSelectView的intervalWidth-->
     <dimen name="time_view_intervalWidth">34dp</dimen>
-<!--    TimeSelectView的height-->
-    <dimen name="time_view_height">560dp</dimen>
+    <!--    TimeSelectView的height，一般为intervalHeight的8倍-->
+    <dimen name="time_view_height">600dp</dimen>
+
+<!--    登陆界面字体大小-->
+    <dimen name="login_edit_size">24sp</dimen>
+
+<!--    注册页面字体大小-->
+    <dimen name="register_edit_size">16sp</dimen>
 
 </resources>

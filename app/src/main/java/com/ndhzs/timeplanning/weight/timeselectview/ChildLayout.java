@@ -8,7 +8,6 @@ import android.view.MotionEvent;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.FrameLayout;
-import android.widget.ScrollView;
 
 import androidx.annotation.NonNull;
 
@@ -57,7 +56,6 @@ public class ChildLayout extends FrameLayout implements TimeSelectView.IIsAllowD
             case MotionEvent.ACTION_DOWN:
                 mInitialX = (int) ev.getX();
                 mInitialY = (int) ev.getY();
-                onTouchEvent(ev);
                 break;
             case MotionEvent.ACTION_MOVE:
                 if (RectView.WHICH_CONDITION == RectView.INSIDE) {
@@ -65,7 +63,9 @@ public class ChildLayout extends FrameLayout implements TimeSelectView.IIsAllowD
                 }
             case MotionEvent.ACTION_UP:
                 if (RectView.WHICH_CONDITION == RectView.INSIDE) {
-                    onTouchEvent(ev);//当只长按不移动，在松手的时候系统不会调用onTouchEvent()的UP，只能手动调用了
+                    // 当只长按不移动，在松手的时候系统不会调用onTouchEvent()的UP，只能手动调用了
+                    // 如果你移动后，就不会调用这个onInterceptTouchEvent里的UP了
+                    onTouchEvent(ev);
                     return true;
                 }
                 break;
@@ -87,6 +87,8 @@ public class ChildLayout extends FrameLayout implements TimeSelectView.IIsAllowD
                 }
                 break;
             case MotionEvent.ACTION_UP:
+                RectView.WHICH_CONDITION = 0;//还原
+                Log.d(TAG, "onTouchEvent: ");
                 float moveThreshold = X_MOVE_THRESHOLD * getWidth();
                 int keepThreshold = RectImgView.X_KEEP_THRESHOLD;
                 /*
