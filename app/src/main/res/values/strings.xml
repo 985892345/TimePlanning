@@ -1,6 +1,9 @@
 <resources>
     <string name="app_name">TimePlanning</string>
 
+    <!--    Start界面-->
+    <string name="start_welcome">欢迎使用本软件</string>
+
     <!--    dialog-->
     <!--    文本框的hit-->
     <string name="dlg_et_hit_top">What&#x0020;do&#x0020;you&#x0020;want&#x0020;to&#x0020;do?</string>

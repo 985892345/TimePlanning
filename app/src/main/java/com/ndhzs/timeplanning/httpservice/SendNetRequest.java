@@ -16,7 +16,6 @@ import java.util.HashMap;
 
 public class SendNetRequest {
 
-    private static final String TAG = "123";
     private final Handler mHandler;
 
     public SendNetRequest(Handler mHandler) {
