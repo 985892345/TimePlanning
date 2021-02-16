@@ -151,7 +151,7 @@
             android:layout_marginRight="30dp"
             android:text="@string/register"
             android:theme="@style/Theme.MaterialComponents.Light"
-            app:backgroundTint="@color/blue"
+            app:backgroundTint="@color/default_color"
             app:cornerRadius="14dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"

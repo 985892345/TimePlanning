@@ -13,7 +13,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.ndhzs.timeplanning.R;
-import com.ndhzs.timeplanning.adapter.TimeVPAdapter;
+import com.ndhzs.timeplanning.adapter.DayVpAdapter;
+import com.ndhzs.timeplanning.adapter.TimeVpAdapter;
 import com.ndhzs.timeplanning.weight.MyDrawerLayout;
 import com.ndhzs.timeplanning.weight.timeselectview.bean.TaskBean;
 
@@ -22,8 +23,9 @@ import java.util.HashSet;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
+    private ViewPager2 mDayVp;
     private ViewPager2 mTimePlanVp;
-    private HashMap<Integer, HashSet<TaskBean>> mEveryDayData = new HashMap<>();
+    private final HashMap<Integer, HashSet<TaskBean>> mEveryDayData = new HashMap<>();
     private ImageView mHeadImg;
     private TextView mExplainTv, mSetTv, mDonateTv, mNoIdeaTv;
 
@@ -37,6 +39,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void initView() {
+        mDayVp = findViewById(R.id.vp_day_view);
         mTimePlanVp = findViewById(R.id.vp_time_view);
         mHeadImg = findViewById(R.id.img_left_head);
         mExplainTv = findViewById(R.id.tv_left_explain);
@@ -48,7 +51,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         for (int i = 0; i < 12; i++) {
             mEveryDayData.put(i, new HashSet<>());
         }
-        TimeVPAdapter timeVPAdapter = new TimeVPAdapter(this, mTimePlanVp, mEveryDayData);
+        DayVpAdapter dayVpAdapter = new DayVpAdapter();
+        mDayVp.setAdapter(dayVpAdapter);
+
+        TimeVpAdapter timeVPAdapter = new TimeVpAdapter(this, mTimePlanVp, mEveryDayData);
         mTimePlanVp.setAdapter(timeVPAdapter);
 
         mHeadImg.setOnClickListener(this);

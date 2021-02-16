@@ -111,9 +111,9 @@ public class RectView extends View implements ChildLayout.IUpEvent, TimeSelectVi
         this.mBorderColor = borderColor;
         this.mInsideColor = insideColor;
     }
-    public void setTextSize(int timeTextSize, int taskTextSize) {
+    public void setTextSize(float timeTextSize, float taskTextSize) {
         mRectTimePaint.setTextSize(timeTextSize);
-        mStartTimePaint.setTextSize(mRectTimePaint.getTextSize());
+        mStartTimePaint.setTextSize(timeTextSize);
         mTextPaint.setTextSize(taskTextSize);
         mDTimePaint.setTextSize(timeTextSize * 0.9f);
 

@@ -20,8 +20,8 @@
     <style name="textInputLayout">
         <item name="android:textColorHint">#808080</item>
         <item name="colorControlNormal">#222222</item>
-        <item name="colorControlActivated">@color/blue</item>
-        <item name="colorControlHighlight">@color/blue</item>
+        <item name="colorControlActivated">@color/default_color</item>
+        <item name="colorControlHighlight">@color/default_color</item>
         <item name="colorError">@android:color/holo_red_dark</item>
     </style>
 

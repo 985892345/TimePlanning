@@ -33,7 +33,7 @@ public class StartActivity extends AppCompatActivity {
             PackageInfo packageInfo = packageManager.getPackageInfo(this.getPackageName(),0);
             textView.setText(("V " + packageInfo.versionName));
         } catch (PackageManager.NameNotFoundException e) {
-            textView.setText("无法获取版本号");
+            textView.setText("V ?");
         }
 
         new Thread() {

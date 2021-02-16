@@ -28,6 +28,16 @@
 <!--        最终的任务区域是否展示时间差，在移动和改变大小时任然会展示-->
 <!--        该boolean为static，一旦设置，所有的TimeSelectView都会设置-->
         <attr name="isShowDifferentTime" format="boolean"/>
+    </declare-styleable>
 
+    <declare-styleable name="DayView">
+<!--        圆的颜色-->
+        <attr name="circleColor" format="color"/>
+<!--        日期字体大小-->
+        <attr name="dayTextSize" format="dimension"/>
+    </declare-styleable>
+
+    <declare-styleable name="WeekView">
+        <attr name="weekTextSize" format="dimension"/>
     </declare-styleable>
 </resources>

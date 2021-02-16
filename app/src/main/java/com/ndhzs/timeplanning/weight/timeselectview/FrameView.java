@@ -66,7 +66,7 @@ public class FrameView extends View {
         this.mStartHour = startHour;
         this.mEndHour = endHour;
     }
-    public void setTextSize(int timeTextSize) {
+    public void setTextSize(float timeTextSize) {
         mLeftTimePaint.setTextSize(timeTextSize);
         Paint.FontMetrics fontMetrics = mLeftTimePaint.getFontMetrics();
         mLeftTimeCenter = (fontMetrics.bottom - fontMetrics.top) / 2 - fontMetrics.bottom;

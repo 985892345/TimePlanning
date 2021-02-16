@@ -16,14 +16,14 @@ import com.ndhzs.timeplanning.weight.timeselectview.bean.TaskBean;
 import java.util.HashMap;
 import java.util.HashSet;
 
-public class TimeVPAdapter extends RecyclerView.Adapter<TimeVPAdapter.LeftViewHolder> {
+public class TimeVpAdapter extends RecyclerView.Adapter<TimeVpAdapter.TimeViewHolder> {
 
     private Context mContext;
     private ViewPager2 mViewPager;
     private HashSet<TaskBean> mTaskBeans;
     private HashMap<Integer, HashSet<TaskBean>> mEveryDayData;
 
-    public TimeVPAdapter(Context context, ViewPager2 vp, HashMap<Integer, HashSet<TaskBean>> everyDayData) {
+    public TimeVpAdapter(Context context, ViewPager2 vp, HashMap<Integer, HashSet<TaskBean>> everyDayData) {
         this.mContext = context;
         this.mViewPager = vp;
         this.mEveryDayData = everyDayData;
@@ -31,13 +31,13 @@ public class TimeVPAdapter extends RecyclerView.Adapter<TimeVPAdapter.LeftViewHo
 
     @NonNull
     @Override
-    public LeftViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public TimeViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.viewpager2_item_timeplan, parent, false);
-        return new LeftViewHolder(view);
+        return new TimeViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull LeftViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull TimeViewHolder holder, int position) {
         holder.leftTimeView.setLinkViewPager2(mViewPager);
         holder.leftTimeView.setLinkTimeSelectView(holder.rightTimeView);
 
@@ -47,7 +47,6 @@ public class TimeVPAdapter extends RecyclerView.Adapter<TimeVPAdapter.LeftViewHo
         holder.leftTimeView.setOnScrollViewListener(new TimeSelectView.onScrollViewListener() {
             @Override
             public void onScrollChanged(int y) {
-                holder.rightTimeView.setIsOpenScrollCallBack(false);
                 holder.rightTimeView.scrollTo(0, y);
             }
         });
@@ -56,7 +55,6 @@ public class TimeVPAdapter extends RecyclerView.Adapter<TimeVPAdapter.LeftViewHo
         holder.rightTimeView.setOnScrollViewListener(new TimeSelectView.onScrollViewListener() {
             @Override
             public void onScrollChanged(int y) {
-                holder.leftTimeView.setIsOpenScrollCallBack(false);
                 holder.leftTimeView.scrollTo(0, y);
             }
         });
@@ -96,14 +94,14 @@ public class TimeVPAdapter extends RecyclerView.Adapter<TimeVPAdapter.LeftViewHo
         nameDialog.show();
     }
 
-    static class LeftViewHolder extends RecyclerView.ViewHolder{
+    static class TimeViewHolder extends RecyclerView.ViewHolder {
 
         TimeSelectView leftTimeView;
         TimeSelectView rightTimeView;
-        public LeftViewHolder(@NonNull View itemView) {
+        public TimeViewHolder(@NonNull View itemView) {
             super(itemView);
-            leftTimeView = itemView.findViewById(R.id.time_view_left);
-            rightTimeView = itemView.findViewById(R.id.time_view_right);
+            leftTimeView = itemView.findViewById(R.id.vp_item_time_left);
+            rightTimeView = itemView.findViewById(R.id.vp_item_time_right);
         }
     }
 

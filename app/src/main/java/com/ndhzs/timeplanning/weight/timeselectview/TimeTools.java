@@ -19,7 +19,7 @@ public class TimeTools {
      */
     public final float[] mEveryMinuteHeight = new float[61];
     public static final int DELAY_NOW_TIME_REFRESH = 30000;//刷新当前时间高度的间隔时间
-    public static final int DELAY_BACK_CURRENT_TIME = 10000;//回到当前时间的延缓时间
+    public static final int DELAY_BACK_CURRENT_TIME = 15000;//回到当前时间的延缓时间
     public int TIME_INTERVAL = 15;//按下空白区域时起始时间的分钟间隔数(必须为60的因数)
 
     public TimeTools(int hLineWidth, int extraHeight, int intervalHeight, int startHour) {

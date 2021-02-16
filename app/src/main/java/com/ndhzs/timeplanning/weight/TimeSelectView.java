@@ -39,8 +39,8 @@ public class TimeSelectView extends ScrollView {
     private final int mIntervalHeight;//一个小时的间隔高度
     private final int mBorderColor;//矩形边框颜色
     private final int mInsideColor;//矩形内部颜色
-    private final int mTimeTextSide;//时间字体大小
-    private final int mTaskTextSize;//任务字体大小
+    private final float mTimeTextSide;//时间字体大小
+    private final float mTaskTextSize;//任务字体大小
     private final TimeTools mTimeTools;
     private boolean mIsOpenScrollCallBack = true;//设置mIsCloseUserActionJudge，将在被其他非触摸操作滑动时不会回调滑动的接口
 
@@ -178,8 +178,8 @@ public class TimeSelectView extends ScrollView {
         mIntervalLeft = (int)ty.getDimension(R.styleable.TimeSelectView_intervalWidth, 110);
         mIntervalHeight = (int)ty.getDimension(R.styleable.TimeSelectView_intervalHeight, 194);
         mExtraHeight = (int)(mIntervalHeight * 0.5f);
-        mTimeTextSide = (int)ty.getDimension(R.styleable.TimeSelectView_timeTextSize, 40);
-        mTaskTextSize = (int)ty.getDimension(R.styleable.TimeSelectView_taskTextSize, 40);
+        mTimeTextSide = ty.getDimension(R.styleable.TimeSelectView_timeTextSize, 40);
+        mTaskTextSize = ty.getDimension(R.styleable.TimeSelectView_taskTextSize, 40);
         mCenterTime = ty.getFloat(R.styleable.TimeSelectView_centerTime, -1);
         mStartHour = ty.getInteger(R.styleable.TimeSelectView_startHour, 2);
         mEndHour = ty.getInteger(R.styleable.TimeSelectView_endHour, 24 + 2);

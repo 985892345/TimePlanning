@@ -12,7 +12,7 @@
         android:id="@+id/view_statusBar"
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="@color/blue"
+        android:background="@color/default_color"
         android:orientation="horizontal"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -20,7 +20,7 @@
         android:id="@+id/toolbar"
         android:layout_width="0dp"
         android:layout_height="?actionBarSize"
-        android:background="@color/blue"
+        android:background="@color/default_color"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
@@ -34,90 +34,17 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginTop="8dp"
-        android:layout_marginBottom="24dp"
+        android:layout_marginBottom="16dp"
         android:orientation="vertical"
         app:layout_constraintBottom_toTopOf="@+id/vp_time_view"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/toolbar">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <com.ndhzs.timeplanning.weight.WeekView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <TextView
-                android:id="@+id/tv_week_8"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="日"
-                android:textSize="@dimen/week_textSize"
-                app:layout_constraintEnd_toStartOf="@+id/tv_week_1"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="@+id/tv_week_1" />
-
-            <TextView
-                android:id="@+id/tv_week_1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="一"
-                android:textSize="@dimen/week_textSize"
-                app:layout_constraintEnd_toStartOf="@+id/tv_week_2"
-                app:layout_constraintStart_toEndOf="@+id/tv_week_8"
-                app:layout_constraintTop_toTopOf="@+id/tv_week_2" />
-
-            <TextView
-                android:id="@+id/tv_week_2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="二"
-                android:textSize="@dimen/week_textSize"
-                app:layout_constraintEnd_toStartOf="@+id/tv_week_3"
-                app:layout_constraintStart_toEndOf="@+id/tv_week_1"
-                app:layout_constraintTop_toTopOf="@+id/tv_week_3" />
-
-            <TextView
-                android:id="@+id/tv_week_3"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="三"
-                android:textSize="@dimen/week_textSize"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="@+id/tv_week_4"
-                app:layout_constraintStart_toEndOf="@+id/tv_week_2"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <TextView
-                android:id="@+id/tv_week_4"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="四"
-                android:textSize="@dimen/week_textSize"
-                app:layout_constraintEnd_toStartOf="@+id/tv_week_5"
-                app:layout_constraintStart_toEndOf="@+id/tv_week_3"
-                app:layout_constraintTop_toTopOf="@+id/tv_week_3" />
-
-            <TextView
-                android:id="@+id/tv_week_5"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="五"
-                android:textSize="@dimen/week_textSize"
-                app:layout_constraintEnd_toStartOf="@+id/tv_week_6"
-                app:layout_constraintStart_toEndOf="@+id/tv_week_4"
-                app:layout_constraintTop_toTopOf="@+id/tv_week_4" />
-
-            <TextView
-                android:id="@+id/tv_week_6"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="1dp"
-                android:text="六"
-                android:textSize="@dimen/week_textSize"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@+id/tv_week_5"
-                app:layout_constraintTop_toTopOf="@+id/tv_week_5" />
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
+            android:layout_height="wrap_content"
+            app:weekTextSize="@dimen/week_textSize" />
 
         <androidx.viewpager2.widget.ViewPager2
             android:id="@+id/vp_day_view"

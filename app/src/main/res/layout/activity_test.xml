@@ -20,7 +20,7 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <com.ndhzs.timeplanning.weight.TimeSelectView
-            android:id="@+id/time_view_left"
+            android:id="@+id/vp_item_time_left"
             android:layout_width="180dp"
             android:layout_height="400dp"
             app:centerTime="10.5"
