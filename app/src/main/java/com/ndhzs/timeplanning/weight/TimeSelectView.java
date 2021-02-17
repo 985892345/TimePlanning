@@ -56,8 +56,8 @@ public class TimeSelectView extends ScrollView {
     public static boolean IS_SHOW_TOP_BOTTOM_TIME = true;//是否绘制上下边界时间
     public static boolean IS_SHOW_DIFFERENT_TIME = true;//是否绘制时间差
 
-    private onScrollViewListener mOnScrollViewListener;
-    private onDataChangeListener mOnDataChangeListener;
+    private OnScrollViewListener mOnScrollViewListener;
+    private OnDataChangeListener mOnDataChangeListener;
 
     /**
      * 得到点击的数据对象
@@ -80,7 +80,7 @@ public class TimeSelectView extends ScrollView {
      * 来打开只有用户触摸时才能回调滑动接口
      * @param onScrollViewListener 滑动监听
      */
-    public void setOnScrollViewListener(onScrollViewListener onScrollViewListener) {
+    public void setOnScrollViewListener(OnScrollViewListener onScrollViewListener) {
         this.mOnScrollViewListener = onScrollViewListener;
     }
 
@@ -157,8 +157,10 @@ public class TimeSelectView extends ScrollView {
         }, 200);
     }
 
-    public void setOnDataChangeListener(onDataChangeListener onDataChangeListener) {
+    public void setOnDataChangeListener(OnDataChangeListener onDataChangeListener) {
         this.mOnDataChangeListener = onDataChangeListener;
+        mRectView.setOnDataIncreaseListener(mOnDataChangeListener);
+        mLayoutChild.setOnDataDeleteListener(mOnDataChangeListener);
     }
 
     /**
@@ -230,7 +232,7 @@ public class TimeSelectView extends ScrollView {
     }
 
     private boolean mIsLongPress;//是否是长按
-    private static final int MOVE_THRESHOLD = 15;//识别是长按而能移动的阀值
+    private final int MOVE_THRESHOLD = 15;//识别是长按而能移动的阈值
     private final Runnable mLongPressRun = new Runnable() {
         @Override
         public void run() {
@@ -618,7 +620,7 @@ public class TimeSelectView extends ScrollView {
 
     public interface IRectView {
         boolean isClick(int y);
-        void setOnDataChangeListener(onDataChangeListener onDataChangeListener);
+        void setOnDataIncreaseListener(OnDataChangeListener onDataChangeListener);
         void setData(HashSet<TaskBean> taskBeans);
         void isAllowDraw(boolean isAllowDraw);
         void longPress(int y);
@@ -629,18 +631,20 @@ public class TimeSelectView extends ScrollView {
         RectImgView getImgViewRect();
         TaskBean getClickTaskBean();
     }
-    public interface IIsAllowDraw {
+    public interface IChildLayout {
+        void setOnDataDeleteListener(OnDataChangeListener onDataChangeListener);
         void isAllowDraw(boolean isAllowDraw);
     }
-    public interface onScrollViewListener {
+    public interface OnScrollViewListener {
         /**
          * 设置了CenterTime后的滑动值不会返回
          * @param y 当前ScrollView的ScrollY
          */
         void onScrollChanged(int y);
     }
-    public interface onDataChangeListener {
-        void onDataChanged(TaskBean newData);
+    public interface OnDataChangeListener {
+        void onDataIncrease(TaskBean newData);
+        void onDataDelete(TaskBean deletedData);
     }
 
     private static final String TAG = "123";

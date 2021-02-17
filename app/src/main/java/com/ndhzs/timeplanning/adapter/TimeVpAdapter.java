@@ -13,17 +13,19 @@ import com.ndhzs.timeplanning.weight.NameDialog;
 import com.ndhzs.timeplanning.weight.TimeSelectView;
 import com.ndhzs.timeplanning.weight.timeselectview.bean.TaskBean;
 
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 
 public class TimeVpAdapter extends RecyclerView.Adapter<TimeVpAdapter.TimeViewHolder> {
 
-    private Context mContext;
-    private ViewPager2 mViewPager;
+    private final Context mContext;
+    private final ViewPager2 mViewPager;
+    private boolean mIsShowTopBottomTime = true;
+    private boolean mIsShowDifferentTime = false;
     private HashSet<TaskBean> mTaskBeans;
-    private HashMap<Integer, HashSet<TaskBean>> mEveryDayData;
+    private List<HashSet<TaskBean>> mEveryDayData;
 
-    public TimeVpAdapter(Context context, ViewPager2 vp, HashMap<Integer, HashSet<TaskBean>> everyDayData) {
+    public TimeVpAdapter(Context context, ViewPager2 vp, List<HashSet<TaskBean>> everyDayData) {
         this.mContext = context;
         this.mViewPager = vp;
         this.mEveryDayData = everyDayData;
@@ -35,54 +37,59 @@ public class TimeVpAdapter extends RecyclerView.Adapter<TimeVpAdapter.TimeViewHo
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.viewpager2_item_timeplan, parent, false);
         return new TimeViewHolder(view);
     }
-
     @Override
     public void onBindViewHolder(@NonNull TimeViewHolder holder, int position) {
-        holder.leftTimeView.setLinkViewPager2(mViewPager);
-        holder.leftTimeView.setLinkTimeSelectView(holder.rightTimeView);
-
-        holder.leftTimeView.setData(mEveryDayData.get(position));
-        holder.rightTimeView.setData(mEveryDayData.get(position));
-
-        holder.leftTimeView.setOnScrollViewListener(new TimeSelectView.onScrollViewListener() {
-            @Override
-            public void onScrollChanged(int y) {
-                holder.rightTimeView.scrollTo(0, y);
-            }
-        });
-        holder.rightTimeView.setLinkViewPager2(mViewPager);
-        holder.rightTimeView.setLinkTimeSelectView(holder.leftTimeView);
-        holder.rightTimeView.setOnScrollViewListener(new TimeSelectView.onScrollViewListener() {
-            @Override
-            public void onScrollChanged(int y) {
-                holder.leftTimeView.scrollTo(0, y);
-            }
-        });
-
-        holder.leftTimeView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                click(holder.leftTimeView);
-            }
-        });
-        holder.rightTimeView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                click(holder.rightTimeView);
-            }
-        });
+        processTimeView(holder.leftTimeView, holder.rightTimeView, position);
+        processTimeView(holder.rightTimeView, holder.leftTimeView, position);
     }
-
     @Override
     public int getItemCount() {
         return mEveryDayData.size();
     }
 
-    public void setEveryDayData(HashMap<Integer, HashSet<TaskBean>> everyDayData) {
+    public void setEveryDayData(List<HashSet<TaskBean>> everyDayData) {
         this.mEveryDayData = everyDayData;
         notifyDataSetChanged();
     }
+    public void setIsShowTopBottomTime(boolean is) {
+        this.mIsShowTopBottomTime = is;
+        notifyDataSetChanged();
+    }
+    public void setIsShowDifferentTime(boolean is) {
+        this.mIsShowDifferentTime = is;
+        notifyDataSetChanged();
+    }
 
+    private void processTimeView(TimeSelectView v1, TimeSelectView v2, int position) {
+        v1.setLinkTimeSelectView(v2);
+        v1.setLinkViewPager2(mViewPager);
+        v1.setData(mEveryDayData.get(position));
+        v1.setIsShowTopBottomTime(mIsShowTopBottomTime);
+        v1.setIsShowDifferentTime(mIsShowDifferentTime);
+        v1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                click(v1);
+            }
+        });
+        v1.setOnScrollViewListener(new TimeSelectView.OnScrollViewListener() {
+            @Override
+            public void onScrollChanged(int y) {
+                v2.scrollTo(0, y);
+            }
+        });
+        v1.setOnDataChangeListener(new TimeSelectView.OnDataChangeListener() {
+            @Override
+            public void onDataIncrease(TaskBean newData) {
+                mEveryDayData.get(position).add(newData);
+            }
+
+            @Override
+            public void onDataDelete(TaskBean deletedData) {
+                mEveryDayData.get(position).remove(deletedData);
+            }
+        });
+    }
     private void click(TimeSelectView timeView) {
         NameDialog nameDialog = new NameDialog(mContext, R.style.dialog, timeView.getClickTaskBean());
         nameDialog.setOnDlgCloseListener(new NameDialog.onDlgCloseListener() {
@@ -93,7 +100,6 @@ public class TimeVpAdapter extends RecyclerView.Adapter<TimeVpAdapter.TimeViewHo
         });
         nameDialog.show();
     }
-
     static class TimeViewHolder extends RecyclerView.ViewHolder {
 
         TimeSelectView leftTimeView;

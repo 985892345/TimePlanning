@@ -10,7 +10,16 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.ndhzs.timeplanning.R;
 import com.ndhzs.timeplanning.weight.DayView;
 
+import java.util.List;
+
 public class DayVpAdapter extends RecyclerView.Adapter<DayVpAdapter.DayViewHolder> {
+
+    private List<String[][]> mDays;
+
+    public DayVpAdapter(List<String[][]> days) {
+        this.mDays = days;
+    }
+
     @NonNull
     @Override
     public DayViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -20,7 +29,7 @@ public class DayVpAdapter extends RecyclerView.Adapter<DayVpAdapter.DayViewHolde
 
     @Override
     public void onBindViewHolder(@NonNull DayViewHolder holder, int position) {
-
+        //holder.mDayView.setWeek(mDays.get(position));
     }
 
     @Override

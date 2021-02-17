@@ -48,7 +48,7 @@ public class RectView extends View implements ChildLayout.IUpEvent, TimeSelectVi
     private final List<Rect> mRects = new ArrayList<>();
     private final HashMap<Rect, TaskBean> mRectAndData = new HashMap<>();
     private RectImgView mImgViewRect;
-    private TimeSelectView.onDataChangeListener mOnDataChangeListener;
+    private TimeSelectView.OnDataChangeListener mOnDataChangeListener;
 
     private boolean mIsAllowDraw;//说明正在自动滑动，通知onTouchEvent()的MOVE不要处理，不然绘图会卡
 
@@ -464,11 +464,15 @@ public class RectView extends View implements ChildLayout.IUpEvent, TimeSelectVi
                     mRects.add(re);
                     TaskBean taskBean = new TaskBean(mTimeTools.getTime(re.top),
                             mTimeTools.getDiffTime(re.top, re.bottom));
+                    taskBean.setYear(mTimeTools.getYear());
+                    taskBean.setMonth(mTimeTools.getMonth());
+                    taskBean.setDay(mTimeTools.getDay());
+                    taskBean.setWeek(mTimeTools.getWeek());
                     taskBean.setName("点击设置任务名称");
                     taskBean.setBorderColor(mBorderColor);
                     taskBean.setInsideColor(mInsideColor);
                     mRectAndData.put(re, taskBean);
-                    dataChange(taskBean);
+                    dataIncrease(taskBean);
                 }
                 WHICH_CONDITION = 0;
                 Rect refreshRect = new Rect(initialRect.left, initialRect.top - 100, initialRect.right, initialRect.bottom + 100);
@@ -517,7 +521,8 @@ public class RectView extends View implements ChildLayout.IUpEvent, TimeSelectVi
         }
         return false;
     }
-    public void setOnDataChangeListener(TimeSelectView.onDataChangeListener onDataChangeListener) {
+    @Override
+    public void setOnDataIncreaseListener(TimeSelectView.OnDataChangeListener onDataChangeListener) {
         this.mOnDataChangeListener = onDataChangeListener;
     }
     @Override
@@ -637,9 +642,9 @@ public class RectView extends View implements ChildLayout.IUpEvent, TimeSelectVi
         invalidate();
     }
 
-    public void dataChange(TaskBean newData) {
+    public void dataIncrease(TaskBean newData) {
         if (mOnDataChangeListener != null) {
-            mOnDataChangeListener.onDataChanged(newData);
+            mOnDataChangeListener.onDataIncrease(newData);
         }
     }
 

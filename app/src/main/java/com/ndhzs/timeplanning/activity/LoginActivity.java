@@ -1,7 +1,6 @@
 package com.ndhzs.timeplanning.activity;
 
 import android.annotation.SuppressLint;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
@@ -22,33 +21,31 @@ import com.ndhzs.timeplanning.TextWatcher.BaseTextWatcher;
 import com.ndhzs.timeplanning.httpservice.SendNetRequest;
 import com.ndhzs.timeplanning.weight.RegisterDialog;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
-import java.util.Objects;
 
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener {
 
-    private Button btnForgetPassword;
-    private Button btnRegister;
-    private Button btnLogin;
-    private Button btnQQ;
-    private Button btnWechat;
-    private CheckBox cbRemember;
-    private TextInputLayout tilUsername;
-    private TextInputLayout tilPassword;
-    private TextInputEditText etUsername;
-    private TextInputEditText etPassword;
+    private Button mBtnForgetPassword;
+    private Button mBtnRegister;
+    private Button mBtnLogin;
+    private Button mBtnQQ;
+    private Button mBtnWechat;
+    private CheckBox mCbRemember;
+    private TextInputLayout mTilUsername;
+    private TextInputLayout mTilPassword;
+    private TextInputEditText mEtUsername;
+    private TextInputEditText mEtPassword;
 
-    private SharedPreferences shared;
-    private SharedPreferences.Editor editor;
+    private SharedPreferences mShared;
+    private SharedPreferences.Editor mEditor;
 
-    private RegisterDialog registerDialog;
+    private RegisterDialog mRegisterDialog;
 
     private MHandler mHandler;
-
-    private static final String TAG = "123";
-    private static final int SUCCEED = 0;
-    private static final int FAIL = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,49 +57,49 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     }
 
     private void initView() {
-        btnForgetPassword = findViewById(R.id.login_btn_forgetPassword);
-        btnRegister = findViewById(R.id.login_btn_register);
-        btnLogin = findViewById(R.id.login_btn_login);
-        btnQQ = findViewById(R.id.login_btn_qq);
-        btnWechat = findViewById(R.id.login_btn_wechat);
+        mBtnForgetPassword = findViewById(R.id.login_btn_forgetPassword);
+        mBtnRegister = findViewById(R.id.login_btn_register);
+        mBtnLogin = findViewById(R.id.login_btn_login);
+        mBtnQQ = findViewById(R.id.login_btn_qq);
+        mBtnWechat = findViewById(R.id.login_btn_wechat);
 
-        cbRemember = findViewById(R.id.login_cb_remember);
+        mCbRemember = findViewById(R.id.login_cb_remember);
 
-        tilUsername = findViewById(R.id.login_til_username);
-        tilPassword = findViewById(R.id.login_til_password);
+        mTilUsername = findViewById(R.id.login_til_username);
+        mTilPassword = findViewById(R.id.login_til_password);
 
-        etUsername = findViewById(R.id.login_et_username);
-        etPassword = findViewById(R.id.login_et_password);
+        mEtUsername = findViewById(R.id.login_et_username);
+        mEtPassword = findViewById(R.id.login_et_password);
     }
 
     private void initEvent() {
-        shared = getSharedPreferences("data", MODE_PRIVATE);
-        editor = shared.edit();
-        btnForgetPassword.setOnClickListener(this);
-        btnRegister.setOnClickListener(this);
-        btnLogin.setOnClickListener(this);
-        btnQQ.setOnClickListener(this);
-        btnWechat.setOnClickListener(this);
+        mShared = getSharedPreferences("login", MODE_PRIVATE);
+        mBtnForgetPassword.setOnClickListener(this);
+        mBtnRegister.setOnClickListener(this);
+        mBtnLogin.setOnClickListener(this);
+        mBtnQQ.setOnClickListener(this);
+        mBtnWechat.setOnClickListener(this);
 
-        cbRemember.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        mCbRemember.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                editor.putBoolean("remember_password", isChecked);
-                editor.apply();
+                mEditor = mShared.edit();
+                mEditor.putBoolean("remember_password", isChecked);
+                mEditor.apply();
             }
         });
 
-        etUsername.addTextChangedListener(new BaseTextWatcher(tilUsername));
-        etPassword.addTextChangedListener(new BaseTextWatcher(tilPassword));
+        mEtUsername.addTextChangedListener(new BaseTextWatcher(mTilUsername));
+        mEtPassword.addTextChangedListener(new BaseTextWatcher(mTilPassword));
 
         //记录是否记住密码
-        cbRemember.setChecked(shared.getBoolean("remember_password", false));
-        if (cbRemember.isChecked()){
+        mCbRemember.setChecked(mShared.getBoolean("remember_password", false));
+        if (mCbRemember.isChecked()){
 
-            String username = shared.getString("username", null);
+            String username = mShared.getString("username", null);
             if (username != null) {
-                etUsername.setText(username);
-                etPassword.setText(shared.getString("password", null));
+                mEtUsername.setText(username);
+                mEtPassword.setText(mShared.getString("password", null));
             }
         }
     }
@@ -115,24 +112,25 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 Toast.makeText(this, "暂时不能改密码！", Toast.LENGTH_SHORT).show();
                 break;
             case R.id.login_btn_register :
-                registerDialog = new RegisterDialog(LoginActivity.this, R.style.dialog);
-                registerDialog.setRegisterDialogListener(new RegisterDialog.RegisterDialogListener() {
+                mRegisterDialog = new RegisterDialog(LoginActivity.this, R.style.dialog);
+                mRegisterDialog.setRegisterDialogListener(new RegisterDialog.RegisterDialogListener() {
                     @Override
                     public void ClosedClickListener(String username, String password) {
-                        sharedPreferencesEditor(username, password);
-                        etUsername.setText(username);
-                        etPassword.setText(password);
-                        registerDialog.dismiss();
+                        sharedEditor(username, password);
+                        mEtUsername.setText(username);
+                        mEtPassword.setText(password);
+                        mRegisterDialog.dismiss();
                     }
                 });
-                registerDialog.show();
+                mRegisterDialog.show();
                 break;
             case R.id.login_btn_login :
-                String username = Objects.requireNonNull(etUsername.getText()).toString();
-                String password = Objects.requireNonNull(etPassword.getText()).toString();
+                String username = mEtUsername.getText().toString();
+                String password = mEtPassword.getText().toString();
                 if (username.equals("")|| password.equals("")){
                     Toast.makeText(this, "请输入完整！", Toast.LENGTH_SHORT).show();
                 }else {
+                    Toast.makeText(this, "请求登陆中，请耐心等待", Toast.LENGTH_SHORT).show();
                     HashMap<String, String> map = new HashMap<>();
                     map.put("username", username);
                     map.put("password", password);
@@ -148,15 +146,17 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     }
 
     //写进SharedPreferences
-    public void sharedPreferencesEditor(String username, String password) {
-        editor.putString("username", username);
-        editor.putString("password", password);
-        editor.apply();
+    public void sharedEditor(String username, String password) {
+        mEditor.putString("username", username);
+        mEditor.putString("password", password);
+        mEditor.apply();
     }
 
     private static class MHandler extends Handler {
 
         private final WeakReference<LoginActivity> weakReference;
+        private final int SUCCEED = 0;
+        private final int FAIL = -1;
 
         public MHandler(LoginActivity activity) {
             this.weakReference = new WeakReference<>(activity);
@@ -166,23 +166,27 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         public void handleMessage(@NonNull Message msg) {
             super.handleMessage(msg);
             LoginActivity activity= weakReference.get();
-
-            String[] data = (String[]) msg.obj;
-
             if (activity != null){
-                switch (msg.what) {
-                    case SUCCEED : {
-                        activity.sharedPreferencesEditor(data[0], data[1]);
-//                        Intent intent = new Intent(activity, ContentActivity.class);
-//                        activity.startActivity(intent);
-                        break;
+                JSONObject js = (JSONObject) msg.obj;
+                try {
+                    int errorCode = js.getInt("errorCode");
+                    switch (errorCode) {
+                        case SUCCEED:
+                            String username = activity.mEtUsername.getText().toString();
+                            String password = activity.mEtPassword.getText().toString();
+                            activity.sharedEditor(username, password);
+                            Toast.makeText(activity, "登陆成功，欢迎回来！", Toast.LENGTH_SHORT).show();
+                            activity.finish();
+                            break;
+                        case FAIL:
+                            String errorMsg = js.getString("errorMsg");
+                            Toast.makeText(activity, "登陆失败！", Toast.LENGTH_LONG).show();
+                            activity.mTilUsername.setError(errorMsg);
+                            activity.mTilPassword.setError(errorMsg);
+                            break;
                     }
-                    case FAIL : {
-                        Toast.makeText(activity, "登陆失败！", Toast.LENGTH_LONG).show();
-                        activity.tilUsername.setError(data[2]);
-                        activity.tilPassword.setError(data[2]);
-                        break;
-                    }
+                }catch (JSONException e) {
+                    Toast.makeText(activity, "Json读取出错！", Toast.LENGTH_LONG).show();
                 }
             }
         }

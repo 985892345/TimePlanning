@@ -5,6 +5,11 @@ import java.util.List;
 
 public class TaskBean {
 
+    private int mYear;
+    private int mMonth;
+    private int mDay;
+    private int mWeek;
+
     private String mStartTime;
     private String mDiffTime;
     private String mName;
@@ -16,6 +21,34 @@ public class TaskBean {
     public TaskBean(String startTime, String diffTime) {
         this.mStartTime = startTime;
         this.mDiffTime = diffTime;
+    }
+
+    public int getYear() {
+        return mYear;
+    }
+    public void setYear(int year) {
+        mYear = year;
+    }
+
+    public int getMonth() {
+        return mMonth;
+    }
+    public void setMonth(int month) {
+        mMonth = month;
+    }
+
+    public int getDay() {
+        return mDay;
+    }
+    public void setDay(int day) {
+        mDay = day;
+    }
+
+    public int getWeek() {
+        return mWeek;
+    }
+    public void setWeek(int week) {
+        mWeek = week;
     }
 
     public String getStartTime() {

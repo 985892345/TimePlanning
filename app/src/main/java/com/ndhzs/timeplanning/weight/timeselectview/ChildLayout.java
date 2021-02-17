@@ -14,7 +14,7 @@ import androidx.annotation.NonNull;
 import com.ndhzs.timeplanning.weight.TimeSelectView;
 import com.ndhzs.timeplanning.weight.timeselectview.bean.TaskBean;
 
-public class ChildLayout extends FrameLayout implements TimeSelectView.IIsAllowDraw {
+public class ChildLayout extends FrameLayout implements TimeSelectView.IChildLayout {
 
     private Context mContext;
     private IUpEvent mIRectView;
@@ -23,6 +23,7 @@ public class ChildLayout extends FrameLayout implements TimeSelectView.IIsAllowD
     private ChildLayout mLinkChildLayout;
     private TimeTools mLinkTimeTools;
     private TaskBean mTaskBean;
+    private TimeSelectView.OnDataChangeListener mOnDataChangeListener;
     private int mDiffDistance = 0;
     private int mInitialX, mInitialY;//长按已选择的区域时的坐标
     private int mUpperLimit, mLowerLimit;//当前矩形的上下限，不能移动到其他矩形区域
@@ -88,7 +89,6 @@ public class ChildLayout extends FrameLayout implements TimeSelectView.IIsAllowD
                 break;
             case MotionEvent.ACTION_UP:
                 RectView.WHICH_CONDITION = 0;//还原
-                Log.d(TAG, "onTouchEvent: ");
                 float moveThreshold = X_MOVE_THRESHOLD * getWidth();
                 int keepThreshold = RectImgView.X_KEEP_THRESHOLD;
                 /*
@@ -158,6 +158,7 @@ public class ChildLayout extends FrameLayout implements TimeSelectView.IIsAllowD
         return true;
     }
     private void deleteImgView() {
+        dataDeleted(mTaskBean);
         if (mLinkImgView != null) {
             mLinkImgView.animate()
                     .scaleX(0)
@@ -412,6 +413,16 @@ public class ChildLayout extends FrameLayout implements TimeSelectView.IIsAllowD
         }
     }
 
+    public void dataDeleted(TaskBean deletedData) {
+        if (mOnDataChangeListener != null) {
+            mOnDataChangeListener.onDataDelete(deletedData);
+        }
+    }
+
+    @Override
+    public void setOnDataDeleteListener(TimeSelectView.OnDataChangeListener onDataChangeListener) {
+        this.mOnDataChangeListener = onDataChangeListener;
+    }
     @Override
     public void isAllowDraw(boolean isAllowDraw) {
         mIsAllowDraw = isAllowDraw;

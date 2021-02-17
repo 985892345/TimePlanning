@@ -22,6 +22,9 @@ import com.ndhzs.timeplanning.TextWatcher.Password1Watcher;
 import com.ndhzs.timeplanning.TextWatcher.Password2Watcher;
 import com.ndhzs.timeplanning.httpservice.SendNetRequest;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Objects;
@@ -41,9 +44,6 @@ public class RegisterDialog extends Dialog {
     private Button mBtnRegister;
     private MHandler mHandler;
     private RegisterDialogListener mListener;
-
-    private static final int SUCCEED = 0;
-    private static final int FAIL = -1;
 
 
     public RegisterDialog(Context context, int themeResId) {
@@ -99,14 +99,14 @@ public class RegisterDialog extends Dialog {
         @Override
         public void onClick(View v) {
             boolean isOk = true;
-            String username = Objects.requireNonNull(mEtUsername.getText()).toString();
-            String password2 = Objects.requireNonNull(mEtPassword2.getText()).toString();
-            String phoneNum = Objects.requireNonNull(mEtPhone.getText()).toString();
+            String username = mEtUsername.getText().toString();
+            String password = mEtPassword1.getText().toString();
+            String phoneNum = mEtPhone.getText().toString();
             if (username.equals("")){
                 isOk = false;
                 mTilUsername.setError("用户名不能为空！");
             }
-            if (password2.equals("")){
+            if (password.equals("")){
                 isOk = false;
                 mTilPassword1.setError("密码不能为空！");
             }
@@ -117,8 +117,8 @@ public class RegisterDialog extends Dialog {
             if (isOk) {
                 HashMap<String, String> map = new HashMap<>();
                 map.put("username", username);
-                map.put("password", password2);
-                map.put("repassword", password2);
+                map.put("password", password);
+                map.put("repassword", password);
                 mHandler = new MHandler(RegisterDialog.this);
                 new SendNetRequest(mHandler).sendPostNetRequest("https://www.wanandroid.com/user/register", map);
             }
@@ -128,6 +128,8 @@ public class RegisterDialog extends Dialog {
     private static class MHandler extends Handler {
 
         private final WeakReference<RegisterDialog> weakReference;
+        private final int SUCCEED = 0;
+        private final int FAIL = -1;
 
         public MHandler(RegisterDialog dialog) {
             this.weakReference = new WeakReference<>(dialog);
@@ -137,23 +139,25 @@ public class RegisterDialog extends Dialog {
         public void handleMessage(@NonNull Message msg) {
             super.handleMessage(msg);
             RegisterDialog dialog= weakReference.get();
-
-            String[] data = (String[]) msg.obj;
-
-            if (dialog != null){
-                switch (msg.what) {
-                    case SUCCEED : {
-                        Toast.makeText(dialog.mContext, "注册成功！", Toast.LENGTH_SHORT).show();
-                        String username = data[0];
-                        String password = data[1];
-                        dialog.mListener.ClosedClickListener(username, password);
-                        break;
+            if (dialog != null) {
+                JSONObject js = (JSONObject) msg.obj;
+                try {
+                    int errorCode = js.getInt("errorCode");
+                    switch (errorCode) {
+                        case SUCCEED:
+                            Toast.makeText(dialog.mContext, "注册成功！", Toast.LENGTH_SHORT).show();
+                            String username = dialog.mEtUsername.getText().toString();
+                            String password = dialog.mEtPassword1.getText().toString();
+                            dialog.mListener.ClosedClickListener(username, password);
+                            break;
+                        case FAIL:
+                            String errorMsg = js.getString("errorMsg");
+                            Toast.makeText(dialog.mContext, "注册失败！", Toast.LENGTH_LONG).show();
+                            dialog.mTilUsername.setError(errorMsg);
+                            break;
                     }
-                    case FAIL : {
-                        Toast.makeText(dialog.mContext, "注册失败！", Toast.LENGTH_LONG).show();
-                        dialog.mTilUsername.setError(data[2]);
-                        break;
-                    }
+                }catch (JSONException e) {
+                    Toast.makeText(dialog.mContext, "Json读取出错！", Toast.LENGTH_LONG).show();
                 }
             }
         }

@@ -1,7 +1,5 @@
 package com.ndhzs.timeplanning.weight.timeselectview;
 
-import android.util.Log;
-
 import java.util.Calendar;
 
 public class TimeTools {
@@ -170,6 +168,18 @@ public class TimeTools {
         return (mTopTimeHour - mStartHour) * mIntervalHeight - mHLineWidth + (int)Math.ceil(mEveryMinuteHeight[mTopTimeMinute + 1]) - 1;
     }
 
+    public int getYear() {
+        return Calendar.getInstance().get(Calendar.YEAR);
+    }
+    public int getMonth() {
+        return Calendar.getInstance().get(Calendar.MONTH) + 1;
+    }
+    public int getDay() {
+        return Calendar.getInstance().get(Calendar.DATE);
+    }
+    public int getWeek() {
+        return Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
+    }
     public float getNowTime() {
         Calendar calendar = Calendar.getInstance();
         int hour = calendar.get(Calendar.HOUR_OF_DAY);

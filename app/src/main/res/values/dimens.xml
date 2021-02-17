@@ -3,7 +3,7 @@
 
 <!--    星期字体大小-->
     <dimen name="week_textSize">12dp</dimen>
-    <dimen name="week_day_textSize">24dp</dimen>
+    <dimen name="week_day_textSize">22dp</dimen>
 
 <!--    TimeView-->
     <dimen name="out_distance">20dp</dimen>
@@ -13,11 +13,11 @@
     <!--    TimeSelectView的任务字体大小-->
     <dimen name="time_view_taskSize">14dp</dimen>
     <!--    TimeSelectView的intervalHeight-->
-    <dimen name="time_view_intervalHeight">70dp</dimen>
+    <dimen name="time_view_intervalHeight">78dp</dimen>
     <!--    TimeSelectView的intervalWidth-->
     <dimen name="time_view_intervalWidth">34dp</dimen>
     <!--    TimeSelectView的height，一般为intervalHeight的8倍-->
-    <dimen name="time_view_height">560dp</dimen>
+    <dimen name="time_view_height">624dp</dimen>
 
 <!--    登陆界面字体大小-->
     <dimen name="login_edit_size">24sp</dimen>
