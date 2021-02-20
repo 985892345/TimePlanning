@@ -1,6 +1,7 @@
 package com.ndhzs.timeplanning.adapter;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +14,8 @@ import com.ndhzs.timeplanning.weight.NameDialog;
 import com.ndhzs.timeplanning.weight.TimeSelectView;
 import com.ndhzs.timeplanning.weight.timeselectview.bean.TaskBean;
 
+import org.litepal.LitePal;
+
 import java.util.HashSet;
 import java.util.List;
 
@@ -20,14 +23,15 @@ public class TimeVpAdapter extends RecyclerView.Adapter<TimeVpAdapter.TimeViewHo
 
     private final Context mContext;
     private final ViewPager2 mViewPager;
+    private final int mShowTimeLinePosition;
     private boolean mIsShowTopBottomTime = true;
     private boolean mIsShowDifferentTime = false;
-    private HashSet<TaskBean> mTaskBeans;
-    private List<HashSet<TaskBean>> mEveryDayData;
+    private List<List<TaskBean>> mEveryDayData;
 
-    public TimeVpAdapter(Context context, ViewPager2 vp, List<HashSet<TaskBean>> everyDayData) {
+    public TimeVpAdapter(Context context, ViewPager2 vp, int showTimeLinePosition, List<List<TaskBean>> everyDayData) {
         this.mContext = context;
         this.mViewPager = vp;
+        this.mShowTimeLinePosition = showTimeLinePosition;
         this.mEveryDayData = everyDayData;
     }
 
@@ -47,20 +51,8 @@ public class TimeVpAdapter extends RecyclerView.Adapter<TimeVpAdapter.TimeViewHo
         return mEveryDayData.size();
     }
 
-    public void setEveryDayData(List<HashSet<TaskBean>> everyDayData) {
-        this.mEveryDayData = everyDayData;
-        notifyDataSetChanged();
-    }
-    public void setIsShowTopBottomTime(boolean is) {
-        this.mIsShowTopBottomTime = is;
-        notifyDataSetChanged();
-    }
-    public void setIsShowDifferentTime(boolean is) {
-        this.mIsShowDifferentTime = is;
-        notifyDataSetChanged();
-    }
-
     private void processTimeView(TimeSelectView v1, TimeSelectView v2, int position) {
+        v1.setIsShowTimeLine(position == mShowTimeLinePosition);
         v1.setLinkTimeSelectView(v2);
         v1.setLinkViewPager2(mViewPager);
         v1.setData(mEveryDayData.get(position));
@@ -81,12 +73,18 @@ public class TimeVpAdapter extends RecyclerView.Adapter<TimeVpAdapter.TimeViewHo
         v1.setOnDataChangeListener(new TimeSelectView.OnDataChangeListener() {
             @Override
             public void onDataIncrease(TaskBean newData) {
-                mEveryDayData.get(position).add(newData);
+                newData.setDates_id(position);
+                newData.save();
             }
 
             @Override
             public void onDataDelete(TaskBean deletedData) {
-                mEveryDayData.get(position).remove(deletedData);
+                deletedData.delete();
+            }
+
+            @Override
+            public void onDataAlter(TaskBean alterData) {
+                alterData.save();
             }
         });
     }

@@ -21,7 +21,7 @@ import com.ndhzs.timeplanning.weight.timeselectview.RectImgView;
 import com.ndhzs.timeplanning.weight.timeselectview.FrameView;
 import com.ndhzs.timeplanning.weight.timeselectview.bean.TaskBean;
 
-import java.util.HashSet;
+import java.util.List;
 
 public class TimeSelectView extends ScrollView {
 
@@ -71,7 +71,7 @@ public class TimeSelectView extends ScrollView {
      * 加载数据时使用
      * @param taskBeans 传入新的数据
      */
-    public void setData(HashSet<TaskBean> taskBeans) {
+    public void setData(List<TaskBean> taskBeans) {
         mRectView.setData(taskBeans);
     }
 
@@ -157,10 +157,25 @@ public class TimeSelectView extends ScrollView {
         }, 200);
     }
 
+    /**
+     * 设置是否显示时间线
+     */
+    public void setIsShowTimeLine(boolean is) {
+        NowTimeLine mNowTimeLine = new NowTimeLine(context, mTimeTools);
+        if (is) {
+            LayoutParams lpNowTimeView = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+            mNowTimeLine.setInterval(mIntervalLeft, FrameView.INTERVAL_RIGHT);
+            mNowTimeLine.setElevation(1);
+            mLayoutChild.addView(mNowTimeLine, lpNowTimeView);
+        }else {
+            mLayoutChild.removeView(mNowTimeLine);
+        }
+    }
+
     public void setOnDataChangeListener(OnDataChangeListener onDataChangeListener) {
         this.mOnDataChangeListener = onDataChangeListener;
-        mRectView.setOnDataIncreaseListener(mOnDataChangeListener);
-        mLayoutChild.setOnDataDeleteListener(mOnDataChangeListener);
+        mRectView.setOnDataChangeListener(mOnDataChangeListener);
+        mLayoutChild.setOnDataChangeListener(mOnDataChangeListener);
     }
 
     /**
@@ -198,10 +213,7 @@ public class TimeSelectView extends ScrollView {
         LayoutParams lpLayoutChild = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
         mLayoutChild.setInterval(mIntervalLeft, mExtraHeight);
 
-        NowTimeLine nowTimeLine = new NowTimeLine(context, mTimeTools);
-        LayoutParams lpNowTimeView = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
-        nowTimeLine.setInterval(mIntervalLeft, FrameView.INTERVAL_RIGHT);
-        nowTimeLine.setElevation(1);
+
 
         RectView rectView = new RectView(context, mTimeTools);
         LayoutParams lpRectView = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
@@ -217,15 +229,14 @@ public class TimeSelectView extends ScrollView {
         mRectView = rectView;
 
         FrameView frameView = new FrameView(context);
-        LayoutParams lpTimeFrameView = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+        LayoutParams lpFrameView = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
         frameView.setHour(mStartHour, mEndHour);
         frameView.setTextSize(mTimeTextSide);
         frameView.setInterval(mIntervalLeft, FrameView.INTERVAL_RIGHT, mExtraHeight, mIntervalHeight);
 
         //addView()，顺序不能调换，也可以设置elevation来控制高度
         mLayoutChild.addView(rectView, lpRectView);
-        mLayoutChild.addView(frameView, lpTimeFrameView);
-        mLayoutChild.addView(nowTimeLine, lpNowTimeView);
+        mLayoutChild.addView(frameView, lpFrameView);
         mLayoutChild.setClipChildren(false);
         addView(mLayoutChild, lpLayoutChild);
         setClipChildren(false);
@@ -620,8 +631,8 @@ public class TimeSelectView extends ScrollView {
 
     public interface IRectView {
         boolean isClick(int y);
-        void setOnDataIncreaseListener(OnDataChangeListener onDataChangeListener);
-        void setData(HashSet<TaskBean> taskBeans);
+        void setOnDataChangeListener(OnDataChangeListener l);
+        void setData(List<TaskBean> taskBeans);
         void isAllowDraw(boolean isAllowDraw);
         void longPress(int y);
         void refresh(int y);
@@ -632,7 +643,7 @@ public class TimeSelectView extends ScrollView {
         TaskBean getClickTaskBean();
     }
     public interface IChildLayout {
-        void setOnDataDeleteListener(OnDataChangeListener onDataChangeListener);
+        void setOnDataChangeListener(OnDataChangeListener l);
         void isAllowDraw(boolean isAllowDraw);
     }
     public interface OnScrollViewListener {
@@ -645,6 +656,7 @@ public class TimeSelectView extends ScrollView {
     public interface OnDataChangeListener {
         void onDataIncrease(TaskBean newData);
         void onDataDelete(TaskBean deletedData);
+        void onDataAlter(TaskBean alterData);
     }
 
     private static final String TAG = "123";

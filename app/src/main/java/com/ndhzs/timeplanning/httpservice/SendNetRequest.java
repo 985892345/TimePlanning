@@ -2,6 +2,7 @@ package com.ndhzs.timeplanning.httpservice;
 
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 
 import org.json.JSONObject;
 
@@ -12,6 +13,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.HashMap;
 
 public class SendNetRequest {
@@ -29,17 +31,17 @@ public class SendNetRequest {
                         URL url = new URL(mUrl);
                         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                         connection.setRequestMethod("GET");//设置请求方式为GET
-                        connection.setConnectTimeout(5000);//设置最大连接时间，单位为毫秒，超出这个设定的时间将会导致连接超时
-                        connection.setReadTimeout(5000);//设置最大的读取时间，单位为毫秒，超出这个设定的时间将会导致读取超时
-
-                        connection.connect();//正式连接
-                        InputStream in = connection.getInputStream();//从接口处获取输入流
-                        String responseData = StreamToString(in);//这里就是服务器返回的数据
-
-                        JSONObject js = new JSONObject(responseData);
-                        Message message = new Message();
-                        message.obj = js;
-                        mHandler.sendMessage(message);
+                        connection.setConnectTimeout(8000);//设置最大连接时间，单位为毫秒，超出这个设定的时间将会导致连接超时
+                        connection.setReadTimeout(8000);//设置最大的读取时间，单位为毫秒，超出这个设定的时间将会导致读取超时
+                        if (connection.getResponseCode() == 200) {
+                            InputStream in = connection.getInputStream();//从接口处获取输入流
+                            String responseData = StreamToString(in);//这里就是服务器返回的数据
+                            JSONObject js = new JSONObject(responseData);
+                            Message message = new Message();
+                            message.obj = js;
+                            mHandler.sendMessage(message);
+                            connection.disconnect();
+                        }
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -54,23 +56,30 @@ public class SendNetRequest {
                         URL url = new URL(mUrl);
                         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                         connection.setRequestMethod("POST");//设置请求方式为POST
-                        connection.setConnectTimeout(5000);//设置最大连接时间，单位为毫秒，超出这个设定的时间将会导致连接超时
-                        connection.setReadTimeout(5000);//设置最大的读取时间，单位为毫秒，超出这个设定的时间将会导致读取超时
+                        connection.setConnectTimeout(8000);//设置最大连接时间，单位为毫秒，超出这个设定的时间将会导致连接超时
+                        connection.setReadTimeout(8000);//设置最大的读取时间，单位为毫秒，超出这个设定的时间将会导致读取超时
                         connection.setDoOutput(true);//允许输入流
                         connection.setDoInput(true);//允许输出流
+                        connection.setUseCaches(false);
                         StringBuilder dataToWrite = new StringBuilder();//构建参数值
                         for (String key : params.keySet()) {
                             dataToWrite.append(key).append("=").append(params.get(key)).append("&");
                         }
-                        connection.connect();//正式连接
+                        String data = dataToWrite.substring(0, dataToWrite.length() - 1);
+
                         OutputStream outputStream = connection.getOutputStream();//开启输出流
-                        outputStream.write(dataToWrite.substring(0, dataToWrite.length() - 1).getBytes());//去除最后一个&
-                        InputStream in = connection.getInputStream();//从接口处获取输入流
-                        String responseData = StreamToString(in);//这里就是服务器返回的数据
-                        JSONObject js = new JSONObject(responseData);
-                        Message message = new Message();
-                        message.obj = js;
-                        mHandler.sendMessage(message);
+                        outputStream.write(data.getBytes());//去除最后一个&
+                        if (connection.getResponseCode() == 200) {
+                            Log.d(TAG, "sendPostNetRequest: 222222");
+                            InputStream in = connection.getInputStream();//从接口处获取输入流
+                            String responseData = StreamToString(in);//这里就是服务器返回的数据
+                            JSONObject js = new JSONObject(responseData);
+
+                            Message message = new Message();
+                            message.obj = js;
+                            mHandler.sendMessage(message);
+                            connection.disconnect();
+                        }
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -98,4 +107,6 @@ public class SendNetRequest {
         }
         return sb.toString();//将拼接好的字符串返回出去
     }
+
+    public static final String TAG = "123";
 }

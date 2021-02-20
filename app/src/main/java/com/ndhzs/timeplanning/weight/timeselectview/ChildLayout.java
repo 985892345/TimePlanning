@@ -60,6 +60,9 @@ public class ChildLayout extends FrameLayout implements TimeSelectView.IChildLay
                 break;
             case MotionEvent.ACTION_MOVE:
                 if (RectView.WHICH_CONDITION == RectView.INSIDE) {
+                    if (mLinkChildLayout != null) {
+
+                    }
                     return true;
                 }
             case MotionEvent.ACTION_UP:
@@ -183,6 +186,7 @@ public class ChildLayout extends FrameLayout implements TimeSelectView.IChildLay
                 });
     }
     private void goBackImgView(int dx) {
+
         int correctTop = mExtraHeight;
         int correctBottom = getBottom() - mExtraHeight;
         int imgViewTop = mImgView.getTop();
@@ -396,12 +400,13 @@ public class ChildLayout extends FrameLayout implements TimeSelectView.IChildLay
             mLinkImgView = mImgView.getSameImgView(mLinkTimeTools);
             LayoutParams layoutParams = new LayoutParams(lp);
             layoutParams.leftMargin += mDiffDistance;
-            mLinkChildLayout.addView(mLinkImgView, layoutParams);
+            mLinkChildLayout.addView(mLinkImgView, layoutParams);//在另一个ChildLayout生成一个矩形在自身的ChildLayout的底部
             mImgView.setLinkImgView(mLinkImgView);
             mImgView.setSelfImgView(mImgView);
             mImgView.setDiffDistance(mDiffDistance);
             mLinkImgView.setSelfImgView(mImgView);
             mLinkImgView.setDiffDistance(mDiffDistance);
+            mLinkChildLayout.mIRectView.deleteIsInsideRect(taskBean);
         }
     }
 
@@ -413,14 +418,14 @@ public class ChildLayout extends FrameLayout implements TimeSelectView.IChildLay
         }
     }
 
-    public void dataDeleted(TaskBean deletedData) {
+    private void dataDeleted(TaskBean deletedData) {
         if (mOnDataChangeListener != null) {
             mOnDataChangeListener.onDataDelete(deletedData);
         }
     }
 
     @Override
-    public void setOnDataDeleteListener(TimeSelectView.OnDataChangeListener onDataChangeListener) {
+    public void setOnDataChangeListener(TimeSelectView.OnDataChangeListener onDataChangeListener) {
         this.mOnDataChangeListener = onDataChangeListener;
     }
     @Override
@@ -432,6 +437,7 @@ public class ChildLayout extends FrameLayout implements TimeSelectView.IChildLay
         void deleteHashMap();
         void addDeletedRectFromTop(int top);
         void addDeletedRectFromBottom(int bottom);
+        void deleteIsInsideRect(TaskBean taskBean);//用来通知另一个ChildLayout删掉正在长按移动的矩形
         void addRectFromTop(int top, TaskBean taskBean);
         void addRectFromBottom(int bottom, TaskBean taskBean);
         int getNowUpperLimit(int y);

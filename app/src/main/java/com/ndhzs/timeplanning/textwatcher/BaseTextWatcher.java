@@ -1,4 +1,4 @@
-package com.ndhzs.timeplanning.TextWatcher;
+package com.ndhzs.timeplanning.textwatcher;
 
 import android.text.Editable;
 import android.text.TextWatcher;

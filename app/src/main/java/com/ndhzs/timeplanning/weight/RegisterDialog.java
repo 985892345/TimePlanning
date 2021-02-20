@@ -17,9 +17,9 @@ import androidx.annotation.NonNull;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.ndhzs.timeplanning.R;
-import com.ndhzs.timeplanning.TextWatcher.BaseTextWatcher;
-import com.ndhzs.timeplanning.TextWatcher.Password1Watcher;
-import com.ndhzs.timeplanning.TextWatcher.Password2Watcher;
+import com.ndhzs.timeplanning.textwatcher.BaseTextWatcher;
+import com.ndhzs.timeplanning.textwatcher.Password1Watcher;
+import com.ndhzs.timeplanning.textwatcher.Password2Watcher;
 import com.ndhzs.timeplanning.httpservice.SendNetRequest;
 
 import org.json.JSONException;
@@ -27,7 +27,6 @@ import org.json.JSONObject;
 
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
-import java.util.Objects;
 
 public class RegisterDialog extends Dialog {
 

@@ -17,7 +17,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.ndhzs.timeplanning.R;
-import com.ndhzs.timeplanning.TextWatcher.BaseTextWatcher;
+import com.ndhzs.timeplanning.textwatcher.BaseTextWatcher;
 import com.ndhzs.timeplanning.httpservice.SendNetRequest;
 import com.ndhzs.timeplanning.weight.RegisterDialog;
 
@@ -39,6 +39,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private TextInputLayout mTilPassword;
     private TextInputEditText mEtUsername;
     private TextInputEditText mEtPassword;
+    private String mUsername;
+    private String mPassword;
 
     private SharedPreferences mShared;
     private SharedPreferences.Editor mEditor;
@@ -125,15 +127,15 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 mRegisterDialog.show();
                 break;
             case R.id.login_btn_login :
-                String username = mEtUsername.getText().toString();
-                String password = mEtPassword.getText().toString();
-                if (username.equals("")|| password.equals("")){
+                mUsername = mEtUsername.getText().toString();
+                mPassword = mEtPassword.getText().toString();
+                if (mUsername.equals("")|| mPassword.equals("")){
                     Toast.makeText(this, "请输入完整！", Toast.LENGTH_SHORT).show();
                 }else {
                     Toast.makeText(this, "请求登陆中，请耐心等待", Toast.LENGTH_SHORT).show();
                     HashMap<String, String> map = new HashMap<>();
-                    map.put("username", username);
-                    map.put("password", password);
+                    map.put("username", mUsername);
+                    map.put("password", mPassword);
                     mHandler = new MHandler(LoginActivity.this);
                     new SendNetRequest(mHandler).sendPostNetRequest("https://www.wanandroid.com/user/login", map);
                 }
@@ -147,6 +149,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
     //写进SharedPreferences
     public void sharedEditor(String username, String password) {
+        mEditor = mShared.edit();
         mEditor.putString("username", username);
         mEditor.putString("password", password);
         mEditor.apply();
@@ -172,10 +175,10 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                     int errorCode = js.getInt("errorCode");
                     switch (errorCode) {
                         case SUCCEED:
-                            String username = activity.mEtUsername.getText().toString();
-                            String password = activity.mEtPassword.getText().toString();
-                            activity.sharedEditor(username, password);
                             Toast.makeText(activity, "登陆成功，欢迎回来！", Toast.LENGTH_SHORT).show();
+                            String username = activity.mUsername;
+                            String password = activity.mPassword;
+                            activity.sharedEditor(username, password);
                             activity.finish();
                             break;
                         case FAIL:

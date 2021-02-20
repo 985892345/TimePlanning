@@ -11,8 +11,6 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.animation.Animation;
-import android.view.animation.DecelerateInterpolator;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -35,8 +33,8 @@ public class DayView extends View {
     private final int mColorRed = 0xFFFF0000;
     private final int mCircleColor;
     private final int mCalenderColor = 0xFF828282;//阴历的文字颜色，默认灰色
-    private int mNowCirclePosition = 4;
-    private float mCirclePosition = 4;
+    private int mNowCirclePosition = -1;//圆实际在的位置
+    private float mCirclePosition = -1;//当天圆该在的位置
     private float mCircleRadius;
     private float mInitialCircleRadius;
     private float mCircleDrawHeight;
@@ -46,38 +44,39 @@ public class DayView extends View {
     private float mRestDayTextDrawHeight;
     private float mCalenderTextDrawHeight;
     private OnWeekClickListener mOnWeekClickListener;
-    private String[] mWeek = new String[]{"14", "15", "16", "17", "18", "19", "20"};
-    private String[] mCalender = new String[]{"情人节", "初四", "初五", "初六", "雨水", "初八", "初九"};
-    private String[] mRectDay = new String[]{"休", "休", "休", "休", "", "", "班"};
+    private String[] mDate = new String[]{"14", "15", "16", "17", "18", "19", "20"};
+    private String[] mCalender = new String[7];
+    private String[] mRectDay = new String[7];
 
-    /**
-     * 设置当前周的日期数和阴历或者是节日，节日和阴历会自动识别改变颜色
-     * @param week 传入二维数组，[0][]代表当前周对应的日期数，[1][]代表当前周对应的阴历数或节日，
-     *             [2][]代表当前周对应的休息天和上班天，若部分天没有请输入""即可
-     */
-    public void setWeek(String[][] week) {
-        mWeek = week[0];
-        mCalender = week[1];
-        mRectDay = week[2];
+    public void setDate(String[] dates) {
+        mDate = dates;
+        invalidate();
+    }
+    public void setCalender(String[] calender) {
+        mCalender = calender;
+        invalidate();
+    }
+    public void setRectDays(String[] rectDays) {
+        mRectDay = rectDays;
         invalidate();
     }
 
     /**
-     * 设置当前该显示周几，如果不在该周显示，请设置成 0
-     * @param position 周日到周六分别对应1 ~ 7
+     * 设置当前该显示周几，如果不在该周显示，请设置成 -1
+     * @param position 周日到周六分别对应 0 ~ 6
      */
     public void setCirclePosition(int position) {
-        mNowCirclePosition = position;
+        mNowCirclePosition = position + 1;
+        mCirclePosition = mNowCirclePosition;
         invalidate();
     }
 
     /**
-     * 设置琢个日期的移动动画效果
-     * @param f 传入从0 ~ 1之间的小数
+     * 设置与其他的联动
+     * @param position 移动的位置，周日到周六分别对应 0 ~ 6
      */
-    public void setMobileEffect(float f) {
-        mCirclePosition += f;
-        mCircleRadius = (float) (0.5 * -Math.abs(Math.sin(f * Math.PI)) + 1) * mInitialCircleRadius;
+    public void setMovePosition(int position) {
+        mCirclePosition = position + 1;
     }
 
     /**
@@ -161,6 +160,12 @@ public class DayView extends View {
         for (int i = 0; i < 7; i++) {
             String calender = mCalender[i];
             String rest = mRectDay[i];
+            if (calender == null) {
+                calender = "";
+            }
+            if (rest == null) {
+                rest = "";
+            }
             if (calender.startsWith("初") || calender.startsWith("十") || calender.startsWith("廿")) {
                 mCalenderPaint.setColor(mCalenderColor);
             }else {
@@ -183,7 +188,7 @@ public class DayView extends View {
                 mDayPaint.setColor(mColorBlack);
             }
             float x = getWidth() / 14.0f * (2 * i + 1);
-            canvas.drawText(mWeek[i], x, mDayTextDrawHeight, mDayPaint);
+            canvas.drawText(mDate[i], x, mDayTextDrawHeight, mDayPaint);
             canvas.drawText(calender, x, mCalenderTextDrawHeight, mCalenderPaint);
             canvas.drawText(rest, x + 1.6f * mExtraHeight, mRestDayTextDrawHeight, mRestDayPaint);
         }
@@ -198,13 +203,11 @@ public class DayView extends View {
         int y = (int) event.getY();
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                Log.d(TAG, "onTouchEvent: DOWN");
                 mInitialX = x;
                 mInitialY = y;
                 mIsClick = true;
                 break;
             case MotionEvent.ACTION_MOVE:
-                Log.d(TAG, "onTouchEvent: MOVE");
                 if (Math.abs(x - mInitialX) > MOVE_THRESHOLD || Math.abs(y - mInitialY) > MOVE_THRESHOLD) {
                     mIsClick = false;
                 }else {
@@ -212,15 +215,17 @@ public class DayView extends View {
                 }
                 break;
             case MotionEvent.ACTION_UP:
-                Log.d(TAG, "onTouchEvent: UP");
                 if (mIsClick) {
                     if (Math.abs(mInitialY - mCircleDrawHeight) < 2 * mCircleRadius) {
                         for (int i = 0; i < 7; i++) {
                             if (Math.abs(mInitialX - getWidth() / 14.0f * (2 * i + 1)) < 2 * mCircleRadius) {
-                                clickMove(i + 1);
                                 if (mOnWeekClickListener != null) {
-                                    mOnWeekClickListener.onWeekClick(i + 1);
+                                    mOnWeekClickListener.onWeekClick(i);
                                 }
+                                if (i + 1 == mCirclePosition) {//点击相同的位置
+                                    return false;
+                                }
+                                clickMove(i + 1);
                             }
                         }
                     }
@@ -245,6 +250,7 @@ public class DayView extends View {
             @Override
             public void onAnimationEnd(Animator animation) {
                 mCircleRadius = mInitialCircleRadius;
+                mCirclePosition = clickPosition;
                 invalidate();
             }
         });

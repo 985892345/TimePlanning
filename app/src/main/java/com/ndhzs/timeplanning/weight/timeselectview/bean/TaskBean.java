@@ -1,99 +1,96 @@
 package com.ndhzs.timeplanning.weight.timeselectview.bean;
 
-import java.util.ArrayList;
-import java.util.List;
+import org.litepal.crud.LitePalSupport;
 
-public class TaskBean {
+public class TaskBean extends LitePalSupport {
 
-    private int mYear;
-    private int mMonth;
-    private int mDay;
-    private int mWeek;
+    private int dates_id;
+    private int year;
+    private int month;
+    private int day;
+    private int week;
 
-    private String mStartTime;
-    private String mDiffTime;
-    private String mName;
-    private String mDescribe;
-    private int mBorderColor;
-    private int mInsideColor;
-    private final List<Integer> mRepeatDay = new ArrayList<>();
+    private String startTime;
+    private String diffTime;
+    private String name;
+    private String describe;
+    private int borderColor;
+    private int insideColor;
 
-    public TaskBean(String startTime, String diffTime) {
-        this.mStartTime = startTime;
-        this.mDiffTime = diffTime;
+    public int getDates_id() {
+        return dates_id;
+    }
+    public void setDates_id(int dates_id) {
+        this.dates_id = dates_id;
     }
 
     public int getYear() {
-        return mYear;
+        return year;
     }
     public void setYear(int year) {
-        mYear = year;
+        this.year = year;
     }
 
     public int getMonth() {
-        return mMonth;
+        return month;
     }
     public void setMonth(int month) {
-        mMonth = month;
+        this.month = month;
     }
 
     public int getDay() {
-        return mDay;
+        return day;
     }
     public void setDay(int day) {
-        mDay = day;
+        this.day = day;
     }
 
     public int getWeek() {
-        return mWeek;
+        return week;
     }
     public void setWeek(int week) {
-        mWeek = week;
+        this.week = week;
     }
 
     public String getStartTime() {
-        return mStartTime;
+        return startTime;
     }
     public void setStartTime(String startTime) {
-        mStartTime = startTime;
+        this.startTime = startTime;
     }
 
     public String getDiffTime() {
-        return mDiffTime;
+        return diffTime;
     }
     public void setDiffTime(String diffTime) {
-        mDiffTime = diffTime;
+        this.diffTime = diffTime;
     }
 
     public String getName() {
-        return mName;
+        return name;
     }
     public void setName(String name) {
-        mName = name;
+        this.name = name;
     }
 
     public String getDescribe() {
-        return mDescribe;
+        return describe;
     }
     public void setDescribe(String describe) {
-        mDescribe = describe;
+        this.describe = describe;
     }
 
     public int getBorderColor() {
-        return mBorderColor;
+        return borderColor;
     }
     public void setBorderColor(int borderColor) {
-        mBorderColor = borderColor;
+        this.borderColor = borderColor;
     }
 
     public int getInsideColor() {
-        return mInsideColor;
+        return insideColor;
     }
     public void setInsideColor(int insideColor) {
-        mInsideColor = insideColor;
-    }
-
-    public List<Integer> getRepeatDay() {
-        return mRepeatDay;
+        this.insideColor = insideColor;
     }
 }

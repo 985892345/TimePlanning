@@ -17,7 +17,7 @@ public class TimeTools {
      */
     public final float[] mEveryMinuteHeight = new float[61];
     public static final int DELAY_NOW_TIME_REFRESH = 30000;//刷新当前时间高度的间隔时间
-    public static final int DELAY_BACK_CURRENT_TIME = 15000;//回到当前时间的延缓时间
+    public static final int DELAY_BACK_CURRENT_TIME = 10000;//回到当前时间的延缓时间
     public int TIME_INTERVAL = 15;//按下空白区域时起始时间的分钟间隔数(必须为60的因数)
 
     public TimeTools(int hLineWidth, int extraHeight, int intervalHeight, int startHour) {
@@ -38,8 +38,9 @@ public class TimeTools {
      * @return 已减去mExtraHeight
      */
     public int getTopHeight(String startTime) {//开始加载数据时使用
-        mTopTimeHour = Integer.parseInt(startTime.substring(0, 2));
-        mTopTimeMinute = Integer.parseInt(startTime.substring(3));
+        String[] time = startTime.split(":");
+        mTopTimeHour = Integer.parseInt(time[0]);
+        mTopTimeMinute = Integer.parseInt(time[1]);
         return (mTopTimeHour - mStartHour) * mIntervalHeight - mHLineWidth + (int)Math.ceil(mEveryMinuteHeight[mTopTimeMinute + 1]) - 1;
     }
 
@@ -49,8 +50,9 @@ public class TimeTools {
      * @return 已减去mExtraHeight
      */
     public int getBottomHeight(String dTime) {//开始加载数据时使用
-        int dH = Integer.parseInt(dTime.substring(0, 2));
-        int dM = Integer.parseInt(dTime.substring(3));
+        String[] time = dTime.split(":");
+        int dH = Integer.parseInt(time[0]);
+        int dM = Integer.parseInt(time[1]);
         mBottomTimeHour = mTopTimeHour + dH;
         mBottomTimeMinute = mTopTimeMinute + dM;
         if (mBottomTimeMinute >= 60) {
@@ -108,8 +110,9 @@ public class TimeTools {
      * @return 时间
      */
     public String getBottomTime(String dTime) {//RectImgView中与getTopTime(int y)方法一起使用，用时间差得到正确的底部时间
-        int dH = Integer.parseInt(dTime.substring(0, 2));
-        int dM = Integer.parseInt(dTime.substring(3));
+        String[] time = dTime.split(":");
+        int dH = Integer.parseInt(time[0]);
+        int dM = Integer.parseInt(time[1]);
         mBottomTimeHour = mTopTimeHour + dH;
         mBottomTimeMinute = mTopTimeMinute + dM;
         if (mBottomTimeMinute >= 60) {
@@ -148,8 +151,9 @@ public class TimeTools {
     public int getTopTimeHeight(int bottom, String dTime) {//本方法是在RectImgView放置过后在RectView中调用，通过时间差得上边界
         mBottomTimeHour = getHour(bottom + mExtraHeight);
         mBottomTimeMinute = getMinute(bottom + mExtraHeight);
-        int dH = Integer.parseInt(dTime.substring(0, 2));
-        int dM = Integer.parseInt(dTime.substring(3));
+        String[] time = dTime.split(":");
+        int dH = Integer.parseInt(time[0]);
+        int dM = Integer.parseInt(time[1]);
         mTopTimeHour = mBottomTimeHour - dH;
         mTopTimeMinute = mBottomTimeMinute - dM;
         if (mTopTimeMinute < 0) {

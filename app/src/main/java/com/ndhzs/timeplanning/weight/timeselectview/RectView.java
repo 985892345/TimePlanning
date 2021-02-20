@@ -462,8 +462,9 @@ public class RectView extends View implements ChildLayout.IUpEvent, TimeSelectVi
                     initialRect.bottom = getEndTimeCorrectHeight(initialRect.bottom);
                     Rect re = new Rect(initialRect);
                     mRects.add(re);
-                    TaskBean taskBean = new TaskBean(mTimeTools.getTime(re.top),
-                            mTimeTools.getDiffTime(re.top, re.bottom));
+                    TaskBean taskBean = new TaskBean();
+                    taskBean.setStartTime(mTimeTools.getTime(re.top));
+                    taskBean.setDiffTime(mTimeTools.getDiffTime(re.top, re.bottom));
                     taskBean.setYear(mTimeTools.getYear());
                     taskBean.setMonth(mTimeTools.getMonth());
                     taskBean.setDay(mTimeTools.getDay());
@@ -491,6 +492,7 @@ public class RectView extends View implements ChildLayout.IUpEvent, TimeSelectVi
                         TaskBean taskBean = mRectAndData.get(deletedRect);
                         taskBean.setStartTime(mTimeTools.getTime(re.top));
                         taskBean.setDiffTime(mTimeTools.getDiffTime(re.top, re.bottom));
+                        dataAlter(taskBean);
                     }
                     mRects.add(re);//之前在isContain()中被删掉了
                     mRectAndData.put(re, mRectAndData.remove(deletedRect));
@@ -522,21 +524,26 @@ public class RectView extends View implements ChildLayout.IUpEvent, TimeSelectVi
         return false;
     }
     @Override
-    public void setOnDataIncreaseListener(TimeSelectView.OnDataChangeListener onDataChangeListener) {
+    public void setOnDataChangeListener(TimeSelectView.OnDataChangeListener onDataChangeListener) {
         this.mOnDataChangeListener = onDataChangeListener;
     }
     @Override
-    public void setData(HashSet<TaskBean> taskBeans) {
+    public void setData(List<TaskBean> taskBeans) {
         if (taskBeans == null) {
             return;
         }
         for (TaskBean taskBean : taskBeans) {
-            int top = getStartTimeCorrectHeight(mTimeTools.getTopHeight(taskBean.getStartTime()));
-            int bottom = getEndTimeCorrectHeight(mTimeTools.getBottomHeight(taskBean.getDiffTime()));
-            Rect rect = new Rect(0, top, getWidth(), bottom);
-            mRects.add(rect);
-            mRectAndData.put(rect, taskBean);
-            invalidate(rect);
+            post(new Runnable() {
+                @Override
+                public void run() {
+                    int top = getStartTimeCorrectHeight(mTimeTools.getTopHeight(taskBean.getStartTime()));
+                    int bottom = getEndTimeCorrectHeight(mTimeTools.getBottomHeight(taskBean.getDiffTime()));
+                    Rect rect = new Rect(0, top, getWidth(), bottom);
+                    mRects.add(rect);
+                    mRectAndData.put(rect, taskBean);
+                    invalidate(rect);
+                }
+            });
         }
     }
     @Override
@@ -571,7 +578,6 @@ public class RectView extends View implements ChildLayout.IUpEvent, TimeSelectVi
     }
     @Override
     public TaskBean getClickTaskBean() {
-        Log.d(TAG, "getClickTaskBean: " + mRectAndData.size());
         return mRectAndData.get(mRects.get(mClickLocation));
     }
 
@@ -589,6 +595,7 @@ public class RectView extends View implements ChildLayout.IUpEvent, TimeSelectVi
         mRects.add(rect);
         TaskBean taskBean = mRectAndData.get(deletedRect);
         taskBean.setStartTime(mTimeTools.getTime(top));
+        dataAlter(taskBean);
         mRectAndData.put(rect, taskBean);
         invalidate();
         if (!rect.equals(deletedRect)) {
@@ -605,11 +612,49 @@ public class RectView extends View implements ChildLayout.IUpEvent, TimeSelectVi
         mRects.add(rect);
         TaskBean taskBean = mRectAndData.get(deletedRect);
         taskBean.setStartTime(mTimeTools.getTime(top));
+        dataAlter(taskBean);
         mRectAndData.put(rect, taskBean);
         invalidate();
         if (!rect.equals(deletedRect)) {
             deleteHashMap();
         }
+    }
+    @Override
+    public void deleteIsInsideRect(TaskBean taskBean) {
+        for (Rect rect : mRectAndData.keySet()) {
+            if (mRectAndData.get(rect) == taskBean) {
+                mRects.remove(rect);
+                mRectAndData.remove(rect);
+                invalidate(rect);
+                return;
+            }
+        }
+    }
+    @Override
+    public void addRectFromTop(int top, TaskBean taskBean) {
+        String dTime = taskBean.getDiffTime();
+        top = getStartTimeCorrectHeight(top);
+        //bottom以时间差值来计算高度，如果不用时间差，就会出现上下边界时间出错的问题
+        int bottom = getEndTimeCorrectHeight(mTimeTools.getBottomTimeHeight(top, dTime));
+        Rect rect = new Rect(0, top, getWidth(), bottom);
+        mRects.add(rect);
+        taskBean.setStartTime(mTimeTools.getTime(top));
+        dataAlter(taskBean);
+        mRectAndData.put(rect, taskBean);
+        invalidate();
+    }
+    @Override
+    public void addRectFromBottom(int bottom, TaskBean taskBean) {
+        String dTime = taskBean.getDiffTime();
+        bottom = getEndTimeCorrectHeight(bottom);
+        //top以时间差值来计算高度，如果不用时间差，就会出现上下边界时间出错的问题
+        int top = getStartTimeCorrectHeight(mTimeTools.getTopTimeHeight(bottom, dTime));
+        Rect rect = new Rect(0, top, getWidth(), bottom);
+        mRects.add(rect);
+        taskBean.setStartTime(mTimeTools.getTime(top));
+        dataAlter(taskBean);
+        mRectAndData.put(rect, taskBean);
+        invalidate();
     }
     @Override
     public int getNowUpperLimit(int y) {//记得转换坐标系
@@ -619,32 +664,16 @@ public class RectView extends View implements ChildLayout.IUpEvent, TimeSelectVi
     public int getNowLowerLimit(int y) {//记得转换坐标系
         return getLowerLimit(y);
     }
-    public void addRectFromTop(int top, TaskBean taskBean) {
-        String dTime = taskBean.getDiffTime();
-        top = getStartTimeCorrectHeight(top);
-        //bottom以时间差值来计算高度，如果不用时间差，就会出现上下边界时间出错的问题
-        int bottom = getEndTimeCorrectHeight(mTimeTools.getBottomTimeHeight(top, dTime));
-        Rect rect = new Rect(0, top, getWidth(), bottom);
-        mRects.add(rect);
-        taskBean.setStartTime(mTimeTools.getTime(top));
-        mRectAndData.put(rect, taskBean);
-        invalidate();
-    }
-    public void addRectFromBottom(int bottom, TaskBean taskBean) {
-        String dTime = taskBean.getDiffTime();
-        bottom = getEndTimeCorrectHeight(bottom);
-        //top以时间差值来计算高度，如果不用时间差，就会出现上下边界时间出错的问题
-        int top = getStartTimeCorrectHeight(mTimeTools.getTopTimeHeight(bottom, dTime));
-        Rect rect = new Rect(0, top, getWidth(), bottom);
-        mRects.add(rect);
-        taskBean.setStartTime(mTimeTools.getTime(top));
-        mRectAndData.put(rect, taskBean);
-        invalidate();
-    }
 
-    public void dataIncrease(TaskBean newData) {
+    private void dataIncrease(TaskBean newData) {
         if (mOnDataChangeListener != null) {
             mOnDataChangeListener.onDataIncrease(newData);
+        }
+    }
+
+    private void dataAlter(TaskBean alterData) {
+        if (mOnDataChangeListener != null) {
+            mOnDataChangeListener.onDataAlter(alterData);
         }
     }
 

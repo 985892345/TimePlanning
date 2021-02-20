@@ -1,5 +1,6 @@
 package com.ndhzs.timeplanning.weight;
 
+import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.Context;
 import android.os.Bundle;
@@ -10,20 +11,22 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
 import com.ndhzs.timeplanning.R;
 import com.ndhzs.timeplanning.weight.timeselectview.bean.TaskBean;
 
-public class NameDialog extends Dialog {
+public class NameDialog extends Dialog implements View.OnClickListener{
 
     private Context mContext;
     private TaskBean mTaskBean;
     private ImageView mImgHead;
+    private TextView mTvTime;
     private EditText mEtName;
     private EditText mEtDescribe;
-    private TextView mTv1, mTv2, mTv3, mTv4;
+    private TextView mTvBorderColor, mTvInsideColor, mTvSetRepeat, mTvSetGroup;
     private Button mBtnBack, mBtnFinish;
     private RoundCornerView mColorBorder, mColorInside;
     private onDlgCloseListener mCloseListener;
@@ -55,16 +58,20 @@ public class NameDialog extends Dialog {
 
     private void initView() {
         mImgHead = findViewById(R.id.img_head);
+        mTvTime = findViewById(R.id.tv_time);
         mEtName = findViewById(R.id.et_name);
         mEtDescribe = findViewById(R.id.et_describe);
-        mTv1 = findViewById(R.id.tv_week_1);
-        mTv2 = findViewById(R.id.tv_week_2);
-        mTv3 = findViewById(R.id.tv_3);
-        mTv4 = findViewById(R.id.tv_4);
+        mTvBorderColor = findViewById(R.id.tv_color_border);
+        mTvInsideColor = findViewById(R.id.tv_color_inside);
+        mTvSetRepeat = findViewById(R.id.tv_set_repeat);
+        mTvSetGroup = findViewById(R.id.tv_set_group);
         mBtnBack = findViewById(R.id.btn_back);
         mBtnFinish = findViewById(R.id.btn_finish);
         mColorBorder = findViewById(R.id.view_color_border);
         mColorInside = findViewById(R.id.view_color_inside);
+
+        String time = mTaskBean.getMonth() + "月" + mTaskBean.getDay() + "日，" + mTaskBean.getStartTime() + " - " + getEndTime();
+        mTvTime.setText(time);
 
         String name = mTaskBean.getName();
         if (!name.equals("点击设置任务名称")) {
@@ -78,18 +85,29 @@ public class NameDialog extends Dialog {
         mColorInside.setColor(mTaskBean.getInsideColor());
     }
     private void initEvent() {
-        mBtnFinish.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                close();
-            }
-        });
-        mBtnBack.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                close();
-            }
-        });
+        mTvBorderColor.setOnClickListener(this);
+        mTvSetRepeat.setOnClickListener(this);
+        mTvInsideColor.setOnClickListener(this);
+        mTvSetGroup.setOnClickListener(this);
+        mBtnFinish.setOnClickListener(this);
+        mBtnBack.setOnClickListener(this);
+    }
+
+    private String getEndTime() {
+        String startTime = mTaskBean.getStartTime();
+        String diffTime = mTaskBean.getDiffTime();
+        int startHour = Integer.parseInt(startTime.substring(0, 2));
+        int startMinute = Integer.parseInt(startTime.substring(3));
+        String[] time = mTaskBean.getDiffTime().split(":");
+        int dH = Integer.parseInt(time[0]);
+        int dM = Integer.parseInt(time[1]);
+        int endHour = startHour + dH;
+        int endMinute = startMinute + dM;
+        if (endMinute >= 60) {
+            endHour++;
+            endMinute -= 60;
+        }
+        return endHour + ":" + endMinute;
     }
 
     private void close() {
@@ -107,6 +125,22 @@ public class NameDialog extends Dialog {
 
     public void setOnDlgCloseListener(onDlgCloseListener l) {
         this.mCloseListener = l;
+    }
+
+    @SuppressLint("NonConstantResourceId")
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.btn_back:
+            case R.id.btn_finish:
+                close();
+                break;
+            case R.id.tv_color_border:
+            case R.id.tv_color_inside:
+            case R.id.tv_set_repeat:
+            case R.id.tv_set_group:
+                Toast.makeText(mContext, "QAQ 抱歉，因时间原因，该功能暂未实现", Toast.LENGTH_LONG).show();
+        }
     }
 
     public interface onDlgCloseListener {
