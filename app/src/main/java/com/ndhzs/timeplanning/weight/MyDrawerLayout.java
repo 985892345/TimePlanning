@@ -35,8 +35,6 @@ public class MyDrawerLayout {
         statusBar.setLayoutParams(params);
         //隐藏状态栏
         Window window = activity.getWindow();
-
-
         int option = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
         window.getDecorView().setSystemUiVisibility(option);
         window.setStatusBarColor(Color.TRANSPARENT);

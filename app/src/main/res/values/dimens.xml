@@ -25,4 +25,7 @@
 <!--    注册页面字体大小-->
     <dimen name="register_edit_size">16sp</dimen>
 
+<!--    软件说明界面的字体大小-->
+    <dimen name="explain_text_size">12sp</dimen>
+
 </resources>

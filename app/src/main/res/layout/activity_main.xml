@@ -4,7 +4,7 @@
     android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/drawer_background">
+    android:background="@drawable/bg_drawer_background">
 
     <!--主页内容-->
     <androidx.cardview.widget.CardView
