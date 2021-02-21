@@ -78,10 +78,10 @@ public class TimeSelectView extends ScrollView {
     /**
      * 设置滑动接口，默认所有引起的滑动都会回调滑动接口，可以setIsCloseUserActionJudge(boolean)
      * 来打开只有用户触摸时才能回调滑动接口
-     * @param onScrollViewListener 滑动监听
+     * @param l 滑动监听
      */
-    public void setOnScrollViewListener(OnScrollViewListener onScrollViewListener) {
-        this.mOnScrollViewListener = onScrollViewListener;
+    public void setOnScrollViewListener(OnScrollViewListener l) {
+        this.mOnScrollViewListener = l;
     }
 
     /**

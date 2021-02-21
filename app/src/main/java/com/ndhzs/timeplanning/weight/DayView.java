@@ -72,7 +72,7 @@ public class DayView extends View {
     }
 
     /**
-     * 设置与其他的联动
+     * 直接跳转之该位置
      * @param position 移动的位置，周日到周六分别对应 0 ~ 6
      */
     public void setMovePosition(int position) {

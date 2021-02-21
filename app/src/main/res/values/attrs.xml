@@ -9,7 +9,7 @@
         <attr name="borderColor" format="color"/>
 <!--        默认的任务内部颜色-->
         <attr name="insideColor" format="color"/>
-<!--        左侧时间文字大小，其他时间文字大小会依据该值进行缩小-->
+<!--        左侧时间轴文字大小，其他时间文字大小会依据该值进行缩小-->
         <attr name="timeTextSize" format="dimension"/>
 <!--        任务名称文字大小-->
         <attr name="taskTextSize" format="dimension"/>
