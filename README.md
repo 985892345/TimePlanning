@@ -15,13 +15,13 @@
 ![自定义View的结构图](https://github.com/985892345/TimePlanning/blob/main/app/src/main/res/drawable-v24/img_github_1.jpg)  
 ###### 功能：
 ![任务介绍图](https://github.com/985892345/TimePlanning/blob/main/app/src/main/res/drawable-v24/img_explain_timeview.png)
-> ①长按向下滑即可选取任务
-> ②长按上下边界区可移动修改时间
-> ③长按内部区域支持整体上下移动
-> ④长按内部区域支持左右移动删除任务
-> ⑤以上操作移至皆可使时间轴自动滚动
-> ⑥点击任务即可设置任务名称和颜色
-> ⑦整体移动支持两个时间轴互相传递
+> ①长按向下滑即可选取任务  
+> ②长按上下边界区可移动修改时间  
+> ③长按内部区域支持整体上下移动  
+> ④长按内部区域支持左右移动删除任务  
+> ⑤以上操作移至皆可使时间轴自动滚动  
+> ⑥点击任务即可设置任务名称和颜色  
+> ⑦整体移动支持两个时间轴互相传递  
 
 #### 3、其他界面
  其他的界面还包括侧滑界面和登陆界面，这里就不细说了  
@@ -35,52 +35,52 @@
  继承于ScrollView，主要实现了自动滑动、包含其他View的功能  
 ###### 其public方法如下：
 > TaskBean getClickTaskBean()
->> 返回当前点击的任务数据对象
+>> 返回当前点击的任务数据对象  
 > void refreshName()
->> 设置当前点击区域的任务名称
+>> 设置当前点击区域的任务名称  
 > void setData(List<TaskBean> taskBeans)
->> 首次加载数据时使用
+>> 首次加载数据时使用  
 > void setOnScrollViewListener(OnScrollViewListener l)
->> 设置滑动接口，默认所有引起的滑动都会回调滑动接口
+>> 设置滑动接口，默认所有引起的滑动都会回调滑动接口  
 > void setIsOpenScrollCallBack(boolean is)
->> 设置是否在非用户触摸而调用scrollTo等方法时关闭滑动回调
+>> 设置是否在非用户触摸而调用scrollTo等方法时关闭滑动回调  
 > void setTimeInterval(int timeInterval)
->> 设置时间间隔数，目前时间间隔数只用于开始设置任务时，任务的开始时间只能是间隔数的倍数（因时间问题，之后会增加结束时间也为间隔数倍数）
+>> 设置时间间隔数，目前时间间隔数只用于开始设置任务时，任务的开始时间只能是间隔数的倍数（因时间问题，之后会增加结束时间也为间隔数倍数）  
 > void setIsShowTopBottomTime(boolean is)
->> 最终的任务区域是否展示上下边界时间，即使是false在移动和改变大小时任然会展示
+>> 最终的任务区域是否展示上下边界时间，即使是false在移动和改变大小时任然会展示  
 > void setIsShowDifferentTime(boolean is)
->> 最终的任务区域是否展示时间差，即使是false在移动和改变大小时任然会展示
+>> 最终的任务区域是否展示时间差，即使是false在移动和改变大小时任然会展示  
 > void setLinkViewPager2(ViewPager2 viewPager2)
->> 解决与ViewPager2的同向滑动冲突问题（传入ViewPager2，不是ViewPager）
+>> 解决与ViewPager2的同向滑动冲突问题（传入ViewPager2，不是ViewPager）  
 > void setLinkTimeSelectView(TimeSelectView linkTimeView)
->> 实现两个并排的TimeSelectView，整体移动互相传递数据
+>> 实现两个并排的TimeSelectView，整体移动互相传递数据  
 > void setIsShowTimeLine(boolean is)
->> 设置是否显示时间线
+>> 设置是否显示时间线  
 ###### 其attrs属性如下：
 > name="intervalWidth" format="dimension"
->> 左侧时间间隔的宽度
+>> 左侧时间间隔的宽度  
 > name="intervalHeight" format="dimension"
->> 每根水平线间隔的高度
+>> 每根水平线间隔的高度  
 > name="borderColor" format="color"
->> 默认的任务边框颜色
+>> 默认的任务边框颜色  
 > name="insideColor" format="color"
->> 默认的任务内部颜色
+>> 默认的任务内部颜色  
 > name="timeTextSize" format="dimension"
->> 左侧时间轴文字大小，其他时间文字大小会依据该值进行缩小
+>> 左侧时间轴文字大小，其他时间文字大小会依据该值进行缩小  
 > name="taskTextSize" format="dimension"
->> 任务名称文字大小
+>> 任务名称文字大小  
 > name="centerTime" format="float"
 >> 设置居中的时间，支持小数
->> 若传入的时间处于上下边界附近无法居中的位置，则会使时间线处于顶部或尾部界面内，但不居中。若不设置，则会自动以当前时间居中。
+>> 若传入的时间处于上下边界附近无法居中的位置，则会使时间线处于顶部或尾部界面内，但不居中。若不设置，则会自动以当前时间居中。  
 > name="startHour" format="integer"
->> 设置开始时间，不设置默认为2
+>> 设置开始时间，不设置默认为2  
 > name="endHour" format="integer"
->> 设置结束时间，不设置默认为明天2点
->> 支持设置明天的时间，但请加上24，如：设置成明天的2点，就输入26
+>> 设置结束时间，不设置默认为明天2点  
+>> 支持设置明天的时间，但请加上24，如：设置成明天的2点，就输入26  
 > name="isShowTopBottomTime" format="boolean"
->> 最终的任务区域是否展示上下边界时间，即使是false在移动和改变大小时任然会展示
+>> 最终的任务区域是否展示上下边界时间，即使是false在移动和改变大小时任然会展示  
 > name="isShowTopBottomTime" format="boolean"
->> 最终的任务区域是否展示时间差，即使是false在移动和改变大小时任然会展示
+>> 最终的任务区域是否展示时间差，即使是false在移动和改变大小时任然会展示  
 
 
 ###### TimeSelectView中的ChildLayout
@@ -96,18 +96,18 @@
  继承于View，一个简单的显示周数的View
 ###### 其public方法如下：
 > void setDate(String[] dates)
->> 设置当周日子数
+>> 设置当周日子数  
 > void setCalender(String[] calender)
->> 设置当周农历数或日子数，带有“初”、“十”、“廿”开头的会设置成白色字体显示
+>> 设置当周农历数或日子数，带有“初”、“十”、“廿”开头的会设置成白色字体显示  
 > void setCirclePosition(int position)
->> 设置当前该显示周几，如果不在该周显示，请设置成 -1，周日到周六分别对应 0 ~ 6
+>> 设置当前该显示周几，如果不在该周显示，请设置成 -1，周日到周六分别对应 0 ~ 6  
 > void setMovePosition(int position)
->> 直接跳转之该位置，周日到周六分别对应 0 ~ 6
+>> 直接跳转之该位置，周日到周六分别对应 0 ~ 6  
 > void setOnWeekClickListener(OnWeekClickListener l)
->> 设置点击的日期监听
+>> 设置点击的日期监听  
 ###### 其attrs属性如下：
 > name="circleColor" format="color"
->> 设置园的颜色
+>> 设置园的颜色  
 > name="dayTextSize" format="dimension"
 >> 设置日期字体大小，其他字体随该大小改变  
 
