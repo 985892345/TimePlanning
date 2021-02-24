@@ -209,7 +209,7 @@ public class TimeSelectView extends ScrollView {
         initLayout(context);
     }
     private void initLayout(Context context) {
-        mLayoutChild = new ChildLayout(context);
+        mLayoutChild = new ChildLayout(context, mTimeTools);
         LayoutParams lpLayoutChild = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
         mLayoutChild.setInterval(mIntervalLeft, mExtraHeight);
 

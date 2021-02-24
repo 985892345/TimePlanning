@@ -118,6 +118,7 @@ public class NameDialog extends Dialog implements View.OnClickListener{
                 mTaskBean.setName(name);
                 mTaskBean.setDescribe(describe);
                 mCloseListener.onClose();
+                mTaskBean.save();
             }
         }
         dismiss();

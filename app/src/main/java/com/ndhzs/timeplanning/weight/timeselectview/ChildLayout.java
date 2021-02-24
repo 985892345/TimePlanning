@@ -23,6 +23,7 @@ public class ChildLayout extends FrameLayout implements TimeSelectView.IChildLay
     private ChildLayout mLinkChildLayout;
     private TimeTools mLinkTimeTools;
     private TaskBean mTaskBean;
+    private TimeTools mTimeTools;
     private TimeSelectView.OnDataChangeListener mOnDataChangeListener;
     private int mDiffDistance = 0;
     private int mInitialX, mInitialY;//长按已选择的区域时的坐标
@@ -38,9 +39,10 @@ public class ChildLayout extends FrameLayout implements TimeSelectView.IChildLay
     private final int BOTTOM_TO_DRAW = 1;
     private final int DECIDE_BY_ONESELF = 0;
 
-    public ChildLayout(@NonNull Context context) {
+    public ChildLayout(@NonNull Context context, TimeTools timeTools) {
         super(context);
         this.mContext = context;
+        this.mTimeTools = timeTools;
     }
 
     public void setIRectView(IUpEvent IRectView) {
@@ -60,9 +62,6 @@ public class ChildLayout extends FrameLayout implements TimeSelectView.IChildLay
                 break;
             case MotionEvent.ACTION_MOVE:
                 if (RectView.WHICH_CONDITION == RectView.INSIDE) {
-                    if (mLinkChildLayout != null) {
-
-                    }
                     return true;
                 }
             case MotionEvent.ACTION_UP:
@@ -194,7 +193,7 @@ public class ChildLayout extends FrameLayout implements TimeSelectView.IChildLay
         int nowUpperLimit = mIRectView.getNowUpperLimit(imgViewBottom - mExtraHeight) + mExtraHeight;
         int nowLowerLimit = mIRectView.getNowLowerLimit(imgViewTop - mExtraHeight) + mExtraHeight;
         //每个if对应了一种情况，具体请以序号看纸上的草图
-        if (mImgView.getHeight() <= nowLowerLimit - nowUpperLimit) {
+        if (mImgView.getHeight() - (mTimeTools.mEveryMinuteHeight[1] - 1) <= nowLowerLimit - nowUpperLimit) {
             if (imgViewTop <= nowLowerLimit && imgViewBottom >= nowLowerLimit) {//1
                 correctBottom = nowLowerLimit;
                 WHERE_TO_DRAW = BOTTOM_TO_DRAW;
@@ -318,7 +317,7 @@ public class ChildLayout extends FrameLayout implements TimeSelectView.IChildLay
         int linkImgViewBottom = childLayout.mLinkImgView.getBottom();
         int nowUpperLimit = mIRectView.getNowUpperLimit(linkImgViewBottom - mExtraHeight) + mExtraHeight;
         int nowLowerLimit = mIRectView.getNowLowerLimit(linkImgViewTop - mExtraHeight) + mExtraHeight;
-        if (linkImgViewBottom - linkImgViewTop  <= nowLowerLimit - nowUpperLimit) {
+        if (linkImgViewBottom - linkImgViewTop  - (mTimeTools.mEveryMinuteHeight[1] - 1) <= nowLowerLimit - nowUpperLimit) {
             if (linkImgViewTop <= nowLowerLimit && linkImgViewBottom >= nowLowerLimit) {//1
                 correctBottom = nowLowerLimit;
                 WHERE_TO_DRAW = BOTTOM_TO_DRAW;
