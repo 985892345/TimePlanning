@@ -10,7 +10,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
 
-import com.ndhzs.timeplanning.weight.TimeSelectView;
+import com.ndhzs.timeplanning.weight.timeselectview.TimeSelectView;
 import com.ndhzs.timeplanning.weight.timeselectview.utils.TimeUtil;
 import com.ndhzs.timeplanning.weight.timeselectview.bean.TaskBean;
 import com.ndhzs.timeplanning.weight.timeselectview.layout.ChildLayout;

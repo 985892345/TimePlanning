@@ -1,4 +1,4 @@
-package com.ndhzs.timeplanning.weight;
+package com.ndhzs.timeplanning.weight.timeselectview;
 
 import android.animation.ValueAnimator;
 import android.content.Context;

@@ -19,7 +19,7 @@ import com.google.android.material.textfield.TextInputLayout;
 import com.ndhzs.timeplanning.R;
 import com.ndhzs.timeplanning.textwatcher.BaseTextWatcher;
 import com.ndhzs.timeplanning.httpservice.SendNetRequest;
-import com.ndhzs.timeplanning.weight.RegisterDialog;
+import com.ndhzs.timeplanning.weight.dialog.RegisterDialog;
 
 import org.json.JSONException;
 import org.json.JSONObject;

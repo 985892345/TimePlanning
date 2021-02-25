@@ -1,4 +1,4 @@
-package com.ndhzs.timeplanning.weight;
+package com.ndhzs.timeplanning.weight.dialog;
 
 import android.app.Dialog;
 import android.content.Context;

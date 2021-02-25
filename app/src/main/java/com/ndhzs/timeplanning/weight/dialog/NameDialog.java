@@ -1,4 +1,4 @@
-package com.ndhzs.timeplanning.weight;
+package com.ndhzs.timeplanning.weight.dialog;
 
 import android.annotation.SuppressLint;
 import android.app.Dialog;
@@ -16,6 +16,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 
 import com.ndhzs.timeplanning.R;
+import com.ndhzs.timeplanning.weight.RoundCornerView;
 import com.ndhzs.timeplanning.weight.timeselectview.bean.TaskBean;
 
 public class NameDialog extends Dialog implements View.OnClickListener{

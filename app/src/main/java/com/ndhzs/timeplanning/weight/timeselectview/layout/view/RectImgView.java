@@ -10,7 +10,7 @@ import android.graphics.Rect;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.ndhzs.timeplanning.weight.TimeSelectView;
+import com.ndhzs.timeplanning.weight.timeselectview.TimeSelectView;
 import com.ndhzs.timeplanning.weight.timeselectview.utils.TimeUtil;
 import com.ndhzs.timeplanning.weight.timeselectview.bean.TaskBean;
 

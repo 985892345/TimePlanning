@@ -34,7 +34,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <com.ndhzs.timeplanning.weight.TimeSelectView
+        <com.ndhzs.timeplanning.weight.timeselectview.TimeSelectView
             android:id="@+id/vp_item_time_left"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -79,7 +79,7 @@
         app:layout_constraintStart_toEndOf="@+id/linearLayout1"
         app:layout_constraintTop_toTopOf="parent">
 
-        <com.ndhzs.timeplanning.weight.TimeSelectView
+        <com.ndhzs.timeplanning.weight.timeselectview.TimeSelectView
             android:id="@+id/vp_item_time_right"
             android:layout_width="match_parent"
             android:layout_height="match_parent"

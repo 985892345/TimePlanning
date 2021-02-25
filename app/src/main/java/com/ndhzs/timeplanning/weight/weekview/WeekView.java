@@ -1,4 +1,4 @@
-package com.ndhzs.timeplanning.weight;
+package com.ndhzs.timeplanning.weight.weekview;
 
 import android.content.Context;
 import android.content.res.TypedArray;

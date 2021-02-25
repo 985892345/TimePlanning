@@ -9,8 +9,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.ndhzs.timeplanning.R;
-import com.ndhzs.timeplanning.weight.NameDialog;
-import com.ndhzs.timeplanning.weight.TimeSelectView;
+import com.ndhzs.timeplanning.weight.dialog.NameDialog;
+import com.ndhzs.timeplanning.weight.timeselectview.TimeSelectView;
 import com.ndhzs.timeplanning.weight.timeselectview.bean.TaskBean;
 
 import java.util.List;

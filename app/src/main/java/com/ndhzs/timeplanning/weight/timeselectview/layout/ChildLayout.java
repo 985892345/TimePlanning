@@ -11,7 +11,7 @@ import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
 
-import com.ndhzs.timeplanning.weight.TimeSelectView;
+import com.ndhzs.timeplanning.weight.timeselectview.TimeSelectView;
 import com.ndhzs.timeplanning.weight.timeselectview.layout.view.RectImgView;
 import com.ndhzs.timeplanning.weight.timeselectview.layout.view.RectView;
 import com.ndhzs.timeplanning.weight.timeselectview.utils.TimeUtil;

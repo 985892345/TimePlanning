@@ -8,7 +8,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.ndhzs.timeplanning.R;
-import com.ndhzs.timeplanning.weight.DayView;
+import com.ndhzs.timeplanning.weight.weekview.DayView;
 
 import java.util.List;
 
