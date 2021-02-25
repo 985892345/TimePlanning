@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.ndhzs.timeplanning.weight.DayView xmlns:android="http://schemas.android.com/apk/res/android"
+<com.ndhzs.timeplanning.weight.DayView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/vp_item_day"
     android:layout_width="match_parent"

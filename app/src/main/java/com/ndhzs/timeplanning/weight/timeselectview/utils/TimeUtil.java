@@ -1,8 +1,8 @@
-package com.ndhzs.timeplanning.weight.timeselectview;
+package com.ndhzs.timeplanning.weight.timeselectview.utils;
 
 import java.util.Calendar;
 
-public class TimeTools {
+public class TimeUtil {
 
     private final int mHLineWidth;//水平线厚度
     private final int mExtraHeight;//上方或下方其中一方多余的高度
@@ -20,7 +20,7 @@ public class TimeTools {
     public static final int DELAY_BACK_CURRENT_TIME = 10000;//回到当前时间的延缓时间
     public int TIME_INTERVAL = 15;//按下空白区域时起始时间的分钟间隔数(必须为60的因数)
 
-    public TimeTools(int hLineWidth, int extraHeight, int intervalHeight, int startHour) {
+    public TimeUtil(int hLineWidth, int extraHeight, int intervalHeight, int startHour) {
         this.mHLineWidth = hLineWidth;
         this.mExtraHeight = extraHeight;
         this.mIntervalHeight = intervalHeight;

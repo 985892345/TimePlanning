@@ -8,7 +8,6 @@ import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -17,7 +16,7 @@ import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 
 import com.ndhzs.timeplanning.R;
-import com.ndhzs.timeplanning.weight.timeselectview.FrameView;
+import com.ndhzs.timeplanning.weight.timeselectview.layout.view.FrameView;
 
 public class DayView extends View {
 

@@ -89,7 +89,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        Log.d(TAG, "onDestroy: " + mDiffDate/7*7);
         for (int i = 0; i < mDiffDate/7*7; i++) {
             Dates dates = new Dates();
             int diffPosition = 7 * mDates.size() - mDiffDate/7*7;

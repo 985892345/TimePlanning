@@ -1,7 +1,7 @@
-package com.ndhzs.timeplanning.weight.timeselectview;
+package com.ndhzs.timeplanning.weight.timeselectview.layout.view;
 
 /*
- *此自定义View只用于在长按已选取的区域时生成相同的Img来移动
+ * 此自定义View只用于在长按已选取的区域时生成相同的Img来移动
  */
 
 import android.content.Context;
@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.ndhzs.timeplanning.weight.TimeSelectView;
+import com.ndhzs.timeplanning.weight.timeselectview.utils.TimeUtil;
 import com.ndhzs.timeplanning.weight.timeselectview.bean.TaskBean;
 
 public class RectImgView extends View {
@@ -20,7 +21,7 @@ public class RectImgView extends View {
     private final String mTaskName;
     private final String mStDTime;
     private final RectView mRectView;
-    private final TimeTools mTimeTools;
+    private final TimeUtil mTimeUtil;
     private RectImgView mSelfImgView;
     private RectImgView mLinkImgView;
     private int mDiffDistance = 0;
@@ -34,17 +35,17 @@ public class RectImgView extends View {
      * @param taskBean 数据
      * @param rectView 与RectView进行绑定
      */
-    public RectImgView(Context context, Rect rect, TaskBean taskBean, RectView rectView, TimeTools timeTools) {
-        this(context, rect, taskBean.getName(), taskBean.getDiffTime(), rectView, timeTools);
+    public RectImgView(Context context, Rect rect, TaskBean taskBean, RectView rectView, TimeUtil timeUtil) {
+        this(context, rect, taskBean.getName(), taskBean.getDiffTime(), rectView, timeUtil);
     }
 
-    public RectImgView(Context context, Rect rect, String taskName, String stDTime, RectView rectView, TimeTools timeTools) {
+    public RectImgView(Context context, Rect rect, String taskName, String stDTime, RectView rectView, TimeUtil timeUtil) {
         super(context);
         this.mContext = context;
         this.mTaskName = taskName;
         this.mStDTime = stDTime;
         this.mRectView = rectView;
-        this.mTimeTools = timeTools;
+        this.mTimeUtil = timeUtil;
         mRect = new Rect(0, 0, rect.width(), rect.height());
     }
 
@@ -81,8 +82,8 @@ public class RectImgView extends View {
     protected void onDraw(Canvas canvas) {
         mRectView.drawRect(canvas, mRect, mTaskName);
         mRectView.drawTopBottomTime(canvas, mRect,
-                mTimeTools.getTopTime(getTop()),
-                mTimeTools.getBottomTime(mStDTime));
+                mTimeUtil.getTopTime(getTop()),
+                mTimeUtil.getBottomTime(mStDTime));
         if (TimeSelectView.IS_SHOW_DIFFERENT_TIME) {
             mRectView.drawArrows(canvas, mRect, mStDTime);
         }
@@ -170,8 +171,8 @@ public class RectImgView extends View {
      * 用于添加相同，但开始时间不同的RectImgView
      * @return 返回new的一样的副本
      */
-    public RectImgView getSameImgView(TimeTools timeTools) {
-        return new RectImgView(mContext, mRect, mTaskName, mStDTime, mRectView, timeTools);
+    public RectImgView getSameImgView(TimeUtil timeUtil) {
+        return new RectImgView(mContext, mRect, mTaskName, mStDTime, mRectView, timeUtil);
     }
 
     private static final String TAG = "123";

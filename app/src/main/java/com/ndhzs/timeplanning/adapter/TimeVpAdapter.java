@@ -1,7 +1,6 @@
 package com.ndhzs.timeplanning.adapter;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,9 +13,6 @@ import com.ndhzs.timeplanning.weight.NameDialog;
 import com.ndhzs.timeplanning.weight.TimeSelectView;
 import com.ndhzs.timeplanning.weight.timeselectview.bean.TaskBean;
 
-import org.litepal.LitePal;
-
-import java.util.HashSet;
 import java.util.List;
 
 public class TimeVpAdapter extends RecyclerView.Adapter<TimeVpAdapter.TimeViewHolder> {
@@ -93,7 +89,7 @@ public class TimeVpAdapter extends RecyclerView.Adapter<TimeVpAdapter.TimeViewHo
         nameDialog.setOnDlgCloseListener(new NameDialog.onDlgCloseListener() {
             @Override
             public void onClose() {
-                timeView.refreshName();
+                timeView.refreshRect();
             }
         });
         nameDialog.show();

@@ -13,12 +13,12 @@ import androidx.core.content.ContextCompat;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.ndhzs.timeplanning.R;
-import com.ndhzs.timeplanning.weight.timeselectview.ChildLayout;
-import com.ndhzs.timeplanning.weight.timeselectview.RectView;
-import com.ndhzs.timeplanning.weight.timeselectview.TimeTools;
-import com.ndhzs.timeplanning.weight.timeselectview.NowTimeLine;
-import com.ndhzs.timeplanning.weight.timeselectview.RectImgView;
-import com.ndhzs.timeplanning.weight.timeselectview.FrameView;
+import com.ndhzs.timeplanning.weight.timeselectview.layout.ChildLayout;
+import com.ndhzs.timeplanning.weight.timeselectview.layout.view.RectView;
+import com.ndhzs.timeplanning.weight.timeselectview.utils.TimeUtil;
+import com.ndhzs.timeplanning.weight.timeselectview.layout.view.NowTimeLine;
+import com.ndhzs.timeplanning.weight.timeselectview.layout.view.RectImgView;
+import com.ndhzs.timeplanning.weight.timeselectview.layout.view.FrameView;
 import com.ndhzs.timeplanning.weight.timeselectview.bean.TaskBean;
 
 import java.util.List;
@@ -41,7 +41,7 @@ public class TimeSelectView extends ScrollView {
     private final int mInsideColor;//矩形内部颜色
     private final float mTimeTextSide;//时间字体大小
     private final float mTaskTextSize;//任务字体大小
-    private final TimeTools mTimeTools;
+    private final TimeUtil mTimeUtil;
     private boolean mIsOpenScrollCallBack = true;//设置mIsCloseUserActionJudge，将在被其他非触摸操作滑动时不会回调滑动的接口
 
     /**
@@ -99,7 +99,7 @@ public class TimeSelectView extends ScrollView {
      * @param timeInterval 必须为60的因数，若不是，将以15为间隔数
      */
     public void setTimeInterval(int timeInterval) {
-        mTimeTools.TIME_INTERVAL = (60 % timeInterval == 0) ? timeInterval : 15;
+        mTimeUtil.TIME_INTERVAL = (60 % timeInterval == 0) ? timeInterval : 15;
     }
 
     /**
@@ -123,8 +123,8 @@ public class TimeSelectView extends ScrollView {
     /**
      * 设置当前点击区域的任务名称
      */
-    public void refreshName() {
-        mRectView.refreshName();
+    public void refreshRect() {
+        mRectView.refreshRect();
     }
 
     /**
@@ -152,7 +152,7 @@ public class TimeSelectView extends ScrollView {
                 int[] linkPosition = new int[2];
                 linkTimeView.getLocationInWindow(linkPosition);
                 int diffDistance = selfPosition[0] - linkPosition[0];
-                mLayoutChild.setLinkChildLayout(linkTimeView.mLayoutChild, linkTimeView.mTimeTools, diffDistance);
+                mLayoutChild.setLinkChildLayout(linkTimeView.mLayoutChild, linkTimeView.mTimeUtil, diffDistance);
             }
         }, 200);
     }
@@ -161,7 +161,7 @@ public class TimeSelectView extends ScrollView {
      * 设置是否显示时间线
      */
     public void setIsShowTimeLine(boolean is) {
-        NowTimeLine mNowTimeLine = new NowTimeLine(context, mTimeTools);
+        NowTimeLine mNowTimeLine = new NowTimeLine(context, mTimeUtil);
         if (is) {
             LayoutParams lpNowTimeView = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
             mNowTimeLine.setInterval(mIntervalLeft, FrameView.INTERVAL_RIGHT);
@@ -204,18 +204,18 @@ public class TimeSelectView extends ScrollView {
         IS_SHOW_DIFFERENT_TIME = ty.getBoolean(R.styleable.TimeSelectView_isShowDifferentTime, false);
         ty.recycle();
         setCenterTime(mCenterTime);
-        mTimeTools = new TimeTools(FrameView.HORIZONTAL_LINE_WIDTH, mExtraHeight, mIntervalHeight, mStartHour);
+        mTimeUtil = new TimeUtil(FrameView.HORIZONTAL_LINE_WIDTH, mExtraHeight, mIntervalHeight, mStartHour);
         setVerticalScrollBarEnabled(false);
         initLayout(context);
     }
     private void initLayout(Context context) {
-        mLayoutChild = new ChildLayout(context, mTimeTools);
+        mLayoutChild = new ChildLayout(context, mTimeUtil);
         LayoutParams lpLayoutChild = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
         mLayoutChild.setInterval(mIntervalLeft, mExtraHeight);
 
 
 
-        RectView rectView = new RectView(context, mTimeTools);
+        RectView rectView = new RectView(context, mTimeUtil);
         LayoutParams lpRectView = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
         lpRectView.leftMargin = mIntervalLeft;
         lpRectView.topMargin = mExtraHeight;
@@ -308,7 +308,7 @@ public class TimeSelectView extends ScrollView {
             case MotionEvent.ACTION_UP:
                 removeCallbacks(mLongPressRun);
                 if (y != mInitialY) {//这个自动回到CenterTime不能写在onInterceptTouchEvent()的UP，详细看下方注释
-                    postDelayed(mGoBackCenterTimeRun, TimeTools.DELAY_BACK_CURRENT_TIME);
+                    postDelayed(mGoBackCenterTimeRun, TimeUtil.DELAY_BACK_CURRENT_TIME);
                 }
                 break;
         }
@@ -548,8 +548,8 @@ public class TimeSelectView extends ScrollView {
             post(new Runnable() {
                 @Override
                 public void run() {
-                    fastTimeMove(mTimeTools.getNowTime());
-                    postDelayed(mTimeMoveRun, TimeTools.DELAY_NOW_TIME_REFRESH);
+                    fastTimeMove(mTimeUtil.getNowTime());
+                    postDelayed(mTimeMoveRun, TimeUtil.DELAY_NOW_TIME_REFRESH);
                 }
             });
         }else {//设置CenterTime，以CenterTime为中线，不随时间移动
@@ -569,14 +569,14 @@ public class TimeSelectView extends ScrollView {
         @Override
         public void run() {
             slowlyTimeMove();
-            postDelayed(this, TimeTools.DELAY_NOW_TIME_REFRESH);
+            postDelayed(this, TimeUtil.DELAY_NOW_TIME_REFRESH);
         }
     };
     private ValueAnimator mAnimator;
     private void slowlyTimeMove() {
         int height;
         if (mCenterTime == -1) {//以当前时间线为中线
-            height = getCenterTimeHeight(mTimeTools.getNowTime());
+            height = getCenterTimeHeight(mTimeUtil.getNowTime());
         }else {//以CenterTime为中线，不随时间移动
             height = mCenterTimeHeight;
         }
@@ -636,7 +636,7 @@ public class TimeSelectView extends ScrollView {
         void isAllowDraw(boolean isAllowDraw);
         void longPress(int y);
         void refresh(int y);
-        void refreshName();
+        void refreshRect();
         int getUpperLimit();
         int getLowerLimit();
         RectImgView getImgViewRect();

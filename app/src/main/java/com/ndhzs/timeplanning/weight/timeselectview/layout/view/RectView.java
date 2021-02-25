@@ -1,4 +1,4 @@
-package com.ndhzs.timeplanning.weight.timeselectview;
+package com.ndhzs.timeplanning.weight.timeselectview.layout.view;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -6,25 +6,25 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
 import android.graphics.RectF;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
 
 import com.ndhzs.timeplanning.weight.TimeSelectView;
+import com.ndhzs.timeplanning.weight.timeselectview.utils.TimeUtil;
 import com.ndhzs.timeplanning.weight.timeselectview.bean.TaskBean;
+import com.ndhzs.timeplanning.weight.timeselectview.layout.ChildLayout;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 
 public class RectView extends View implements ChildLayout.IUpEvent, TimeSelectView.IRectView {
 
     private final Context mContext;
-    private final TimeTools mTimeTools;
+    private final TimeUtil mTimeUtil;
 
     private Paint mInsidePaint;//圆角矩形内部画笔
     private Paint mBorderPaint;//圆角矩形边框画笔
@@ -69,10 +69,10 @@ public class RectView extends View implements ChildLayout.IUpEvent, TimeSelectVi
     private float RECT_LESSER_HEIGHT;//矩形较小高度，控制矩形上下线时间能否显示,与字体大小有关
     private float RECT_SHOE_START_TIME_HEIGHT;//矩形显示开始时间的最小高度，与字体大小有关(大于它不一定能保存矩形)
 
-    public RectView(Context context, TimeTools timeTools) {
+    public RectView(Context context, TimeUtil timeUtil) {
         super(context);
         this.mContext = context;
-        this.mTimeTools = timeTools;
+        this.mTimeUtil = timeUtil;
         initPaint();
     }
     private void initPaint() {
@@ -209,7 +209,7 @@ public class RectView extends View implements ChildLayout.IUpEvent, TimeSelectVi
         }else {
             if (initialRect.height() > RECT_SHOE_START_TIME_HEIGHT) {
                 //绘制开始的时间，就是顶部中间那个时间
-                canvas.drawText(mTimeTools.getTime(initialRect.top), initialRect.centerX(),
+                canvas.drawText(mTimeUtil.getTime(initialRect.top), initialRect.centerX(),
                         initialRect.top - mRectTimeAscent + RECT_BORDER_WIDTH - 4, mStartTimePaint);
             }
         }
@@ -220,7 +220,7 @@ public class RectView extends View implements ChildLayout.IUpEvent, TimeSelectVi
             canvas.drawText(stDTime,
                     timeRight, rect.centerY() + mDTimeCenter, mDTimePaint);
         }else {
-            canvas.drawText(mTimeTools.getDiffTime(rect.top, rect.bottom),
+            canvas.drawText(mTimeUtil.getDiffTime(rect.top, rect.bottom),
                     timeRight, rect.centerY() + mDTimeCenter, mDTimePaint);
         }
         {
@@ -255,8 +255,8 @@ public class RectView extends View implements ChildLayout.IUpEvent, TimeSelectVi
         float t = rect.top - mRectTimeAscent + RECT_BORDER_WIDTH - 4;
         float b = rect.bottom - mRectTimeDescent - RECT_BORDER_WIDTH + 4;
         if (topTime == null) {
-            canvas.drawText(mTimeTools.getTime(rect.top), l, t, mRectTimePaint);
-            canvas.drawText(mTimeTools.getTime(rect.bottom), l, b, mRectTimePaint);
+            canvas.drawText(mTimeUtil.getTime(rect.top), l, t, mRectTimePaint);
+            canvas.drawText(mTimeUtil.getTime(rect.bottom), l, b, mRectTimePaint);
         }else {
             canvas.drawText(topTime, l, t, mRectTimePaint);
             canvas.drawText(bottomTime, l, b, mRectTimePaint);
@@ -286,7 +286,7 @@ public class RectView extends View implements ChildLayout.IUpEvent, TimeSelectVi
             }
             case INSIDE: {
                 mImgViewRect = new RectImgView(mContext, deletedRect,
-                    mRectAndData.get(deletedRect), this, mTimeTools);
+                    mRectAndData.get(deletedRect), this, mTimeUtil);
                 FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT);
                 lp.leftMargin = getLeft();
                 lp.topMargin = getTop() + deletedRect.top;
@@ -331,16 +331,16 @@ public class RectView extends View implements ChildLayout.IUpEvent, TimeSelectVi
     }
     private int getInitialTimeHeight(int y) {//长按空白区域时调用
         mUpperLimit = getUpperLimit(y);//之后会在longPress()中重新赋值
-        int hLineTopHeight = mTimeTools.getHLineTopHeight(y);
+        int hLineTopHeight = mTimeUtil.getHLineTopHeight(y);
         int relativeHeight = y - hLineTopHeight;
-        int minuteInterval = mTimeTools.TIME_INTERVAL;
-        for (int i = 0; i < mTimeTools.mEveryMinuteHeight.length - minuteInterval; i += minuteInterval) {
-            if (relativeHeight <= mTimeTools.mEveryMinuteHeight[i + minuteInterval]) {
+        int minuteInterval = mTimeUtil.TIME_INTERVAL;
+        for (int i = 0; i < mTimeUtil.mEveryMinuteHeight.length - minuteInterval; i += minuteInterval) {
+            if (relativeHeight <= mTimeUtil.mEveryMinuteHeight[i + minuteInterval]) {
                 /*
                  * 如果MyTime.sEveryMinuteHeight[i] = 12.5, 则取大于等于的整数, 取13, 此时13才是该分钟数的顶线
                  * 如果刚好等于12.0, 则取12, 此时12刚好是该分钟数的顶线
                  * */
-                int correctHeight = hLineTopHeight + (int)Math.ceil(mTimeTools.mEveryMinuteHeight[i]) + 1;
+                int correctHeight = hLineTopHeight + (int)Math.ceil(mTimeUtil.mEveryMinuteHeight[i]) + 1;
                 return Math.max(mUpperLimit, correctHeight);
             }
         }
@@ -348,21 +348,21 @@ public class RectView extends View implements ChildLayout.IUpEvent, TimeSelectVi
     }
     private int getStartTimeCorrectHeight(int top) {//所有的UP事件都会调用
         int upperLimit = getUpperLimit(top);
-        int hLineTopHeight = mTimeTools.getHLineTopHeight(top);
+        int hLineTopHeight = mTimeUtil.getHLineTopHeight(top);
         int relativeHeight = top - hLineTopHeight;
         if (relativeHeight <= FrameView.HORIZONTAL_LINE_WIDTH) {
             return hLineTopHeight + FrameView.HORIZONTAL_LINE_WIDTH;
         }else {
             //最后面的加1是控制两个区域的交界时间能否相同，加1就能相同，不加就除了00分钟以外都不能相同
-            int correctHeight = hLineTopHeight + (int)Math.ceil(mTimeTools.mEveryMinuteHeight[mTimeTools.getMinute(top + mExtraHeight)]) + 1;
+            int correctHeight = hLineTopHeight + (int)Math.ceil(mTimeUtil.mEveryMinuteHeight[mTimeUtil.getMinute(top + mExtraHeight)]) + 1;
             return Math.max(upperLimit, correctHeight);
         }
     }
     private int getEndTimeCorrectHeight(int bottom) {//所有的UP事件都会调用
         int lowerLimit = getLowerLimit(bottom);
-        int hLineTopHeight = mTimeTools.getHLineTopHeight(bottom);
+        int hLineTopHeight = mTimeUtil.getHLineTopHeight(bottom);
         int relativeHeight = bottom - hLineTopHeight;
-        if (relativeHeight < mTimeTools.mEveryMinuteHeight[1]) {//这个时候你滑到的时间为0分钟
+        if (relativeHeight < mTimeUtil.mEveryMinuteHeight[1]) {//这个时候你滑到的时间为0分钟
             return hLineTopHeight;
         }else {
             /*
@@ -374,7 +374,7 @@ public class RectView extends View implements ChildLayout.IUpEvent, TimeSelectVi
              *
              * 最后面的减1是控制两个区域的交界时间能否相同，就是2分钟的最底部的一格的上一格，减1就能相同，不减就除了00分钟以外都不能相同
              * */
-            int correctHeight = hLineTopHeight + (int)Math.ceil(mTimeTools.mEveryMinuteHeight[mTimeTools.getMinute(bottom + mExtraHeight) + 1] - 1) - 1;
+            int correctHeight = hLineTopHeight + (int)Math.ceil(mTimeUtil.mEveryMinuteHeight[mTimeUtil.getMinute(bottom + mExtraHeight) + 1] - 1) - 1;
             return Math.min(lowerLimit, correctHeight);
         }
     }
@@ -463,12 +463,12 @@ public class RectView extends View implements ChildLayout.IUpEvent, TimeSelectVi
                     Rect re = new Rect(initialRect);
                     mRects.add(re);
                     TaskBean taskBean = new TaskBean();
-                    taskBean.setStartTime(mTimeTools.getTime(re.top));
-                    taskBean.setDiffTime(mTimeTools.getDiffTime(re.top, re.bottom));
-                    taskBean.setYear(mTimeTools.getYear());
-                    taskBean.setMonth(mTimeTools.getMonth());
-                    taskBean.setDay(mTimeTools.getDay());
-                    taskBean.setWeek(mTimeTools.getWeek());
+                    taskBean.setStartTime(mTimeUtil.getTime(re.top));
+                    taskBean.setDiffTime(mTimeUtil.getDiffTime(re.top, re.bottom));
+                    taskBean.setYear(mTimeUtil.getYear());
+                    taskBean.setMonth(mTimeUtil.getMonth());
+                    taskBean.setDay(mTimeUtil.getDay());
+                    taskBean.setWeek(mTimeUtil.getWeek());
                     taskBean.setName("点击设置任务名称");
                     taskBean.setBorderColor(mBorderColor);
                     taskBean.setInsideColor(mInsideColor);
@@ -490,8 +490,8 @@ public class RectView extends View implements ChildLayout.IUpEvent, TimeSelectVi
                     Rect re = new Rect(initialRect);
                     if (!re.equals(deletedRect)) {//如果大小和位置改变
                         TaskBean taskBean = mRectAndData.get(deletedRect);
-                        taskBean.setStartTime(mTimeTools.getTime(re.top));
-                        taskBean.setDiffTime(mTimeTools.getDiffTime(re.top, re.bottom));
+                        taskBean.setStartTime(mTimeUtil.getTime(re.top));
+                        taskBean.setDiffTime(mTimeUtil.getDiffTime(re.top, re.bottom));
                         dataAlter(taskBean);
                     }
                     mRects.add(re);//之前在isContain()中被删掉了
@@ -536,8 +536,8 @@ public class RectView extends View implements ChildLayout.IUpEvent, TimeSelectVi
             post(new Runnable() {
                 @Override
                 public void run() {
-                    int top = getStartTimeCorrectHeight(mTimeTools.getTopHeight(taskBean.getStartTime()));
-                    int bottom = getEndTimeCorrectHeight(mTimeTools.getBottomHeight(taskBean.getDiffTime()));
+                    int top = getStartTimeCorrectHeight(mTimeUtil.getTopHeight(taskBean.getStartTime()));
+                    int bottom = getEndTimeCorrectHeight(mTimeUtil.getBottomHeight(taskBean.getDiffTime()));
                     Rect rect = new Rect(0, top, getWidth(), bottom);
                     mRects.add(rect);
                     mRectAndData.put(rect, taskBean);
@@ -551,7 +551,7 @@ public class RectView extends View implements ChildLayout.IUpEvent, TimeSelectVi
         mIsAllowDraw = isAllowDraw;
     }
     @Override
-    public void refreshName() {
+    public void refreshRect() {
         invalidate(mRects.get(mClickLocation));
     }
     @Override
@@ -590,11 +590,11 @@ public class RectView extends View implements ChildLayout.IUpEvent, TimeSelectVi
         String dTime = mRectAndData.get(deletedRect).getDiffTime();
         top = getStartTimeCorrectHeight(top);
         //bottom以时间差值来计算高度，如果不用时间差，就会出现上下边界时间出错的问题
-        int bottom = getEndTimeCorrectHeight(mTimeTools.getBottomTimeHeight(top, dTime));
+        int bottom = getEndTimeCorrectHeight(mTimeUtil.getBottomTimeHeight(top, dTime));
         Rect rect = new Rect(0, top, getWidth(), bottom);
         mRects.add(rect);
         TaskBean taskBean = mRectAndData.get(deletedRect);
-        taskBean.setStartTime(mTimeTools.getTime(top));
+        taskBean.setStartTime(mTimeUtil.getTime(top));
         dataAlter(taskBean);
         mRectAndData.put(rect, taskBean);
         invalidate();
@@ -607,11 +607,11 @@ public class RectView extends View implements ChildLayout.IUpEvent, TimeSelectVi
         String dTime = mRectAndData.get(deletedRect).getDiffTime();
         bottom = getEndTimeCorrectHeight(bottom);
         //top以时间差值来计算高度，如果不用时间差，就会出现上下边界时间出错的问题
-        int top = getStartTimeCorrectHeight(mTimeTools.getTopTimeHeight(bottom, dTime));
+        int top = getStartTimeCorrectHeight(mTimeUtil.getTopTimeHeight(bottom, dTime));
         Rect rect = new Rect(0, top, getWidth(), bottom);
         mRects.add(rect);
         TaskBean taskBean = mRectAndData.get(deletedRect);
-        taskBean.setStartTime(mTimeTools.getTime(top));
+        taskBean.setStartTime(mTimeUtil.getTime(top));
         dataAlter(taskBean);
         mRectAndData.put(rect, taskBean);
         invalidate();
@@ -635,10 +635,10 @@ public class RectView extends View implements ChildLayout.IUpEvent, TimeSelectVi
         String dTime = taskBean.getDiffTime();
         top = getStartTimeCorrectHeight(top);
         //bottom以时间差值来计算高度，如果不用时间差，就会出现上下边界时间出错的问题
-        int bottom = getEndTimeCorrectHeight(mTimeTools.getBottomTimeHeight(top, dTime));
+        int bottom = getEndTimeCorrectHeight(mTimeUtil.getBottomTimeHeight(top, dTime));
         Rect rect = new Rect(0, top, getWidth(), bottom);
         mRects.add(rect);
-        taskBean.setStartTime(mTimeTools.getTime(top));
+        taskBean.setStartTime(mTimeUtil.getTime(top));
         dataAlter(taskBean);
         mRectAndData.put(rect, taskBean);
         invalidate();
@@ -648,10 +648,10 @@ public class RectView extends View implements ChildLayout.IUpEvent, TimeSelectVi
         String dTime = taskBean.getDiffTime();
         bottom = getEndTimeCorrectHeight(bottom);
         //top以时间差值来计算高度，如果不用时间差，就会出现上下边界时间出错的问题
-        int top = getStartTimeCorrectHeight(mTimeTools.getTopTimeHeight(bottom, dTime));
+        int top = getStartTimeCorrectHeight(mTimeUtil.getTopTimeHeight(bottom, dTime));
         Rect rect = new Rect(0, top, getWidth(), bottom);
         mRects.add(rect);
-        taskBean.setStartTime(mTimeTools.getTime(top));
+        taskBean.setStartTime(mTimeUtil.getTime(top));
         dataAlter(taskBean);
         mRectAndData.put(rect, taskBean);
         invalidate();

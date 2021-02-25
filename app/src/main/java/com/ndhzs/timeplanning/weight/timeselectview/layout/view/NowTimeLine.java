@@ -1,30 +1,31 @@
-package com.ndhzs.timeplanning.weight.timeselectview;
+package com.ndhzs.timeplanning.weight.timeselectview.layout.view;
 
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.util.Log;
 import android.view.View;
+
+import com.ndhzs.timeplanning.weight.timeselectview.utils.TimeUtil;
 
 public class NowTimeLine extends View {
 
     private Paint mTimeLinePaint;
     private int mIntervalLeft;//左边的时间间隔宽度
     private int mIntervalRight;//右边的间隔宽度
-    private final TimeTools mTimeTools;
+    private final TimeUtil mTimeUtil;
 
     public static final int BALL_DIAMETER = 14;//小球直径
 
-    public NowTimeLine(Context context, TimeTools timeTools) {
+    public NowTimeLine(Context context, TimeUtil timeUtil) {
         super(context);
-        this.mTimeTools = timeTools;
+        this.mTimeUtil = timeUtil;
         postDelayed(new Runnable() {
             @Override
             public void run() {
                 timeLineMove();
-                postDelayed(this, TimeTools.DELAY_NOW_TIME_REFRESH);
+                postDelayed(this, TimeUtil.DELAY_NOW_TIME_REFRESH);
             }
-        }, TimeTools.DELAY_NOW_TIME_REFRESH);
+        }, TimeUtil.DELAY_NOW_TIME_REFRESH);
         init();
     }
     private void init() {
@@ -57,7 +58,7 @@ public class NowTimeLine extends View {
         // 因为如果我长按已选择了的区域，那么在ChildLayout就会调用addView()，又因为时间线应在最顶层，
         // 所以系统会重新layout()，如果你在LayoutParams.topMargin直接设置了开始位置，那么此时layout()就
         // 会跑回去，所以只有在layout()中设置当前时间的高度，就不会重新返回以前的位置，可以避免这个问题
-        int nowTimeHeight = mTimeTools.getNowTimeHeight() - BALL_DIAMETER/2;
+        int nowTimeHeight = mTimeUtil.getNowTimeHeight() - BALL_DIAMETER/2;
         t = nowTimeHeight;
         b = nowTimeHeight + BALL_DIAMETER;
         super.layout(l, t, r, b);
@@ -75,6 +76,6 @@ public class NowTimeLine extends View {
         layout(0, y, getWidth(), y + getHeight());
     }
     private void timeLineMove() {
-        layout(mTimeTools.getNowTimeHeight() - BALL_DIAMETER/2);
+        layout(mTimeUtil.getNowTimeHeight() - BALL_DIAMETER/2);
     }
 }

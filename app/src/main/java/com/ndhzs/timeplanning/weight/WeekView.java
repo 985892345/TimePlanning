@@ -9,7 +9,7 @@ import android.view.View;
 
 import androidx.annotation.Nullable;
 import com.ndhzs.timeplanning.R;
-import com.ndhzs.timeplanning.weight.timeselectview.FrameView;
+import com.ndhzs.timeplanning.weight.timeselectview.layout.view.FrameView;
 
 public class WeekView extends View {
 
