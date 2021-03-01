@@ -44,10 +44,9 @@ public class WeekView extends View {
         switch (widthMode) {
             case MeasureSpec.UNSPECIFIED://处于HorizontalScrollView中
             case MeasureSpec.AT_MOST://wrap_content
-                widthMeasureSpec = MeasureSpec.makeMeasureSpec(1000, MeasureSpec.EXACTLY);
+                widthMeasureSpec = MeasureSpec.makeMeasureSpec(1080, MeasureSpec.EXACTLY);
                 break;
             case MeasureSpec.EXACTLY://match_parent、精确值
-                FrameView.HORIZONTAL_LINE_LENGTH = MeasureSpec.getSize(widthMeasureSpec);
                 break;
         }
         int heightMode = MeasureSpec.getMode(heightMeasureSpec);

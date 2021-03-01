@@ -89,15 +89,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        for (int i = 0; i < mDiffDate/7*7; i++) {
-            Dates dates = new Dates();
-            int diffPosition = 7 * mDates.size() - mDiffDate/7*7;
-            int j = diffPosition + i / 7;
-            int k = diffPosition + i % 7;
-            dates.setDate(mDates.get(j)[k]);
-            dates.setRest(mRectDays.get(j)[k]);
-            dates.setCalender(mCalender.get(j)[k]);
-            dates.save();
+        int d = mDiffDate/7;
+        for (int i = 0; i < d; i++) {
+            for (int j = 0; j < 7; j++) {
+                Dates dates = new Dates();
+                int p = mDates.size() - i - 1;
+                dates.setDate(mDates.get(p)[j]);
+                dates.setRest(mRectDays.get(p)[j]);
+                dates.setCalender(mCalender.get(p)[j]);
+                dates.save();
+            }
         }
     }
 
