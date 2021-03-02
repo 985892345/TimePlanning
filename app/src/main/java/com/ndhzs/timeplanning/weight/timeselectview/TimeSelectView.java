@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.os.Vibrator;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.ScrollView;
@@ -56,6 +55,8 @@ public class TimeSelectView extends ScrollView {
 
     public static boolean IS_SHOW_TOP_BOTTOM_TIME = true;//是否绘制上下边界时间
     public static boolean IS_SHOW_DIFFERENT_TIME = true;//是否绘制时间差
+
+    public static boolean IS_LONG_PRESS;//是否是长按
 
     private OnScrollViewListener mOnScrollViewListener;
     private OnDataChangeListener mOnDataChangeListener;
@@ -145,6 +146,8 @@ public class TimeSelectView extends ScrollView {
      * @param linkTimeView 传入要连接的另一个TimeSelectView，请保证他们的高度相同
      */
     public void setLinkTimeSelectView(TimeSelectView linkTimeView) {
+        setClipChildren(false);
+        mLayoutChild.setClipChildren(false);
         postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -236,17 +239,15 @@ public class TimeSelectView extends ScrollView {
         //addView()，顺序不能调换，也可以设置elevation来控制高度
         mLayoutChild.addView(rectView, lpRectView);
         mLayoutChild.addView(frameView, lpFrameView);
-        mLayoutChild.setClipChildren(false);
+
         addView(mLayoutChild, lpLayoutChild);
-        setClipChildren(false);
     }
 
-    private boolean mIsLongPress;//是否是长按
     private final int MOVE_THRESHOLD = 15;//识别是长按而能移动的阈值
     private final Runnable mLongPressRun = new Runnable() {
         @Override
         public void run() {
-            mIsLongPress = true;
+            IS_LONG_PRESS = true;
             Vibrator vibrator = (Vibrator)context.getSystemService(Context.VIBRATOR_SERVICE);
             vibrator.vibrate(30);
             mRectView.longPress(mInitialY + getScrollY() - mExtraHeight);
@@ -273,12 +274,12 @@ public class TimeSelectView extends ScrollView {
             case MotionEvent.ACTION_DOWN:
                 mInitialX = x;
                 mInitialY = y;
-                mIsLongPress = false;//刷新
+                IS_LONG_PRESS = false;//刷新
                 postDelayed(mLongPressRun, 250);
                 removeCallbacks(mGoBackCenterTimeRun);//防止多次点击多次调用自动滑动
                 break;
             case MotionEvent.ACTION_MOVE:
-                if (!mIsLongPress) {//长按时间未到时或已被自身处理所有事件
+                if (!IS_LONG_PRESS) {//长按时间未到时或已被自身处理所有事件
                     //只要大于滑动阀值就自身在onInterceptTouchEvent的MOVE事件拦截
                     if (Math.abs(x - mInitialX) > MOVE_THRESHOLD || Math.abs(y - mInitialY) > MOVE_THRESHOLD) {
                         removeCallbacks(mLongPressRun);
@@ -309,6 +310,7 @@ public class TimeSelectView extends ScrollView {
                 if (y != mInitialY) {//这个自动回到CenterTime不能写在onInterceptTouchEvent()的UP，详细看下方注释
                     postDelayed(mGoBackCenterTimeRun, TimeUtil.DELAY_BACK_CURRENT_TIME);
                 }
+                IS_LONG_PRESS = false;
                 break;
         }
         return super.dispatchTouchEvent(ev);
@@ -349,7 +351,7 @@ public class TimeSelectView extends ScrollView {
                 break;
             }
             case MotionEvent.ACTION_MOVE: {
-                if (mIsLongPress) {//如果是长按
+                if (IS_LONG_PRESS) {//如果是长按
                     if (mUpperLimit == Integer.MIN_VALUE) {//保证值只赋值一次
                         mUpperLimit = mRectView.getUpperLimit() + mExtraHeight;
                         mLowerLimit = mRectView.getLowerLimit() + mExtraHeight;
@@ -393,7 +395,7 @@ public class TimeSelectView extends ScrollView {
                     }
                     slowlyMoveBy(dY);
                 }
-                if (!mIsLongPress && Math.abs(x - mInitialX) < MOVE_THRESHOLD && Math.abs(y - mInitialY) < MOVE_THRESHOLD && mRectView.isClick(y + getScrollY() - mExtraHeight)) {
+                if (!IS_LONG_PRESS && Math.abs(x - mInitialX) < MOVE_THRESHOLD && Math.abs(y - mInitialY) < MOVE_THRESHOLD && mRectView.isClick(y + getScrollY() - mExtraHeight)) {
                     performClick();
                 }
                 break;

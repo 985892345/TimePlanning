@@ -7,13 +7,10 @@ import android.util.AttributeSet;
 import android.view.View;
 
 import androidx.annotation.Nullable;
-
-import com.ndhzs.timeplanning.weight.timeselectview.layout.view.FrameView;
-
 public class RoundCornerView extends View {
 
     private final Paint mPaint = new Paint();
-    private final int mCircle = 10;
+    private final int mRadius = 10;
 
     public RoundCornerView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -26,7 +23,7 @@ public class RoundCornerView extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
-        canvas.drawRoundRect(0, 0, getWidth(), getHeight(), mCircle, mCircle, mPaint);
+        canvas.drawRoundRect(0, 0, getWidth(), getHeight(), mRadius, mRadius, mPaint);
     }
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
@@ -37,13 +34,12 @@ public class RoundCornerView extends View {
                 widthMeasureSpec = MeasureSpec.makeMeasureSpec(50, MeasureSpec.EXACTLY);
                 break;
             case MeasureSpec.EXACTLY://match_parent、精确值
-                FrameView.HORIZONTAL_LINE_LENGTH = MeasureSpec.getSize(widthMeasureSpec);
                 break;
         }
         int heightMode = MeasureSpec.getMode(heightMeasureSpec);
         switch (heightMode) {
             case MeasureSpec.UNSPECIFIED://处于ScrollView中
-            case MeasureSpec.AT_MOST://wrap_content，本程序不会用到这个
+            case MeasureSpec.AT_MOST://wrap_content
                 heightMeasureSpec = MeasureSpec.makeMeasureSpec(50, MeasureSpec.EXACTLY);
                 break;
             case MeasureSpec.EXACTLY://match_parent、精确值
