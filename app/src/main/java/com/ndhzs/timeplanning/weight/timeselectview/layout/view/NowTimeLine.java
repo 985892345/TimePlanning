@@ -5,27 +5,27 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.view.View;
 
-import com.ndhzs.timeplanning.weight.timeselectview.utils.TimeUtil;
+import com.ndhzs.timeplanning.weight.timeselectview.utils.TimeViewUtil;
 
 public class NowTimeLine extends View {
 
     private Paint mTimeLinePaint;
     private int mIntervalLeft;//左边的时间间隔宽度
     private int mIntervalRight;//右边的间隔宽度
-    private final TimeUtil mTimeUtil;
+    private final TimeViewUtil mTimeViewUtil;
 
     public static final int BALL_DIAMETER = 14;//小球直径
 
-    public NowTimeLine(Context context, TimeUtil timeUtil) {
+    public NowTimeLine(Context context, TimeViewUtil timeViewUtil) {
         super(context);
-        this.mTimeUtil = timeUtil;
+        this.mTimeViewUtil = timeViewUtil;
         postDelayed(new Runnable() {
             @Override
             public void run() {
                 timeLineMove();
-                postDelayed(this, TimeUtil.DELAY_NOW_TIME_REFRESH);
+                postDelayed(this, TimeViewUtil.DELAY_NOW_TIME_REFRESH);
             }
-        }, TimeUtil.DELAY_NOW_TIME_REFRESH);
+        }, TimeViewUtil.DELAY_NOW_TIME_REFRESH);
         init();
     }
     private void init() {
@@ -58,7 +58,7 @@ public class NowTimeLine extends View {
         // 因为如果我长按已选择了的区域，那么在ChildLayout就会调用addView()，又因为时间线应在最顶层，
         // 所以系统会重新layout()，如果你在LayoutParams.topMargin直接设置了开始位置，那么此时layout()就
         // 会跑回去，所以只有在layout()中设置当前时间的高度，就不会重新返回以前的位置，可以避免这个问题
-        int nowTimeHeight = mTimeUtil.getNowTimeHeight() - BALL_DIAMETER/2;
+        int nowTimeHeight = mTimeViewUtil.getNowTimeHeight() - BALL_DIAMETER/2;
         t = nowTimeHeight;
         b = nowTimeHeight + BALL_DIAMETER;
         super.layout(l, t, r, b);
@@ -76,6 +76,6 @@ public class NowTimeLine extends View {
         layout(0, y, getWidth(), y + getHeight());
     }
     private void timeLineMove() {
-        layout(mTimeUtil.getNowTimeHeight() - BALL_DIAMETER/2);
+        layout(mTimeViewUtil.getNowTimeHeight() - BALL_DIAMETER/2);
     }
 }

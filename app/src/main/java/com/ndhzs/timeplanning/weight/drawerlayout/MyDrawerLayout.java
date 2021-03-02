@@ -10,6 +10,7 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 public class MyDrawerLayout extends DrawerLayout{
+
     public MyDrawerLayout(@NonNull Context context) {
         super(context);
     }
@@ -19,7 +20,7 @@ public class MyDrawerLayout extends DrawerLayout{
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
-        if (isDrawerOpen(GravityCompat.START)) {
+        if (isDrawerOpen(GravityCompat.START) && ev.getX() > getWidth()/2.0f) {
             return true;
         }
         return super.onInterceptTouchEvent(ev);

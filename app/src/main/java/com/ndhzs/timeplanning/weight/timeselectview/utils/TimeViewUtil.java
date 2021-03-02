@@ -2,7 +2,7 @@ package com.ndhzs.timeplanning.weight.timeselectview.utils;
 
 import java.util.Calendar;
 
-public class TimeUtil {
+public class TimeViewUtil {
 
     private final int mHLineWidth;//水平线厚度
     private final int mExtraHeight;//上方或下方其中一方多余的高度
@@ -20,7 +20,7 @@ public class TimeUtil {
     public static final int DELAY_BACK_CURRENT_TIME = 10000;//回到当前时间的延缓时间
     public int TIME_INTERVAL = 15;//按下空白区域时起始时间的分钟间隔数(必须为60的因数)
 
-    public TimeUtil(int hLineWidth, int extraHeight, int intervalHeight, int startHour) {
+    public TimeViewUtil(int hLineWidth, int extraHeight, int intervalHeight, int startHour) {
         this.mHLineWidth = hLineWidth;
         this.mExtraHeight = extraHeight;
         this.mIntervalHeight = intervalHeight;

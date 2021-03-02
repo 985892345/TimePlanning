@@ -14,7 +14,7 @@ import androidx.annotation.NonNull;
 import com.ndhzs.timeplanning.weight.timeselectview.TimeSelectView;
 import com.ndhzs.timeplanning.weight.timeselectview.layout.view.RectImgView;
 import com.ndhzs.timeplanning.weight.timeselectview.layout.view.RectView;
-import com.ndhzs.timeplanning.weight.timeselectview.utils.TimeUtil;
+import com.ndhzs.timeplanning.weight.timeselectview.utils.TimeViewUtil;
 import com.ndhzs.timeplanning.weight.timeselectview.bean.TaskBean;
 
 public class ChildLayout extends FrameLayout implements TimeSelectView.IChildLayout {
@@ -24,9 +24,9 @@ public class ChildLayout extends FrameLayout implements TimeSelectView.IChildLay
     private RectImgView mImgView;
     private RectImgView mLinkImgView;
     private ChildLayout mLinkChildLayout;
-    private TimeUtil mLinkTimeUtil;
+    private TimeViewUtil mLinkTimeViewUtil;
     private TaskBean mTaskBean;
-    private TimeUtil mTimeUtil;
+    private TimeViewUtil mTimeViewUtil;
     private TimeSelectView.OnDataChangeListener mOnDataChangeListener;
     private int mDiffDistance = 0;
     private int mInitialX, mInitialY;//长按已选择的区域时的坐标
@@ -42,10 +42,10 @@ public class ChildLayout extends FrameLayout implements TimeSelectView.IChildLay
     private final int BOTTOM_TO_DRAW = 1;
     private final int DECIDE_BY_ONESELF = 0;
 
-    public ChildLayout(@NonNull Context context, TimeUtil timeUtil) {
+    public ChildLayout(@NonNull Context context, TimeViewUtil timeViewUtil) {
         super(context);
         this.mContext = context;
-        this.mTimeUtil = timeUtil;
+        this.mTimeViewUtil = timeViewUtil;
     }
 
     public void setIRectView(IUpEvent IRectView) {
@@ -196,7 +196,7 @@ public class ChildLayout extends FrameLayout implements TimeSelectView.IChildLay
         int nowUpperLimit = mIRectView.getNowUpperLimit(imgViewBottom - mExtraHeight) + mExtraHeight;
         int nowLowerLimit = mIRectView.getNowLowerLimit(imgViewTop - mExtraHeight) + mExtraHeight;
         //每个if对应了一种情况，具体请以序号看纸上的草图
-        if (mImgView.getHeight() - mTimeUtil.mEveryMinuteHeight[1] <= nowLowerLimit - nowUpperLimit) {
+        if (mImgView.getHeight() - mTimeViewUtil.mEveryMinuteHeight[1] <= nowLowerLimit - nowUpperLimit) {
             if (imgViewTop <= nowLowerLimit && imgViewBottom >= nowLowerLimit) {//1
                 correctBottom = nowLowerLimit;
                 WHERE_TO_DRAW = BOTTOM_TO_DRAW;
@@ -320,7 +320,7 @@ public class ChildLayout extends FrameLayout implements TimeSelectView.IChildLay
         int linkImgViewBottom = childLayout.mLinkImgView.getBottom();
         int nowUpperLimit = mIRectView.getNowUpperLimit(linkImgViewBottom - mExtraHeight) + mExtraHeight;
         int nowLowerLimit = mIRectView.getNowLowerLimit(linkImgViewTop - mExtraHeight) + mExtraHeight;
-        if (linkImgViewBottom - linkImgViewTop  - mTimeUtil.mEveryMinuteHeight[1] <= nowLowerLimit - nowUpperLimit) {
+        if (linkImgViewBottom - linkImgViewTop  - mTimeViewUtil.mEveryMinuteHeight[1] <= nowLowerLimit - nowUpperLimit) {
             if (linkImgViewTop <= nowLowerLimit && linkImgViewBottom >= nowLowerLimit) {//1
                 correctBottom = nowLowerLimit;
                 WHERE_TO_DRAW = BOTTOM_TO_DRAW;
@@ -399,7 +399,7 @@ public class ChildLayout extends FrameLayout implements TimeSelectView.IChildLay
         this.mLowerLimit = currentLowerLimit + mExtraHeight;
         addView(rectImgView, lp);
         if (mLinkChildLayout != null) {
-            mLinkImgView = mImgView.getSameImgView(mLinkTimeUtil);
+            mLinkImgView = mImgView.getSameImgView(mLinkTimeViewUtil);
             LayoutParams layoutParams = new LayoutParams(lp);
             layoutParams.leftMargin += mDiffDistance;
             mLinkChildLayout.addView(mLinkImgView, layoutParams);//在另一个ChildLayout生成一个矩形在自身的ChildLayout的底部
@@ -412,10 +412,10 @@ public class ChildLayout extends FrameLayout implements TimeSelectView.IChildLay
         }
     }
 
-    public void setLinkChildLayout(ChildLayout linkChildLayout, TimeUtil linkTimeUtil, int diffDistance) {
+    public void setLinkChildLayout(ChildLayout linkChildLayout, TimeViewUtil linkTimeViewUtil, int diffDistance) {
         if (mLinkChildLayout == null) {
             mLinkChildLayout = linkChildLayout;
-            mLinkTimeUtil = linkTimeUtil;
+            mLinkTimeViewUtil = linkTimeViewUtil;
             mDiffDistance = diffDistance;
         }
     }

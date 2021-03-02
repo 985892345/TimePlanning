@@ -15,7 +15,7 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.ndhzs.timeplanning.R;
 import com.ndhzs.timeplanning.weight.timeselectview.layout.ChildLayout;
 import com.ndhzs.timeplanning.weight.timeselectview.layout.view.RectView;
-import com.ndhzs.timeplanning.weight.timeselectview.utils.TimeUtil;
+import com.ndhzs.timeplanning.weight.timeselectview.utils.TimeViewUtil;
 import com.ndhzs.timeplanning.weight.timeselectview.layout.view.NowTimeLine;
 import com.ndhzs.timeplanning.weight.timeselectview.layout.view.RectImgView;
 import com.ndhzs.timeplanning.weight.timeselectview.layout.view.FrameView;
@@ -41,7 +41,7 @@ public class TimeSelectView extends ScrollView {
     private final int mInsideColor;//矩形内部颜色
     private final float mTimeTextSide;//时间字体大小
     private final float mTaskTextSize;//任务字体大小
-    private final TimeUtil mTimeUtil;
+    private final TimeViewUtil mTimeViewUtil;
     private boolean mIsOpenScrollCallBack = true;//设置mIsCloseUserActionJudge，将在被其他非触摸操作滑动时不会回调滑动的接口
 
     /**
@@ -101,7 +101,7 @@ public class TimeSelectView extends ScrollView {
      * @param timeInterval 必须为60的因数，若不是，将以15为间隔数
      */
     public void setTimeInterval(int timeInterval) {
-        mTimeUtil.TIME_INTERVAL = (60 % timeInterval == 0) ? timeInterval : 15;
+        mTimeViewUtil.TIME_INTERVAL = (60 % timeInterval == 0) ? timeInterval : 15;
     }
 
     /**
@@ -139,15 +139,13 @@ public class TimeSelectView extends ScrollView {
 
     /**
      * 若你使用了两个并排的TimeSelectView，又想实现整体移动互相传递数据，可以使用该方法。
-     * (使用前提：请设置TimeSelectView的父布局的 android:clipChildren="false"，如果你父布局为
+     * (使用前提：请设置TimeSelectView 和 父布局的 android:clipChildren="false"，如果你父布局为
      * CardView，该属性会设置无效，请使用其他布局。如果你的确想使用CardView，可以尝试将CardView单独设置
      * 为背景，用另一个Layout覆盖在其上，但请将该Layout的android:elevation设置为合适值，不然将无法覆盖
      * 在CardView上方)
      * @param linkTimeView 传入要连接的另一个TimeSelectView，请保证他们的高度相同
      */
     public void setLinkTimeSelectView(TimeSelectView linkTimeView) {
-        setClipChildren(false);
-        mLayoutChild.setClipChildren(false);
         postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -156,7 +154,7 @@ public class TimeSelectView extends ScrollView {
                 int[] linkPosition = new int[2];
                 linkTimeView.getLocationInWindow(linkPosition);
                 int diffDistance = selfPosition[0] - linkPosition[0];
-                mLayoutChild.setLinkChildLayout(linkTimeView.mLayoutChild, linkTimeView.mTimeUtil, diffDistance);
+                mLayoutChild.setLinkChildLayout(linkTimeView.mLayoutChild, linkTimeView.mTimeViewUtil, diffDistance);
             }
         }, 200);
     }
@@ -165,7 +163,7 @@ public class TimeSelectView extends ScrollView {
      * 设置是否显示时间线
      */
     public void setIsShowTimeLine(boolean is) {
-        NowTimeLine mNowTimeLine = new NowTimeLine(context, mTimeUtil);
+        NowTimeLine mNowTimeLine = new NowTimeLine(context, mTimeViewUtil);
         if (is) {
             LayoutParams lpNowTimeView = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
             mNowTimeLine.setInterval(mIntervalLeft, FrameView.INTERVAL_RIGHT);
@@ -208,16 +206,16 @@ public class TimeSelectView extends ScrollView {
         IS_SHOW_DIFFERENT_TIME = ty.getBoolean(R.styleable.TimeSelectView_isShowDifferentTime, false);
         ty.recycle();
         setCenterTime(mCenterTime);
-        mTimeUtil = new TimeUtil(FrameView.HORIZONTAL_LINE_WIDTH, mExtraHeight, mIntervalHeight, mStartHour);
+        mTimeViewUtil = new TimeViewUtil(FrameView.HORIZONTAL_LINE_WIDTH, mExtraHeight, mIntervalHeight, mStartHour);
         setVerticalScrollBarEnabled(false);
         initLayout(context);
     }
     private void initLayout(Context context) {
-        mLayoutChild = new ChildLayout(context, mTimeUtil);
+        mLayoutChild = new ChildLayout(context, mTimeViewUtil);
         LayoutParams lpLayoutChild = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
         mLayoutChild.setInterval(mIntervalLeft, mExtraHeight);
 
-        RectView rectView = new RectView(context, mTimeUtil);
+        RectView rectView = new RectView(context, mTimeViewUtil);
         LayoutParams lpRectView = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
         lpRectView.leftMargin = mIntervalLeft;
         lpRectView.topMargin = mExtraHeight;
@@ -241,6 +239,10 @@ public class TimeSelectView extends ScrollView {
         mLayoutChild.addView(frameView, lpFrameView);
 
         addView(mLayoutChild, lpLayoutChild);
+
+        if (!getClipChildren()) {
+            mLayoutChild.setClipChildren(false);
+        }
     }
 
     private final int MOVE_THRESHOLD = 5;//识别是长按而能移动的阈值
@@ -308,7 +310,7 @@ public class TimeSelectView extends ScrollView {
             case MotionEvent.ACTION_UP:
                 removeCallbacks(mLongPressRun);
                 if (y != mInitialY) {//这个自动回到CenterTime不能写在onInterceptTouchEvent()的UP，详细看下方注释
-                    postDelayed(mGoBackCenterTimeRun, TimeUtil.DELAY_BACK_CURRENT_TIME);
+                    postDelayed(mGoBackCenterTimeRun, TimeViewUtil.DELAY_BACK_CURRENT_TIME);
                 }
                 IS_LONG_PRESS = false;
                 break;
@@ -549,8 +551,8 @@ public class TimeSelectView extends ScrollView {
             post(new Runnable() {
                 @Override
                 public void run() {
-                    fastTimeMove(mTimeUtil.getNowTime());
-                    postDelayed(mTimeMoveRun, TimeUtil.DELAY_NOW_TIME_REFRESH);
+                    fastTimeMove(mTimeViewUtil.getNowTime());
+                    postDelayed(mTimeMoveRun, TimeViewUtil.DELAY_NOW_TIME_REFRESH);
                 }
             });
         }else {//设置CenterTime，以CenterTime为中线，不随时间移动
@@ -570,14 +572,14 @@ public class TimeSelectView extends ScrollView {
         @Override
         public void run() {
             slowlyTimeMove();
-            postDelayed(this, TimeUtil.DELAY_NOW_TIME_REFRESH);
+            postDelayed(this, TimeViewUtil.DELAY_NOW_TIME_REFRESH);
         }
     };
     private ValueAnimator mAnimator;
     private void slowlyTimeMove() {
         int height;
         if (mCenterTime == -1) {//以当前时间线为中线
-            height = getCenterTimeHeight(mTimeUtil.getNowTime());
+            height = getCenterTimeHeight(mTimeViewUtil.getNowTime());
         }else {//以CenterTime为中线，不随时间移动
             height = mCenterTimeHeight;
         }
