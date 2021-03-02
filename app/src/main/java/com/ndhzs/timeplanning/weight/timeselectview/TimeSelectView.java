@@ -243,7 +243,7 @@ public class TimeSelectView extends ScrollView {
         addView(mLayoutChild, lpLayoutChild);
     }
 
-    private final int MOVE_THRESHOLD = 15;//识别是长按而能移动的阈值
+    private final int MOVE_THRESHOLD = 5;//识别是长按而能移动的阈值
     private final Runnable mLongPressRun = new Runnable() {
         @Override
         public void run() {

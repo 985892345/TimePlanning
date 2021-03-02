@@ -1,4 +1,4 @@
-package com.ndhzs.timeplanning.weight;
+package com.ndhzs.timeplanning.weight.drawerlayout;
 
 import android.graphics.Color;
 import android.view.View;
@@ -14,11 +14,11 @@ import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.ndhzs.timeplanning.R;
 
-public class MyDrawerLayout {
+public class InDrawerLayout {
 
     private final AppCompatActivity activity;
 
-    public MyDrawerLayout(AppCompatActivity activity){
+    public InDrawerLayout(AppCompatActivity activity){
         this.activity = activity;
         InMyDrawerLayout();
     }

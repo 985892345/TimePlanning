@@ -10,7 +10,6 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ImageView;
@@ -22,7 +21,7 @@ import com.ndhzs.timeplanning.adapter.DayVpAdapter;
 import com.ndhzs.timeplanning.adapter.TimeVpAdapter;
 import com.ndhzs.timeplanning.db.Dates;
 import com.ndhzs.timeplanning.httpservice.SendNetRequest;
-import com.ndhzs.timeplanning.weight.MyDrawerLayout;
+import com.ndhzs.timeplanning.weight.drawerlayout.InDrawerLayout;
 import com.ndhzs.timeplanning.weight.timeselectview.bean.TaskBean;
 
 import org.json.JSONException;
@@ -32,11 +31,8 @@ import org.litepal.LitePal;
 import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
@@ -65,7 +61,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         LitePal.initialize(this);
-        new MyDrawerLayout(this);
+        new InDrawerLayout(this);
         mShared = getSharedPreferences("data", MODE_PRIVATE);
         loadData();
         initView();
