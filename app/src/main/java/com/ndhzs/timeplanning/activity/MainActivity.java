@@ -10,6 +10,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ImageView;
@@ -54,7 +55,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private int mCurrentWeekPage;
     private int mCurrentWeek;
     private int mDiffDate;
-    private String firstOpenWeekOfFirst;
+    private String firstOpenWeek;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,7 +90,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         for (int i = 0; i < d; i++) {
             for (int j = 0; j < 7; j++) {
                 Dates dates = new Dates();
-                int p = mDates.size() - i - 1;
+                int p = mDates.size() + i - 2;
+                Log.d(TAG, "onDestroy: p = " + p);
                 dates.setDate(mDates.get(p)[j]);
                 dates.setRest(mRectDays.get(p)[j]);
                 dates.setCalender(mCalender.get(p)[j]);
@@ -108,10 +110,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             String nowDay = getNowDay();//这是第一次使用软件的那天日期
             mEditor.putString("firstOpenDate", nowDay);
             String[] loadWeek = getAllOfWeek();
-            String loadWeekOfFirst = loadWeek[0];
-            firstOpenWeekOfFirst = loadWeekOfFirst;//这是第一次使用软件的那周的第一天日期
-            mEditor.putString("firstOpenWeekOfFirst", firstOpenWeekOfFirst);
-            mEditor.putString("loadWeekOfFirst", loadWeekOfFirst);
+            firstOpenWeek = loadWeek[0];//这是第一次使用软件的那周的第一天日期
+            mEditor.putString("firstOpenWeek", firstOpenWeek);
+            mEditor.putString("loadWeek", loadWeek[0]);
             mDiffDate = 14;//这个用来控制viewpager的item刷新数量
             sendHolidayNet(loadWeek);//第一次打开软件加载14天的数据
             sendCalendarNet(loadWeek);
@@ -130,7 +131,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 mEveryDayData.add(new ArrayList<>());
             }
             mCurrentWeekPage = 0;
-            mCurrentWeek = getDiffDate(firstOpenWeekOfFirst, nowDay);//周日到周六分别对应0 ~ 6
+            mCurrentWeek = getDiffDate(firstOpenWeek, nowDay);//周日到周六分别对应0 ~ 6
         }else {
 
             //把之前的数据都读取出来
@@ -154,11 +155,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             String nowDay = getNowDay();
             mEditor.putString("lastOpenDate", nowDay);
             //这是上一次使用网络加载的第一天日期
-            String prevLoadWeekOfFirst = mShared.getString("loadWeekOfFirst", "2021-2-14");
-            mDiffDate = getDiffDate(prevLoadWeekOfFirst, nowDay);
-            String[] loadWeek = getAllOfWeek();
-            String loadWeekOfFirst = loadWeek[0];//这是本周第一天日期
-            mEditor.putString("loadWeekOfFirst", loadWeekOfFirst);
+            String preloadWeek = mShared.getString("loadWeek", "2021-2-14");
+            mDiffDate = getDiffDate(preloadWeek, nowDay);
+            String[] loadWeeks = getAllOfWeek();
+            String newLoadWeek = loadWeeks[0];//这是本周第一天日期
+            mEditor.putString("loadWeek", newLoadWeek);
             if (mDiffDate >= 7 && mDiffDate < 14) {
                 //如果是这个判断，说明你上个星期打开过，那就加载下个星期的数据
                 String[] dates = new String[7];//下个星期的号数
@@ -166,8 +167,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 String[] rectDays = new String[7];
                 String[] sendNetArray = new String[7];//用来发送请求的下个星期的数组
                 for (int i = 0; i < 7; i++) {
-                    sendNetArray[i] = loadWeek[i + 7];
-                    dates[i] = loadWeek[i + 7].split("-")[2];
+                    sendNetArray[i] = loadWeeks[i + 7];
+                    dates[i] = loadWeeks[i + 7].split("-")[2];
                     mEveryDayData.add(new ArrayList<>());
                 }
                 mDates.add(dates);
@@ -182,7 +183,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     String[] calender = new String[7];
                     String[] rectDays = new String[7];
                     for (int j = 0; j < 7; j++) {
-                        dates[j] = loadWeek[7 * i + j].split("-")[2];
+                        dates[j] = loadWeeks[7 * i + j].split("-")[2];
                     }
                     mDates.add(dates);
                     mCalender.add(calender);
@@ -191,8 +192,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 for (int i = 0; i < 14; i++) {
                     mEveryDayData.add(new ArrayList<>());
                 }
-                sendHolidayNet(loadWeek);
-                sendCalendarNet(loadWeek);
+                sendHolidayNet(loadWeeks);
+                sendCalendarNet(loadWeeks);
             }else if (mDiffDate >= 21) {
                 // 如果是这个判断，说明你有两个星期没打开过了
                 // 由于在写这句时临近21号，我就暂时不写这块了，以后来补充
@@ -200,8 +201,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 // 用的人多了就不行了，所以这里就这样暂时不写了 :)
             }
             //这是第一次使用软件的那周的第一天日期
-            firstOpenWeekOfFirst = mShared.getString("firstOpenWeekOfFirst", "2021-2-14");
-            int diffDateToFirstWeek = getDiffDate(firstOpenWeekOfFirst, nowDay);
+            firstOpenWeek = mShared.getString("firstOpenWeek", "2021-2-14");
+            int diffDateToFirstWeek = getDiffDate(firstOpenWeek, nowDay);
             mCurrentWeekPage = diffDateToFirstWeek / 7;
             mCurrentWeek = diffDateToFirstWeek % 7;
         }
@@ -402,7 +403,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                 JSONObject dayJS = holidayJS.getJSONObject(n);
                                 boolean isRect = dayJS.getBoolean("holiday");
                                 String date = dayJS.getString("date");
-                                int diffDate = activity.getDiffDate(activity.firstOpenWeekOfFirst, date);
+                                int diffDate = activity.getDiffDate(activity.firstOpenWeek, date);
                                 if (isRect) {
                                     activity.mRectDays.get(diffDate / 7)[diffDate % 7] = "休";
                                 } else {
@@ -447,7 +448,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             calender = dataJS.getString("lunar").substring(2);
                         }
                         String date = dataJS.getString("date");
-                        int diffDate = activity.getDiffDate(activity.firstOpenWeekOfFirst, date);
+                        int diffDate = activity.getDiffDate(activity.firstOpenWeek, date);
                         activity.mCalender.get(diffDate / 7)[diffDate % 7] = calender;
                         i++;
                         if (i == 7) {//这个接口获取单天数据只能一天一天的获取
