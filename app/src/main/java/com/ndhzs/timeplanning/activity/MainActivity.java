@@ -90,7 +90,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         for (int i = 0; i < d; i++) {
             for (int j = 0; j < 7; j++) {
                 Dates dates = new Dates();
-                int p = mDates.size() + i - 2;
+                int p = mDates.size() + i - 1;
                 Log.d(TAG, "onDestroy: p = " + p);
                 dates.setDate(mDates.get(p)[j]);
                 dates.setRest(mRectDays.get(p)[j]);
