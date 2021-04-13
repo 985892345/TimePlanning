@@ -165,7 +165,7 @@ public class DayView extends View {
             if (rest == null) {
                 rest = "";
             }
-            if (calender.startsWith("初") || calender.startsWith("十") || calender.startsWith("廿")) {
+            if (calender.startsWith("初") || calender.startsWith("十") || calender.startsWith("廿") || calender.startsWith("三")) {
                 mCalenderPaint.setColor(mCalenderColor);
             }else {
                 mCalenderPaint.setColor(mCircleColor);

@@ -8,7 +8,7 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.ScrollView;
-;
+
 import androidx.core.content.ContextCompat;
 import androidx.viewpager2.widget.ViewPager2;
 
@@ -49,7 +49,7 @@ public class TimeSelectView extends ScrollView {
      */
     private int mInitialX, mInitialY;
     private float mCenterTime;
-    private static final int MAX_AUTO_SLIDE_VELOCITY = 49;//最大滑动速度的平方
+    private static final int MAX_AUTO_SLIDE_VELOCITY = 50;//最大滑动速度的平方
     private static final int AUTO_MOVE_THRESHOLD = 150;//自动滑动的阀值
     private static final float MULTIPLE = (float) MAX_AUTO_SLIDE_VELOCITY/AUTO_MOVE_THRESHOLD;
 
@@ -523,7 +523,7 @@ public class TimeSelectView extends ScrollView {
                 case RectView.TOP:
                 case RectView.BOTTOM:
                 case RectView.EMPTY_AREA:
-                    mRectView.refresh(getScrollY() + dy + mMoveY - mExtraHeight);
+                    mRectView.refresh(getScrollY() + mMoveY - mExtraHeight);
                     break;
                 case RectView.INSIDE:
                     mRectView.getImgViewRect().autoSlideLayout(mMoveX - mInitialX, dy + mMoveY - mLastMoveY);

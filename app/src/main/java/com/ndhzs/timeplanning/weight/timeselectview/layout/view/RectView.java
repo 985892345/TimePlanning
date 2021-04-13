@@ -25,7 +25,6 @@ public class RectView extends View implements ChildLayout.IUpEvent, TimeSelectVi
 
     private final Context mContext;
     private final TimeViewUtil mTimeViewUtil;
-
     private Paint mInsidePaint;//圆角矩形内部画笔
     private Paint mBorderPaint;//圆角矩形边框画笔
     private Paint mArrowsPaint;//时间差的箭头线画笔
@@ -560,7 +559,6 @@ public class RectView extends View implements ChildLayout.IUpEvent, TimeSelectVi
             initialRect.bottom = Math.min(y, mLowerLimit);
         }else {
             initialRect.top = Math.max(y, mUpperLimit);
-
         }
         invalidate(initialRect);
     }

@@ -232,12 +232,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void run() {
                 try {
-                    for (int i = 0; i < s.length; i++) {
+                    for (String value : s) {
                         sleep(100);//这个接口在瞬间请求大量数据时会不返回
                         /*
                          * 这个key每天只能请求100次 :(
                          * */
-                        new SendNetRequest(calendarHandler).sendGetNetRequest("https://v.juhe.cn/calendar/day?key=d3baf1e03b20a9bd4b49a0e80e66d925&date=" + s[i]);
+                        new SendNetRequest(calendarHandler).sendGetNetRequest("https://v.juhe.cn/calendar/day?key=d3baf1e03b20a9bd4b49a0e80e66d925&date=" + value);
                     }
                 }catch (InterruptedException e) {
                     e.printStackTrace();
@@ -444,7 +444,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         JSONObject resultJS = js.getJSONObject("result");
                         JSONObject dataJS = resultJS.getJSONObject("data");
                         String calender = dataJS.getString("holiday");
-                        if (calender.equals("")) {
+                        if (calender.equals("") || calender.length() > 5) {
                             calender = dataJS.getString("lunar").substring(2);
                         }
                         String date = dataJS.getString("date");
